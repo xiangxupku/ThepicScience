@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThepicScience — turn a photo of the board into a science lesson you get</title>
+<meta name="description" content="Take a picture of your teacher's whiteboard and get it back as a picture book or a narrated video that explains the science. Free, no sign-up.">
+<meta name="theme-color" content="#fbfaf7">
+<link rel="icon" href="assets/favicon.svg">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<a class="skip" href="#step1">Skip to the first step</a>
+
+<header class="site-head">
+  <div class="wrap head-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">🔬</span>
+      <span class="brand-name">ThepicScience</span>
+    </div>
+    <p class="brand-tag">Photo of the board in. A lesson you understand out.</p>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+
+  <section class="intro">
+    <h1>Snap the whiteboard. Get a picture book or a video that explains it.</h1>
+    <p class="lede">Science is hard because it comes at you fast. Take a picture of the board — or a video of your teacher — and ThepicScience turns it into a picture book, a narrated video, a project you can actually do, or a report outline to write from. Free, and no account.</p>
+  </section>
+
+  <section class="card me" id="me" aria-labelledby="me-h">
+    <div id="me-ask">
+      <p class="eyebrow">Sign in</p>
+      <h2 id="me-h">What grade are you in?</h2>
+      <p class="step-sub">No name, no password, no email — just your grade, kept on this device. It sets how the lessons are written and shows what your grade covers in science.</p>
+      <div class="grade-row" id="grade-row"></div>
+      <p class="skip-line"><button type="button" class="linkish" id="me-skip">Skip for now</button></p>
+    </div>
+
+    <div id="me-known" hidden>
+      <div class="me-head">
+        <div>
+          <p class="eyebrow">Signed in</p>
+          <h2 class="me-grade" id="me-grade">Grade 7</h2>
+          <p class="step-sub" id="me-band"></p>
+        </div>
+        <button type="button" class="btn btn-quiet" id="me-change">Change grade</button>
+      </div>
+      <div class="learn">
+        <p class="lbl" id="learn-h">What your grade covers</p>
+        <p class="hint">Tap one to start, or scroll down and photograph your own board instead.</p>
+        <ul class="topic-list" id="learn-list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <nav class="stepper" aria-label="Progress">
+    <ol>
+      <li><a href="#step1" class="step-link is-current" data-step="1" aria-current="step"><span class="num">1</span> Add your photo</a></li>
+      <li><a href="#step2" class="step-link" data-step="2"><span class="num">2</span> Find the topic</a></li>
+      <li><a href="#step3" class="step-link" data-step="3"><span class="num">3</span> Pick a format</a></li>
+      <li><a href="#step4" class="step-link" data-step="4"><span class="num">4</span> Read or watch</a></li>
+    </ol>
+  </nav>
+
+  <!-- STEP 1 -->
+  <section class="card step" id="step1" aria-labelledby="step1-h">
+    <div class="step-head">
+      <p class="eyebrow">Step 1</p>
+      <h2 id="step1-h">Add a photo or video of the science</h2>
+      <p class="step-sub">The whiteboard, a page of your textbook, your own notes, or a clip of your teacher talking. Nothing you add ever leaves your device.</p>
+    </div>
+
+    <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-help">
+      <svg class="drop-icon" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="13" width="38" height="27" rx="4"/><circle cx="24" cy="27" r="8"/><path d="M17 13l3-5h8l3 5"/></svg>
+      <p class="drop-title">Drop your picture here</p>
+      <p class="drop-or" id="drop-help">or choose a file, take a photo, or paste one with Ctrl + V</p>
+      <div class="drop-actions">
+        <button type="button" class="btn btn-primary" id="pick-file">Choose a file</button>
+        <button type="button" class="btn" id="pick-camera">Take a photo</button>
+      </div>
+      <p class="drop-note">JPG, PNG, WEBP, MP4 or MOV — up to 50 MB</p>
+    </div>
+
+    <label class="visually-hidden" for="file-input">Choose an image or video file</label>
+    <input type="file" id="file-input" accept="image/*,video/*" hidden>
+    <label class="visually-hidden" for="camera-input">Take a photo with your camera</label>
+    <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+
+    <p class="field-error" id="file-error" role="alert" hidden></p>
+
+    <div class="preview" id="preview" hidden>
+      <div class="preview-media" id="preview-media"></div>
+      <div class="preview-meta">
+        <p class="preview-name" id="preview-name"></p>
+        <p class="preview-sub" id="preview-sub"></p>
+        <div class="preview-actions">
+          <button type="button" class="btn btn-primary" id="scan-btn">Read this picture</button>
+          <button type="button" class="btn btn-quiet" id="remove-file">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="skip-line">No picture handy? <button type="button" class="linkish" id="skip-photo">Type your topic instead</button></p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="card step is-locked" id="step2" aria-labelledby="step2-h">
+    <div class="step-head">
+      <p class="eyebrow">Step 2</p>
+      <h2 id="step2-h">Check that we found the right topic</h2>
+      <p class="step-sub">We read the words in your picture and match them to a topic in the science library. You can change it any time.</p>
+    </div>
+
+    <div class="scan-status" id="scan-status" hidden>
+      <div class="bar"><div class="bar-fill" id="scan-bar"></div></div>
+      <p class="scan-text" id="scan-text">Reading the words in your picture…</p>
+      <button type="button" class="btn btn-quiet" id="scan-cancel">Stop reading</button>
+    </div>
+
+    <div class="match" id="match-result" hidden>
+      <div id="match-top"></div>
+    </div>
+
+    <div class="board-terms" id="board-terms" hidden>
+      <p class="lbl">What we found on your board</p>
+      <p class="hint">Your lesson leads with these. Tap one to drop it if your teacher only mentioned it in passing.</p>
+      <div class="chips" id="board-chips"></div>
+      <p class="hint" id="board-missing" hidden></p>
+    </div>
+
+    <div class="topic-picker">
+      <label class="lbl" for="topic-search">Search the science library</label>
+      <input type="search" id="topic-search" class="input" placeholder="cells, forces, water cycle, circuits…" autocomplete="off">
+      <p class="hint" id="topic-count"></p>
+      <ul class="topic-list" id="topic-list"></ul>
+      <p class="empty-note" id="topic-empty" hidden>Nothing in the library matches that yet. Try a shorter word — "cell", "atom", "energy" — or pick one from the full list.</p>
+    </div>
+
+    <div class="chosen" id="chosen" hidden>
+      <div class="chosen-text">
+        <p class="chosen-label">Your topic</p>
+        <p class="chosen-name" id="chosen-name"></p>
+        <p class="chosen-blurb" id="chosen-blurb"></p>
+      </div>
+      <button type="button" class="btn btn-primary" id="to-step3">Next: pick a format</button>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="card step is-locked" id="step3" aria-labelledby="step3-h">
+    <div class="step-head">
+      <p class="eyebrow">Step 3</p>
+      <h2 id="step3-h">How do you want it explained?</h2>
+      <p class="step-sub">Same science in all four — pick what you actually need right now.</p>
+    </div>
+
+    <form id="style-form" novalidate>
+      <fieldset class="fs">
+        <legend class="lbl">What grade are you in?</legend>
+        <div class="choices three">
+          <label class="choice sm"><input type="radio" name="grade" value="elementary"><span class="choice-body"><span class="choice-title">Grades 3–5</span><span class="choice-desc">Short sentences, every word explained</span></span></label>
+          <label class="choice sm"><input type="radio" name="grade" value="middle" checked><span class="choice-body"><span class="choice-title">Grades 6–8</span><span class="choice-desc">The normal version</span></span></label>
+          <label class="choice sm"><input type="radio" name="grade" value="high"><span class="choice-body"><span class="choice-title">Grades 9–12</span><span class="choice-desc">Full detail and harder questions</span></span></label>
+        </div>
+        <p class="hint" id="grade-note"></p>
+      </fieldset>
+
+      <fieldset class="fs">
+        <legend class="lbl">What do you want out of it?</legend>
+        <div class="choices two">
+          <label class="choice">
+            <input type="radio" name="format" value="book" checked>
+            <span class="choice-body">
+              <span class="choice-title">📖 Picture book</span>
+              <span class="choice-desc">One idea per page, with a drawing. Go at your own speed and flip back whenever.</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="format" value="video">
+            <span class="choice-body">
+              <span class="choice-title">🎬 Video</span>
+              <span class="choice-desc">A voice explains it while the drawings change. Play it while you eat dinner.</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="format" value="project">
+            <span class="choice-body">
+              <span class="choice-title">🧪 Project</span>
+              <span class="choice-desc">A real experiment you can do at home, with the write-up planned out for you.</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="format" value="report">
+            <span class="choice-body">
+              <span class="choice-title">📝 Report</span>
+              <span class="choice-desc">A full outline to write from: sections, facts, vocabulary and the questions to answer.</span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="fs" id="len-book">
+        <legend class="lbl">How many pages?</legend>
+        <div class="choices three">
+          <label class="choice sm"><input type="radio" name="pages" value="4" checked><span class="choice-body"><span class="choice-title">4 pages</span><span class="choice-desc">Just the big idea</span></span></label>
+          <label class="choice sm"><input type="radio" name="pages" value="8"><span class="choice-body"><span class="choice-title">8 pages</span><span class="choice-desc">Enough for a quiz</span></span></label>
+          <label class="choice sm"><input type="radio" name="pages" value="12"><span class="choice-body"><span class="choice-title">12 pages</span><span class="choice-desc">The whole unit</span></span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="fs" id="len-video" hidden>
+        <legend class="lbl">How long should the video be?</legend>
+        <div class="choices three">
+          <label class="choice sm"><input type="radio" name="minutes" value="1" checked><span class="choice-body"><span class="choice-title">1 minute</span><span class="choice-desc">Just the big idea</span></span></label>
+          <label class="choice sm"><input type="radio" name="minutes" value="3"><span class="choice-body"><span class="choice-title">3 minutes</span><span class="choice-desc">Enough for a quiz</span></span></label>
+          <label class="choice sm"><input type="radio" name="minutes" value="5"><span class="choice-body"><span class="choice-title">5 minutes</span><span class="choice-desc">The whole unit</span></span></label>
+        </div>
+        <p class="hint">These are targets. Narration takes as long as it takes, and a slower voice or a lower grade changes it — the exact length always shows on the button below.</p>
+      </fieldset>
+
+      <div class="find-online" id="find-online" hidden>
+        <p class="lbl">First — has someone already made one?</p>
+        <p class="hint">A real teacher explaining it on video usually beats anything we can draw. These open a search for your topic in a new tab. If nothing there fits, come back and make your own.</p>
+        <div class="find-row" id="find-row"></div>
+        <p class="hint find-note">We can't search inside this page — that needs a paid account key, and this app deliberately has no server and no sign-in. So the search happens on their site, with your topic already typed in.</p>
+      </div>
+
+      <fieldset class="fs">
+        <legend class="lbl">Voice</legend>
+        <div class="voice-row">
+          <span class="vf">
+            <label class="sub-lbl" for="voice-select">Who reads it to you</label>
+            <select id="voice-select" class="input"></select>
+          </span>
+          <span class="vf">
+            <label class="sub-lbl" for="rate-select">Speaking speed</label>
+            <select id="rate-select" class="input">
+              <option value="0.8">Slow — I need time to think</option>
+              <option value="0.95" selected>Normal</option>
+              <option value="1.15">Fast — I am reviewing</option>
+            </select>
+          </span>
+          <button type="button" class="btn" id="voice-sample">Hear a sample</button>
+        </div>
+        <p class="hint" id="voice-note">Voices come from your own device, so they keep working offline.</p>
+      </fieldset>
+
+      <div class="make-row">
+        <button type="submit" class="btn btn-primary btn-big" id="make-btn">Make my picture book</button>
+        <p class="make-sub" id="make-sub"></p>
+      </div>
+      <p class="hint" id="make-fallback" hidden>Nothing online explained it well? That is what this button is for.</p>
+    </form>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="card step is-locked" id="step4" aria-labelledby="step4-h">
+    <div class="step-head">
+      <p class="eyebrow">Step 4</p>
+      <h2 id="step4-h">Your lesson</h2>
+      <p class="step-sub" id="step4-sub">It shows up here when it is ready.</p>
+    </div>
+
+    <div class="building" id="building" hidden>
+      <div class="bar"><div class="bar-fill" id="build-bar"></div></div>
+      <p class="scan-text" id="build-text">Getting the science together…</p>
+    </div>
+
+    <div id="book-view" hidden>
+      <div class="book" id="book">
+        <div class="book-page" id="book-page" tabindex="0" aria-live="polite"></div>
+      </div>
+      <div class="book-controls">
+        <button type="button" class="btn" id="prev-page">← Back</button>
+        <p class="page-count" id="page-count"></p>
+        <button type="button" class="btn btn-primary" id="next-page">Next →</button>
+      </div>
+      <div class="book-extra">
+        <button type="button" class="btn btn-quiet" id="read-page">🔊 Read this page to me</button>
+        <span class="dots" id="page-dots"></span>
+      </div>
+    </div>
+
+    <div id="video-view" hidden>
+      <div class="player" id="player">
+        <div class="stage" id="stage"></div>
+        <div class="captions" id="captions"></div>
+      </div>
+      <div class="player-bar">
+        <button type="button" class="btn btn-primary" id="play-btn">▶ Play</button>
+        <button type="button" class="btn" id="back-scene" aria-label="Previous scene">⏮</button>
+        <button type="button" class="btn" id="fwd-scene" aria-label="Next scene">⏭</button>
+        <div class="seek" id="seek" role="slider" tabindex="0" aria-label="Video position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent">
+          <div class="seek-ticks" id="seek-ticks" aria-hidden="true"></div>
+          <div class="seek-fill" id="seek-fill"></div>
+        </div>
+        <p class="time" id="time">0:00 / 0:00</p>
+        <button type="button" class="btn" id="full-btn" aria-label="Fullscreen">⛶</button>
+      </div>
+      <div class="scene-chips" id="scene-chips" aria-label="Scenes"></div>
+      <div class="book-extra">
+        <label class="toggle"><input type="checkbox" id="cc-toggle" checked> Show captions</label>
+        <p class="hint" id="speech-warn" hidden>This browser has no voices available, so the video plays with captions only.</p>
+      </div>
+    </div>
+
+    <div id="doc-view" hidden>
+      <article class="doc" id="doc"></article>
+    </div>
+
+    <div class="quiz" id="quiz" hidden>
+      <h3 id="quiz-h">Quick check</h3>
+      <p class="quiz-sub" id="quiz-sub">These are the kind of thing a test asks. Getting one wrong here is free.</p>
+      <form id="quiz-form"></form>
+      <div class="quiz-foot">
+        <button type="button" class="btn btn-primary" id="quiz-check">Check my answers</button>
+        <button type="button" class="btn" id="quiz-deeper" hidden>Dig deeper — all 10 questions</button>
+        <button type="button" class="btn btn-quiet" id="quiz-reset" hidden>Ask me different questions</button>
+        <p class="quiz-score" id="quiz-score" role="status"></p>
+      </div>
+
+      <div class="missed" id="missed" hidden>
+        <h4 class="missed-h">Let's fix the ones you missed</h4>
+        <p class="quiz-sub">Here is the exact part of the lesson that answers each one — then we will ask you about it a different way.</p>
+        <div id="missed-list"></div>
+        <button type="button" class="btn btn-primary" id="retry-missed">Ask me those again</button>
+      </div>
+    </div>
+
+    <div class="exports" id="exports" hidden>
+      <p class="lbl">Keep it</p>
+      <div class="export-row">
+        <button type="button" class="btn" id="ex-print">🖨 Print or save as PDF</button>
+        <button type="button" class="btn" id="ex-download">⬇ Download it</button>
+        <button type="button" class="btn" id="ex-copy">📋 Copy the words</button>
+        <button type="button" class="btn btn-quiet" id="ex-restart">↺ Start over</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="how">
+    <h2>What this actually does</h2>
+    <div class="how-grid">
+      <div>
+        <h3>It reads your picture on your own device</h3>
+        <p>The text reading happens inside your browser. Your photo is never uploaded, because there is no server behind this — it is one web page.</p>
+      </div>
+      <div>
+        <h3>It explains from a real science library</h3>
+        <p>Fourteen topics written in plain words: cells, forces, circuits, the water cycle, DNA and more. If your topic is not in there yet, the app says so instead of making something up.</p>
+      </div>
+      <div>
+        <h3>It never asks who you are</h3>
+        <p>No account, no email, no price. Built by a 7th grader who thinks understanding science should be free.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>ThepicScience — built so science stops being the hard one. Works offline once the page has loaded.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" hidden></div>
+<p class="visually-hidden" id="live" role="status" aria-live="polite"></p>
+<div class="print-only" id="print-area" aria-hidden="true"></div>
+
+<script src="assets/art.js"></script>
+<script src="assets/topics.js"></script>
+<script src="assets/topics-b.js"></script>
+<script src="assets/projects.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

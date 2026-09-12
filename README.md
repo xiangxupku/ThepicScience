@@ -1,0 +1,144 @@
+# ThepicScience
+
+Take a picture of your teacher's whiteboard and get it back as a picture book, a narrated
+video, a science project you can actually do, or a report outline to write from — pitched at
+your grade, with a quiz built from that exact photo. Free, no account.
+
+Built as one static web page: HTML, CSS and plain JavaScript. Nothing is uploaded anywhere —
+the photo, the text reading and the narration all happen inside the browser.
+
+## What it does
+
+1. **📸 Take a picture.** Camera, file picker, drag and drop, or paste. Give it a video and it
+   grabs a frame about a second in.
+2. **🤖 Read what you are learning.** The text on the board is read on your own device, matched
+   to a topic, and the science words it recognised are listed for you. Photos get a light
+   denoise first, which is worth a lot on a real phone shot — on a deliberately bad board
+   photo it took the reader from 12 of 23 words to 23 of 23. A video is sampled at three
+   points and all three frames are read. Those words steer the
+   lesson: a page about stomata gets promoted into a four-page book if your board said
+   "stomata". Tap any word to drop it.
+3. **🎓 Sign in as your grade.** No name, no password, no email — you tap your grade and it is
+   remembered on that device. It sets the wording (grades 3–5 get a short retelling of every
+   idea and a slower voice; 9–12 gets the full text and harder questions), the default
+   length, and how far into a topic the lesson goes — grades 3–5 never get the most advanced
+   quarter of a topic, because leaving it out is better than watering it down. It also lists
+   which topics that grade usually covers, so you can start there instead of a photo.
+4. **📚 Pick what you need.** A picture book (4, 8 or 12 pages), a video, a **science project**
+   with materials, steps and a write-up plan, or a **report outline** with sections, facts,
+   vocabulary and a word-count target for your grade. Pages that came from your own board are
+   badged.
+
+   Every lesson ends with a real-world example — "where you see this" — as its own slide near
+   the end of the video, a box on the last page of the picture book, and a section in the
+   report. A bathroom mirror for the water cycle, one dead bulb in a string of fairy lights
+   for series circuits, counting the seconds after lightning for waves.
+
+   The video is a real player, not a slideshow: a title slide, an example slide and a recap
+   slide, a slow camera
+   drift over each drawing, and **every one of the 43 drawings animates** — the sun's rays
+   turn, rain falls, current runs round the circuit, the heart beats, particles jiggle faster
+   in a gas than a solid. Captions **highlight each word as the voice says it**, driven by the
+   speech engine's own word events rather than a timer. There is a clickable scene strip,
+   fullscreen, and keyboard shortcuts: space to play, arrows to skip a scene, `F` for
+   fullscreen, `C` for captions. None of it animates in the picture book, the exports or the
+   printed pages, and `prefers-reduced-motion` switches all of it off.
+5. **❓ Quiz from that material.** Three questions to start with, drawn from the topic's bank of
+   ten, plus fill-the-gap questions built out of the sentences on your photo. Ask again for a
+   different three, or dig deeper for all ten.
+6. **🧠 Learn from mistakes.** Every question knows which page answers it. A wrong answer turns
+   into that page — drawing, explanation and key word — with a button to read it aloud and a
+   button to jump to it in your lesson. Then it asks you **new** questions about that same
+   idea, built from the page's own key word and text (four ways: definition to word, word to
+   definition, the main point of the page, and fill the gap), followed by the original
+   question so you can prove you have it. 383 of these are possible across the library, and
+   `check.js` verifies every one of them is correct.
+
+Before making a video it also offers a one-tap search of YouTube, Khan Academy, Bilibili and
+the web for your topic, because a real teacher on video often beats anything we can draw.
+
+## Run it locally
+
+Any static file server works. From this folder:
+
+```bash
+npx serve .
+```
+
+Then open the address it prints (usually http://localhost:3000).
+
+Python works too:
+
+```bash
+python -m http.server 8123
+```
+
+You do need a server rather than double-clicking `index.html`, because the text reader
+downloads a worker file and browsers block that on `file://`.
+
+## Deploy to Vercel
+
+```bash
+npx vercel deploy --prod
+```
+
+It is a static site, so there is no build step and no framework to pick. `vercel.json` sets
+clean URLs and a few safety headers. You can also drag this folder onto vercel.com/new.
+
+## What is in here
+
+| File | What it does |
+| --- | --- |
+| `index.html` | The whole page: four steps, book reader, video player, quiz, fix-what-you-missed |
+| `assets/styles.css` | All styling, light and dark mode, print styles for the PDF export |
+| `assets/app.js` | Flow, text reading, board matching, storyboard, player, quiz, exports |
+| `assets/topics.js` | Science library, topics 1–7 |
+| `assets/topics-b.js` | Science library, topics 8–14 |
+| `assets/projects.js` | One hands-on project per topic: materials, steps, the science |
+| `assets/art.js` | Every drawing, as SVG built in code so it works in dark mode |
+| `vercel.json` | Static hosting config |
+| `check.js` | Checks the library: run `node check.js` after editing any topic or project |
+| `.claude/launch.json` | Local preview config for Claude Code |
+
+## Adding a topic to the library
+
+Copy an existing block in `assets/topics.js` and fill it in. The rules the app relies on:
+
+- Exactly **12 scenes**, and exactly **four of each tier**. Tier 1 scenes are what a 4-page
+  book shows, tier 1 + 2 make the 8-page version, all 12 make the long one. Keep a recap
+  scene last — the app always keeps the final scene so short books still end properly.
+- Every scene needs `b` (normal wording) **and** `s` (the grades 3–5 retelling, shorter and
+  plainer). `s` is what the youngest band reads and hears.
+- The topic needs an `example` — `{ t, b, spot }` — the everyday thing this science shows up
+  in. Keep `b` plus `spot` under about 70 words so it narrates in roughly 20 seconds.
+- `art` must name a drawing that exists in `assets/art.js`. `labels` is up to 3 short lines.
+- `keywords` is what a photo gets matched against — include the misspellings and short forms
+  students actually write on a board.
+- `quiz` is exactly **10 questions**, 3 options each, `c` is the index of the right answer.
+  The app asks 3 at a time and rotates, and shows all 10 if the student digs deeper.
+- Add a matching entry in `assets/projects.js` with the same topic id. Household materials
+  only, nothing hot or sharp, and it has to be a fair test: one thing changed, one measured.
+
+## Known limits
+
+- The grade sign-in is stored in `localStorage` on that one device. There is no account, so
+  nothing follows you to another computer — and nothing about you leaves the browser.
+- The library covers 14 topics. Anything outside it is reported as "no topic matched" rather
+  than guessed at.
+- Text recognition needs the internet the first time, to fetch the reader. Everything after
+  that works offline.
+- Handwriting is much harder to read than printed text. Typed slides and textbook pages work
+  best; for messy board writing, picking the topic by hand is faster.
+- The fill-the-gap questions only appear when the photo gave us a clean, readable line of
+  text. If it did not, you just get the library questions.
+- Narration uses the voices already installed on your device, so the list differs between
+  phones and computers. If a device has none, everything still works as text.
+- The word-by-word caption highlight needs the browser to report speech word boundaries.
+  Chrome and Edge do; where a browser does not, the caption simply shows without highlighting.
+- The video lengths are targets, not promises: narration takes as long as it takes, and a
+  slower voice or a younger grade stretches it. A "3 minute" video runs 3:00–3:25 depending on
+  grade, and for grades 3–5 the "5 minute" option tops out around 4:00 because the most
+  advanced pages are held back. The exact length always shows on the button before you build.
+- Searching YouTube and Bilibili happens on their sites, in a new tab. Searching inside this
+  page would need a paid API key, and a key shipped in a public web page is a key anyone can
+  take.
