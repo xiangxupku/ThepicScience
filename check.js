@@ -238,3 +238,33 @@ console.log('\n-- everyday examples --');
 console.log('missing:', exMissing.length ? exMissing.join(', ') : 'none',
   '| too long to narrate:', exLong.length ? exLong.join('; ') : 'none');
 if (exMissing.length || exLong.length) process.exitCode = 1;
+
+// the deeper layer: every topic, and every cross-link pointing somewhere real
+eval(fsp.readFileSync(__dirname + '/assets/detail.js', 'utf8'));
+const D = window.DETAIL, topicIds = new Set(T.map(t => t.id));
+let dMissing = [], dBad = [];
+T.forEach(t => {
+  const d = D[t.id];
+  if (!d) { dMissing.push(t.id); return; }
+  if (!d.formulas || !d.formulas.length) dBad.push(t.id + ': no formulas');
+  if (!d.mistakes || d.mistakes.length < 2) dBad.push(t.id + ': needs at least 2 mistakes');
+  if (!d.deeper || d.deeper.length < 2) dBad.push(t.id + ': needs at least 2 deeper items');
+  if (!d.links || d.links.length < 2) dBad.push(t.id + ': needs at least 2 links');
+  (d.formulas || []).forEach(f => { if (!f.f || !f.what) dBad.push(t.id + ': incomplete formula'); });
+  (d.mistakes || []).forEach(m => { if (!m.wrong || !m.right) dBad.push(t.id + ': incomplete mistake'); });
+  (d.deeper || []).forEach(x => { if (!x.t || !x.b) dBad.push(t.id + ': incomplete deeper item'); });
+  (d.links || []).forEach(l => {
+    if (!topicIds.has(l.id)) dBad.push(t.id + ': link to unknown topic "' + l.id + '"');
+    if (l.id === t.id) dBad.push(t.id + ': links to itself');
+    if (!l.why) dBad.push(t.id + ': link with no reason');
+  });
+});
+const extraD = Object.keys(D).filter(k => !topicIds.has(k));
+console.log('\n-- go deeper --');
+console.log('topics covered:', Object.keys(D).length + '/' + T.length,
+  '| missing:', dMissing.length ? dMissing.join(', ') : 'none',
+  '| orphans:', extraD.length ? extraD.join(', ') : 'none');
+console.log('problems:', dBad.length ? dBad.slice(0, 6).join('; ') : 'none');
+const counts = T.map(t => (D[t.id] ? D[t.id].formulas.length + '/' + D[t.id].mistakes.length + '/' + D[t.id].deeper.length : '-'));
+console.log('formulas/mistakes/deeper per topic:', counts.join('  '));
+if (dMissing.length || dBad.length) process.exitCode = 1;

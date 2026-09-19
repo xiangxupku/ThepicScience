@@ -43,6 +43,22 @@ the photo, the text reading and the narration all happen inside the browser.
    fullscreen, and keyboard shortcuts: space to play, arrows to skip a scene, `F` for
    fullscreen, `C` for captions. None of it animates in the picture book, the exports or the
    printed pages, and `prefers-reduced-motion` switches all of it off.
+   **👹 Escape the monster** is the fifth option. Something is chasing you down a dark path,
+   drawn frame by frame on a canvas: parallax trees, a shadow with glowing eyes, and a student
+   in a lab coat looking back over their shoulder. Every right answer is a burst of speed;
+   every wrong one lets it close in. The chase **freezes while a wrong answer is explained**,
+   because reading why you were wrong should not be the moment you get eaten. It is tuned so a
+   perfect run still tightens from 46 m of head start down to about 18 m — and a "make it less
+   scary" switch turns the shadow friendly and stops the screen shaking. No sound, no jump
+   scares, nothing gory.
+   **📐 Go deeper** sits under every lesson, folded away until you ask for it. It is the layer
+   a test actually examines, and it is written per topic: the **formulas with every symbol
+   spelled out** (`F = m × a` — force in newtons, mass in kilograms, acceleration in m/s²),
+   the **mistakes people really lose marks on** shown as wrong-then-right pairs, **a few steps
+   past the twelve scenes** (free-body diagrams, latent heat, Sankey diagrams, magnetic
+   stripes on the seafloor), and **what the topic joins up with** — tap a link and you switch
+   straight to that topic. It also goes into the report as its own sections, and into the
+   downloads.
 5. **❓ Quiz from that material.** Three questions to start with, drawn from the topic's bank of
    ten, plus fill-the-gap questions built out of the sentences on your photo. Ask again for a
    different three, or dig deeper for all ten.
@@ -95,6 +111,8 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/topics.js` | Science library, topics 1–7 |
 | `assets/topics-b.js` | Science library, topics 8–14 |
 | `assets/projects.js` | One hands-on project per topic: materials, steps, the science |
+| `assets/chase.js` | The monster chase: canvas drawing, physics, and the balance numbers |
+| `assets/detail.js` | The deeper layer per topic: formulas, misconceptions, links |
 | `assets/art.js` | Every drawing, as SVG built in code so it works in dark mode |
 | `vercel.json` | Static hosting config |
 | `check.js` | Checks the library: run `node check.js` after editing any topic or project |
@@ -116,8 +134,19 @@ Copy an existing block in `assets/topics.js` and fill it in. The rules the app r
   students actually write on a board.
 - `quiz` is exactly **10 questions**, 3 options each, `c` is the index of the right answer.
   The app asks 3 at a time and rotates, and shows all 10 if the student digs deeper.
+- Add a matching entry in `assets/detail.js` with the same topic id: at least one formula
+  (each with `what` explaining every symbol), two `mistakes` as wrong/right pairs, two
+  `deeper` items, and two `links` to other topic ids. `check.js` fails if a link points at a
+  topic that does not exist.
 - Add a matching entry in `assets/projects.js` with the same topic id. Household materials
   only, nothing hot or sharp, and it has to be a fair test: one thing changed, one measured.
+
+## Tuning the chase
+
+The numbers live in one `CFG` block at the top of `assets/chase.js`. Raising `baseClose` or
+`ramp` makes it meaner; raising `boost` or `maxGap` makes it kinder. `CHASE.advance(seconds)`
+runs the simulation without waiting for animation frames, which is how the balance above was
+measured — a run with no answers is caught at about 13 seconds.
 
 ## Known limits
 

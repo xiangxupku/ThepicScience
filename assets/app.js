@@ -151,6 +151,9 @@
         ? 'Full wording, and the quiz can pull extra questions from your own photo.'
         : 'The normal wording, with every key word explained.';
 
+    $('grade-chip').hidden = false;
+    $('grade-chip').textContent = 'Grade ' + n + ' · change';
+    $('grade-chip').setAttribute('aria-label', 'Signed in as grade ' + n + '. Change your grade.');
     renderLearnList(n);
     updateGradeNote();
     updateMakeButton();
@@ -178,11 +181,16 @@
     });
   }
 
-  $('me-change').addEventListener('click', function () {
+  function openGradePicker() {
+    $('me').hidden = false;
     $('me-ask').hidden = false;
     $('me-known').hidden = true;
+    goTo($('me'));
     $('grade-row').querySelector('button').focus();
-  });
+  }
+
+  $('me-change').addEventListener('click', openGradePicker);
+  $('grade-chip').addEventListener('click', openGradePicker);
 
   $('me-skip').addEventListener('click', function () {
     $('me').hidden = true;
@@ -720,7 +728,8 @@
 
   var MAKE_LABEL = {
     book: 'Make my picture book', video: 'Make my video',
-    project: 'Plan my project', report: 'Build my report outline'
+    project: 'Plan my project', report: 'Build my report outline',
+    chase: 'Start running'
   };
 
   function updateMakeButton() {
@@ -737,6 +746,8 @@
     } else if (S.format === 'project') {
       var p = window.PROJECTS[S.topic.id];
       $('make-sub').textContent = p ? p.title + ' — ' + p.days.toLowerCase() + '.' : 'A hands-on project about ' + name + '.';
+    } else if (S.format === 'chase') {
+      $('make-sub').textContent = 'Outrun it by answering questions about ' + name + '.';
     } else {
       $('make-sub').textContent = 'A full writing plan for a report about ' + name + '.';
     }
@@ -956,6 +967,9 @@
     $('book-view').hidden = true;
     $('video-view').hidden = true;
     $('doc-view').hidden = true;
+    $('chase-view').hidden = true;
+    if (window.CHASE) window.CHASE.stop();
+    $('deeper').hidden = true;
     $('quiz').hidden = true;
     $('exports').hidden = true;
     $('building').hidden = false;
@@ -976,10 +990,12 @@
       $('building').hidden = true;
       if (S.board.format === 'book') showBook();
       else if (S.board.format === 'video') showVideo();
+      else if (S.board.format === 'chase') showChase();
       else showDoc();
       buildQuiz();
-      $('quiz').hidden = false;
-      $('exports').hidden = false;
+      showDeeper();
+      $('quiz').hidden = S.board.format === 'chase';
+      $('exports').hidden = S.board.format === 'chase';
     }
 
     if (reduceMotion || document.hidden) { reveal(); return; }
@@ -1082,6 +1098,10 @@
 
   function showVideo() {
     $('video-view').hidden = false;
+    $('layer-a').innerHTML = '';
+    $('layer-b').innerHTML = '';
+    $('layer-a').className = 'layer is-front';
+    $('layer-b').className = 'layer';
     $('step4-sub').textContent = 'A ' + fmtTime(S.board.total) + ' video about ' + S.board.topic.title.toLowerCase() + '. Press play, or hit the space bar.';
     V.i = 0; V.t = 0; V.playing = false; V.spoken = -1;
     if (!synth) $('speech-warn').hidden = false;
@@ -1140,6 +1160,10 @@
     $('seek-ticks').innerHTML = out;
   }
 
+  function frontLayer() {
+    return $('stage').querySelector('.layer.is-front') || $('layer-a');
+  }
+
   function slideHtml(it) {
     if (it.kind === 'title') {
       return '<div class="card-slide">' +
@@ -1182,13 +1206,20 @@
     return { at: at, of: of };
   }
 
+  /* Two stacked layers: the next slide is built on the hidden one, then they swap with a
+     cross-fade. A straight innerHTML swap was a hard cut, and it looked like a slideshow. */
   function drawScene() {
     var it = S.board.items[V.i];
-    var stage = $('stage');
-    stage.classList.remove('is-in');
-    stage.innerHTML = slideHtml(it);
-    void stage.offsetWidth;               /* restart the entry animation */
-    stage.classList.add('is-in');
+    var front = $('stage').querySelector('.layer.is-front') || $('layer-a');
+    var back = front.id === 'layer-a' ? $('layer-b') : $('layer-a');
+
+    back.innerHTML = slideHtml(it);
+    back.classList.remove('is-out');
+    void back.offsetWidth;                /* restart the entry animation */
+    back.classList.add('is-front');
+    front.classList.remove('is-front');
+    front.classList.add('is-out');
+
     renderCaption(it);
     markChip();
   }
@@ -1467,6 +1498,17 @@
       '<p class="doc-prompt">Finish with the big idea in one or two sentences: ' +
       esc(scenes[scenes.length - 1] ? scenes[scenes.length - 1].term.d : '') + '</p>' +
 
+      (window.DETAIL && window.DETAIL[topic.id] && window.DETAIL[topic.id].formulas.length
+        ? '<h4>Formulas to state and explain</h4>' +
+          window.DETAIL[topic.id].formulas.map(function (f) {
+            return '<p class="doc-fact"><b>' + esc(f.f) + '</b><br>' + esc(f.what) + '</p>';
+          }).join('') +
+          '<h4>Mistakes to avoid making in this report</h4>' +
+          window.DETAIL[topic.id].mistakes.map(function (m) {
+            return '<p class="doc-prompt">Not: ' + esc(m.wrong) + ' &nbsp;→&nbsp; ' + esc(m.right) + '</p>';
+          }).join('')
+        : '') +
+
       (topic.example
         ? '<h4>An everyday example to include</h4>' +
           '<p class="doc-fact"><b>' + esc(topic.example.t) + '.</b> ' + esc(topic.example.b) + '</p>' +
@@ -1489,6 +1531,142 @@
         'You said where the information came from, including your own class notes']) +
       '<p class="doc-foot">Built from your own topic by ThepicScience. The writing has to be yours.</p>';
   }
+
+  /* ── escape the monster ────────────────────────────────
+     The same questions as the quiz, but with something closing in behind you. Right answers
+     are speed; wrong ones cost you ground. Drawing and physics live in chase.js. */
+
+  function chaseQuestions(topic) {
+    var pool = topic.quiz.map(function (q) {
+      return { q: q.q, a: q.a, c: q.c, why: q.why, teach: teachIndexFor(q, topic), source: 'library' };
+    });
+    /* top it up with generated ones so a long run never repeats itself */
+    topic.scenes.forEach(function (sc, i) {
+      pool = pool.concat(practiceFor(topic, i, 1));
+    });
+    if (GRADES[S.grade].cloze) pool = pool.concat(boardQuestions(topic, 2));
+    return pool;
+  }
+
+  function showChase() {
+    $('chase-view').hidden = false;
+    $('step4-sub').textContent = 'Answer fast and you outrun it. ' +
+      'Get one wrong and it closes in. Nothing jumps out and there is no sound.';
+
+    var el = {
+      wrap: $('chase-wrap'), canvas: $('chase-canvas'),
+      bar: $('chase-bar'), dist: $('chase-dist'), gap: $('chase-gap'),
+      play: $('chase-play'), q: $('chase-q'), opts: $('chase-opts'), feedback: $('chase-feedback'),
+      over: $('chase-over'), overTitle: $('chase-over-title'), overSub: $('chase-over-sub')
+    };
+
+    window.CHASE.start({
+      el: el,
+      questions: chaseQuestions(S.board.topic),
+      reduced: reduceMotion,
+      calm: $('chase-calm').checked,
+      onEnd: function (result) {
+        S.missed = result.wrong.filter(function (q) { return typeof q.teach === 'number'; });
+        $('chase-learn').hidden = !S.missed.length;
+        say(result.escaped ? 'You escaped.' : 'It caught you.');
+      }
+    });
+    say('The chase has started. Answer the question to run faster.');
+  }
+
+  $('chase-again').addEventListener('click', function () { showChase(); });
+
+  $('chase-calm').addEventListener('change', function () {
+    if (window.CHASE) window.CHASE.setCalm(this.checked);
+    toast(this.checked ? 'Friendly shadow mode' : 'Back to scary');
+  });
+
+  $('chase-learn').addEventListener('click', function () {
+    if (!S.missed || !S.missed.length) return;
+    $('quiz').hidden = false;
+    buildQuiz(practiceRound(S.missed.slice()));
+    showMissed(S.missed);
+    goTo($('quiz'));
+  });
+
+  window.addEventListener('resize', function () {
+    if (window.CHASE && window.CHASE.running()) window.CHASE.resize();
+  });
+
+  /* ── the deeper layer ──────────────────────────────────
+     The twelve scenes teach the idea. This is what sits on top of it in an exam: the
+     formulas with every symbol named, the misconceptions that cost marks, a few steps past
+     the basics, and the links to the rest of the library. Folded away until asked for, so
+     it never buries the lesson. */
+
+  function topicName(id) {
+    var t = window.TOPICS.filter(function (x) { return x.id === id; })[0];
+    return t ? t.title : id;
+  }
+
+  function deeperHtml(d) {
+    var out = '';
+
+    if (d.formulas && d.formulas.length) {
+      out += '<h4 class="deeper-h">Formulas, and what each part means</h4><div class="deeper-list">' +
+        d.formulas.map(function (f) {
+          return '<div class="deeper-formula"><p class="df-eq">' + esc(f.f) + '</p>' +
+            '<p class="df-what">' + esc(f.what) + '</p></div>';
+        }).join('') + '</div>';
+    }
+
+    if (d.mistakes && d.mistakes.length) {
+      out += '<h4 class="deeper-h">Where people lose marks</h4><div class="deeper-list">' +
+        d.mistakes.map(function (m) {
+          return '<div class="deeper-mistake">' +
+            '<p class="dm-wrong"><span>✗</span>' + esc(m.wrong) + '</p>' +
+            '<p class="dm-right"><span>✓</span>' + esc(m.right) + '</p></div>';
+        }).join('') + '</div>';
+    }
+
+    if (d.deeper && d.deeper.length) {
+      out += '<h4 class="deeper-h">A step past the lesson</h4><div class="deeper-list">' +
+        d.deeper.map(function (x) {
+          return '<div class="deeper-item"><p class="di-t">' + esc(x.t) + '</p>' +
+            '<p class="di-b">' + esc(x.b) + '</p></div>';
+        }).join('') + '</div>';
+    }
+
+    if (d.links && d.links.length) {
+      out += '<h4 class="deeper-h">Joins up with</h4><div class="deeper-links">' +
+        d.links.map(function (l) {
+          return '<button type="button" class="deeper-link" data-goto-topic="' + esc(l.id) + '">' +
+            '<b>' + esc(topicName(l.id)) + '</b><span>' + esc(l.why) + '</span></button>';
+        }).join('') + '</div>';
+    }
+
+    return out;
+  }
+
+  function showDeeper() {
+    var d = window.DETAIL && window.DETAIL[S.board.topic.id];
+    var box = $('deeper');
+    if (!d) { box.hidden = true; return; }
+    box.hidden = false;
+    $('deeper-body').innerHTML = deeperHtml(d);
+    $('deeper-body').querySelectorAll('[data-goto-topic]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        chooseTopic(b.dataset.gotoTopic);
+        goTo($('step3'));
+        markStep(3);
+        toast('Switched to ' + topicName(b.dataset.gotoTopic));
+      });
+    });
+  }
+
+  $('deeper-toggle').addEventListener('click', function () {
+    var body = $('deeper-body');
+    var open = body.hidden;
+    body.hidden = !open;
+    this.setAttribute('aria-expanded', String(open));
+    this.textContent = open ? 'Hide it again' : 'Show me';
+    if (open) { goTo($('deeper')); say('Showing the deeper notes.'); }
+  });
 
   /* ── the quick check ───────────────────────────────────
      Questions come from two places: the library's own three, and — when the photo gave us
@@ -1890,6 +2068,14 @@
       var label = b.format === 'book' ? 'PAGE ' + (i + 1) : 'SCENE ' + (i + 1) + ' (' + fmtTime(it.dur) + ')';
       return label + ' — ' + it.t + '\n' + it.b + '\nKey word: ' + it.term.w + ' — ' + it.term.d + '\n';
     }).join('\n');
+    var d = window.DETAIL && window.DETAIL[b.topic.id];
+    var deep = d ? '\nGO DEEPER\n' +
+      d.formulas.map(function (f) { return f.f + '\n   ' + f.what; }).join('\n') + '\n\n' +
+      'Where people lose marks:\n' +
+      d.mistakes.map(function (m) { return '   Not: ' + m.wrong + '\n   Actually: ' + m.right; }).join('\n') + '\n\n' +
+      'A step past the lesson:\n' +
+      d.deeper.map(function (x) { return '   ' + x.t + ' — ' + x.b; }).join('\n') + '\n'
+      : '';
     var ex = b.topic.example
       ? '\nWHERE YOU SEE THIS\n' + b.topic.example.t + '\n' + b.topic.example.b + '\n' + b.topic.example.spot + '\n'
       : '';
@@ -1897,7 +2083,7 @@
       return (i + 1) + '. ' + q.q + '\n   ' + q.a.map(function (a, ai) { return (ai === q.c ? '[x] ' : '[ ] ') + a; }).join('\n   ') +
         '\n   Why: ' + q.why;
     }).join('\n');
-    return head + body + ex + quiz + '\n';
+    return head + body + ex + deep + quiz + '\n';
   }
 
   function download(name, content, type) {
@@ -2015,6 +2201,9 @@
     $('book-view').hidden = true;
     $('video-view').hidden = true;
     $('doc-view').hidden = true;
+    $('chase-view').hidden = true;
+    if (window.CHASE) window.CHASE.stop();
+    $('deeper').hidden = true;
     $('quiz').hidden = true;
     $('exports').hidden = true;
     renderTopics('');

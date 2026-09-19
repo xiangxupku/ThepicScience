@@ -19,6 +19,7 @@
       <span class="brand-name">ThepicScience</span>
     </div>
     <p class="brand-tag">Photo of the board in. A lesson you understand out.</p>
+    <button type="button" class="grade-chip" id="grade-chip" hidden></button>
   </div>
 </header>
 
@@ -192,6 +193,13 @@
             </span>
           </label>
           <label class="choice">
+            <input type="radio" name="format" value="chase">
+            <span class="choice-body">
+              <span class="choice-title">👹 Escape the monster</span>
+              <span class="choice-desc">Something is chasing you. Every right answer makes you run faster. Get it wrong and it gains.</span>
+            </span>
+          </label>
+          <label class="choice">
             <input type="radio" name="format" value="report">
             <span class="choice-body">
               <span class="choice-title">📝 Report</span>
@@ -285,7 +293,10 @@
 
     <div id="video-view" hidden>
       <div class="player" id="player">
-        <div class="stage" id="stage"></div>
+        <div class="stage" id="stage">
+          <div class="layer is-front" id="layer-a"></div>
+          <div class="layer" id="layer-b"></div>
+        </div>
         <div class="captions" id="captions"></div>
       </div>
       <div class="player-bar">
@@ -306,9 +317,51 @@
       </div>
     </div>
 
+    <div id="chase-view" hidden>
+      <div class="chase" id="chase-wrap">
+        <canvas id="chase-canvas" aria-label="A monster chasing a student down a dark path"></canvas>
+        <div class="chase-hud">
+          <div class="chase-bar"><div class="chase-bar-fill" id="chase-bar"></div></div>
+          <p class="chase-dist" id="chase-dist"></p>
+          <p class="chase-gap" id="chase-gap"></p>
+        </div>
+      </div>
+
+      <div class="chase-play" id="chase-play">
+        <p class="chase-q" id="chase-q" aria-live="polite"></p>
+        <div class="chase-opts" id="chase-opts"></div>
+        <p class="chase-feedback" id="chase-feedback" aria-live="polite"></p>
+      </div>
+
+      <div class="chase-over" id="chase-over" hidden>
+        <h3 id="chase-over-title"></h3>
+        <p class="step-sub" id="chase-over-sub"></p>
+        <div class="export-row">
+          <button type="button" class="btn btn-primary" id="chase-again">Run again</button>
+          <button type="button" class="btn" id="chase-learn">Show me what I missed</button>
+        </div>
+      </div>
+
+      <div class="book-extra">
+        <label class="toggle"><input type="checkbox" id="chase-calm"> Make it less scary</label>
+        <p class="hint">Nothing jumps out and there is no sound. The switch turns the shadow friendly and stops the screen shaking.</p>
+      </div>
+    </div>
+
     <div id="doc-view" hidden>
       <article class="doc" id="doc"></article>
     </div>
+
+    <section class="deeper" id="deeper" hidden aria-labelledby="deeper-h">
+      <div class="deeper-head">
+        <div>
+          <p class="eyebrow">Go deeper</p>
+          <h3 id="deeper-h">The part a test actually asks about</h3>
+        </div>
+        <button type="button" class="btn btn-quiet" id="deeper-toggle" aria-expanded="false" aria-controls="deeper-body">Show me</button>
+      </div>
+      <div id="deeper-body" hidden></div>
+    </section>
 
     <div class="quiz" id="quiz" hidden>
       <h3 id="quiz-h">Quick check</h3>
@@ -373,6 +426,8 @@
 <script src="assets/topics.js"></script>
 <script src="assets/topics-b.js"></script>
 <script src="assets/projects.js"></script>
+<script src="assets/detail.js"></script>
+<script src="assets/chase.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

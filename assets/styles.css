@@ -107,6 +107,14 @@ p { margin: 0; }
 .brand-name { font-weight: 700; letter-spacing: -0.02em; font-size: 1.15rem; }
 .brand-tag { color: var(--ink-2); font-size: .93rem; }
 
+.grade-chip {
+  margin-left: auto; font: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+  padding: .35rem .85rem; border-radius: 999px;
+  border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent);
+  transition: background var(--t);
+}
+.grade-chip:hover { background: var(--accent); color: var(--accent-ink); }
+
 /* ── intro ── */
 .intro { padding: clamp(2.5rem, 7vw, 4.5rem) 0 2rem; max-width: 44rem; }
 .lede { color: var(--ink-2); font-size: clamp(1rem, 2vw, 1.13rem); margin-top: 1rem; }
@@ -442,25 +450,34 @@ p { margin: 0; }
   overflow: hidden; background: var(--art-bg);
 }
 .stage {
-  aspect-ratio: 16/9; display: grid; place-items: center; padding: 1rem 1rem 1.6rem;
-  position: relative; overflow: hidden;
+  aspect-ratio: 16/9; position: relative; overflow: hidden;
   background:
     radial-gradient(120% 90% at 12% 0%, color-mix(in srgb, var(--art-1) 12%, transparent), transparent 60%),
     radial-gradient(110% 80% at 100% 100%, color-mix(in srgb, var(--art-3) 10%, transparent), transparent 60%);
 }
+/* two stacked slides; only the front one is visible, and they swap with a cross-fade */
+.layer {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  padding: 1rem 1rem 1.6rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 460ms ease;
+}
+.layer.is-front { opacity: 1; pointer-events: auto; z-index: 2; }
+.layer.is-out { opacity: 0; z-index: 1; }
 .stage svg { width: 100%; height: 100%; max-height: 100%; }
-/* the title, the drawing and the labels arrive one after another, like a cut in a real video */
-.stage.is-in > * { animation: slide-in 460ms cubic-bezier(.2, .7, .3, 1) both; }
-.stage.is-in > .scene-count { animation-delay: 300ms; }
-.stage.is-in > .from-board { animation-delay: 380ms; }
+/* the title, the drawing and the labels arrive one after another, not all at once */
+.layer.is-front > * { animation: slide-in 520ms cubic-bezier(.2, .7, .3, 1) both; }
+.layer.is-front > .scene-count { animation-delay: 320ms; }
+.layer.is-front > .from-board { animation-delay: 400ms; }
 /* the drawing fades in rather than sliding, so the slow camera drift below owns the transform */
-.stage.is-in > svg {
-  animation: fade-in 520ms ease both 90ms,
-             kenburns 18s ease-in-out 600ms infinite alternate;
+.layer.is-front > svg {
+  animation: fade-in 620ms ease both 120ms,
+             kenburns 20s ease-in-out 700ms infinite alternate;
 }
 @keyframes slide-in {
-  from { opacity: 0; transform: translateY(10px) scale(.98); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(14px) scale(.975); filter: blur(3px); }
+  60% { filter: blur(0); }
+  to { opacity: 1; transform: none; filter: blur(0); }
 }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .scene-head {
@@ -473,8 +490,8 @@ p { margin: 0; }
    Every rule is scoped to .stage, so the picture book, the exports and the printed pages
    stay perfectly still. The reduced-motion block at the bottom switches all of it off. */
 @keyframes kenburns {
-  from { transform: scale(1) translateY(0); }
-  to { transform: scale(1.055) translateY(-1.2%); }
+  from { transform: scale(1) translate(0, 0); }
+  to { transform: scale(1.06) translate(-1%, -1.4%); }
 }
 
 .stage .a-spin       { transform-box: view-box; transform-origin: 160px 85px; animation: a-spin 26s linear infinite; }
@@ -669,6 +686,106 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 .doc-terms p { font-size: .93rem; margin: 0; }
 .doc-terms b { color: var(--accent); }
 .doc-foot { margin-top: 1.6rem; font-size: .84rem; color: var(--ink-2); }
+
+/* ── escape the monster ── */
+.chase {
+  position: relative; margin-top: 1.5rem;
+  border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+  background: #07070d;
+  transition: box-shadow 300ms ease;
+}
+.chase.is-near { box-shadow: inset 0 0 90px 10px rgba(255, 46, 32, .32); }
+.chase canvas { display: block; width: 100%; }
+
+.chase-hud {
+  position: absolute; left: 0; right: 0; top: 0;
+  padding: .7rem .9rem;
+  display: grid; grid-template-columns: 1fr auto; gap: .2rem .8rem;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, .55), transparent);
+  color: #fff; pointer-events: none;
+}
+.chase-bar {
+  grid-column: 1 / -1; height: 7px; border-radius: 99px;
+  background: rgba(255, 255, 255, .18); overflow: hidden;
+}
+.chase-bar-fill { height: 100%; width: 0; background: #7ce0c0; border-radius: 99px; transition: width 120ms linear; }
+.chase-dist { font-size: .8rem; font-weight: 600; opacity: .9; }
+.chase-gap {
+  font-size: .8rem; font-weight: 700; text-align: right;
+  font-variant-numeric: tabular-nums; color: #ffb4a8;
+}
+.chase-gap.is-panic { color: #ff5a47; animation: panic .7s ease-in-out infinite; }
+@keyframes panic { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+.chase-play { margin-top: 1.1rem; }
+.chase-q { font-weight: 650; font-size: clamp(1rem, 2.4vw, 1.15rem); min-height: 2.6rem; }
+.chase-opts { display: grid; gap: .5rem; margin-top: .8rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.chase-opt {
+  font: inherit; font-size: .95rem; font-weight: 550; cursor: pointer; text-align: left;
+  padding: .75rem 1rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line-2); background: var(--surface); color: var(--ink);
+  transition: border-color var(--t), background var(--t), transform var(--t);
+}
+.chase-opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+.chase-opt:active { transform: translateY(1px); }
+.chase-opt.is-right { border-color: var(--ok); background: var(--accent-soft); }
+.chase-opt.is-wrong { border-color: var(--danger); background: var(--danger-soft); }
+.chase-feedback { margin-top: .7rem; min-height: 1.4rem; font-size: .92rem; }
+.chase-feedback.is-good { color: var(--ok); font-weight: 650; }
+.chase-feedback.is-bad { color: var(--ink-2); }
+
+.chase-over {
+  margin-top: 1.2rem; padding: 1.2rem;
+  border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--surface-2);
+}
+.chase-over.is-win { border-left: 4px solid var(--ok); }
+.chase-over.is-lose { border-left: 4px solid var(--danger); }
+.chase-over h3 { font-size: 1.2rem; }
+.chase-over .export-row { margin-top: 1rem; }
+
+/* ── go deeper ── */
+.deeper {
+  margin-top: 2rem; padding-top: 1.6rem; border-top: 1px solid var(--line);
+}
+.deeper-head { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.deeper-h {
+  margin: 1.8rem 0 .7rem; font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em; color: var(--accent);
+}
+.deeper-h:first-child { margin-top: 1.2rem; }
+.deeper-list { display: grid; gap: .7rem; }
+
+.deeper-formula {
+  padding: .85rem 1rem; border-radius: var(--r-sm);
+  background: var(--surface-2); border-left: 3px solid var(--accent);
+}
+.df-eq {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 1.02rem; font-weight: 650; letter-spacing: .01em;
+}
+.df-what { margin-top: .35rem; font-size: .92rem; color: var(--ink-2); }
+
+.deeper-mistake { padding: .8rem 1rem; border-radius: var(--r-sm); background: var(--surface-2); }
+.dm-wrong, .dm-right { display: flex; gap: .55rem; font-size: .94rem; }
+.dm-right { margin-top: .4rem; }
+.dm-wrong span { color: var(--danger); font-weight: 700; flex: none; }
+.dm-right span { color: var(--ok); font-weight: 700; flex: none; }
+.dm-wrong { color: var(--ink-2); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--danger) 55%, transparent); }
+
+.deeper-item { padding: .2rem 0; }
+.di-t { font-weight: 650; }
+.di-b { margin-top: .25rem; font-size: .95rem; color: var(--ink-2); }
+
+.deeper-links { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.deeper-link {
+  font: inherit; text-align: left; cursor: pointer;
+  padding: .7rem .85rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  transition: border-color var(--t), background var(--t);
+}
+.deeper-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+.deeper-link b { display: block; font-weight: 600; }
+.deeper-link span { display: block; font-size: .84rem; color: var(--ink-2); margin-top: .15rem; }
 
 /* ── quiz ── */
 .quiz { margin-top: 2.25rem; border-top: 1px solid var(--line); padding-top: 1.6rem; }
