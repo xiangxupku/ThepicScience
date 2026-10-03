@@ -10,6 +10,167 @@
 
 window.DETAIL = {
 
+  'acids-bases': {
+    formulas: [
+      { f: 'acid + base → salt + water', what: 'neutralisation. The H⁺ from the acid and the OH⁻ from the base join to make water, and whatever is left over is the salt.' },
+      { f: 'acid + metal → salt + hydrogen', what: 'the fizzing is hydrogen. A lit splint held over it pops.' },
+      { f: 'acid + carbonate → salt + water + CO₂', what: 'three products, not two. Bubble the gas through limewater and it turns milky.' },
+      { f: 'pH 0 ── 7 ── 14, each step ×10', what: 'so pH 2 is a hundred times as acidic as pH 4, not twice as acidic.' }
+    ],
+    mistakes: [
+      { wrong: 'Strong and concentrated mean the same thing.', right: 'Strong is how completely the acid releases its H⁺. Concentrated is how much acid is in the water. Concentrated vinegar is still a weak acid.' },
+      { wrong: 'All bases are alkalis.', right: 'An alkali is a base that dissolves in water. Copper oxide is a base but not an alkali.' },
+      { wrong: 'Neutral means nothing is in it.', right: 'Neutral means pH 7 — the H⁺ and OH⁻ balance. Salt water is neutral and far from empty.' }
+    ],
+    deeper: [
+      { t: 'Picking the right indicator', b: 'Universal indicator gives you a pH but a vague endpoint. For a titration you want one that flips sharply: phenolphthalein, colourless in acid and pink in alkali.' },
+      { t: 'Why antacids work', b: 'They are weak bases — usually carbonates or hydroxides — that neutralise excess stomach acid without pushing you past neutral. That is also why they fizz.' },
+      { t: 'Acid rain, properly', b: 'Sulfur dioxide and nitrogen oxides from burning fuels dissolve in rain to make sulfuric and nitric acid. It dissolves limestone, strips nutrients from soil and kills fish in lakes below about pH 5.' }
+    ],
+    links: [
+      { id: 'chemical-change', why: 'neutralisation is a chemical reaction, so mass is conserved in it' },
+      { id: 'atoms', why: 'an acid is really about one loose electron-less hydrogen' },
+      { id: 'body-systems', why: 'your stomach runs at pH 2 and your small intestine does not' }
+    ]
+  },
+
+  'light-optics': {
+    formulas: [
+      { f: 'angle of incidence = angle of reflection', what: 'both measured from the normal — the dotted line at 90° to the surface — never from the surface itself.' },
+      { f: 'speed of light = 300,000,000 m/s', what: 'in a vacuum. It slows in glass and water, and slowing is what makes it bend.' },
+      { f: 'v = f × λ', what: 'light is a wave too, so speed = frequency × wavelength applies here as well.' }
+    ],
+    mistakes: [
+      { wrong: 'Angles are measured from the mirror.', right: 'Always from the normal. Measuring from the mirror turns a 30° answer into 60° and loses the mark.' },
+      { wrong: 'We see things because light leaves our eyes.', right: 'Light travels from a source, bounces off the object, and enters your eye. Nothing comes out of your eye.' },
+      { wrong: 'A red object adds red to the light.', right: 'It absorbs the other colours and reflects red. Shine pure blue light on it and it looks black.' }
+    ],
+    deeper: [
+      { t: 'Drawing a ray diagram that scores', b: 'Use a ruler, put arrows on every ray, draw the normal as a dashed line, and label the angles. Markers look for the arrows and the normal before they look at the angles.' },
+      { t: 'Why total internal reflection has a limit', b: 'Past the critical angle — about 42° for glass — refraction cannot bend the ray enough to escape, so all of it reflects. Below that angle some light still gets out.' },
+      { t: 'Real and virtual images', b: 'A mirror image is virtual: the light never actually goes there, so you cannot catch it on a screen. A convex lens can make a real image, which is how a projector works.' }
+    ],
+    links: [
+      { id: 'waves', why: 'light is one band of the electromagnetic spectrum' },
+      { id: 'body-systems', why: 'your eye is a lens, an aperture and a sensor' },
+      { id: 'solar-system', why: 'eclipses are shadows, which only work because light goes straight' }
+    ]
+  },
+
+  'solar-system': {
+    formulas: [
+      { f: 'rotation = 1 day · orbit = 1 year', what: 'spinning on its axis gives day and night. Going round the Sun gives the year. Two different motions, two different results.' },
+      { f: 'axial tilt = 23.5°', what: 'the cause of the seasons. Distance from the Sun is not — we are closest in January.' },
+      { f: '1 light year ≈ 9.5 trillion km', what: 'a distance, not a time. Light takes 8 minutes from the Sun and 4.2 years from the next star.' }
+    ],
+    mistakes: [
+      { wrong: 'Summer happens when Earth is closer to the Sun.', right: 'It is the tilt. The southern hemisphere has summer in December while Earth is further from the Sun than in June.' },
+      { wrong: 'The Moon has a permanently dark side.', right: 'It has a far side we never see, because it keeps one face toward us. Every part of it gets sunlight during the month.' },
+      { wrong: 'There is no gravity in space.', right: 'Gravity is what holds the orbits. Astronauts float because they are falling around Earth at the same rate as their spacecraft.' }
+    ],
+    deeper: [
+      { t: 'Why the Moon shows the same face', b: 'Earth’s gravity has slowed the Moon’s spin until one rotation takes exactly one orbit. That is tidal locking, and most large moons do it.' },
+      { t: 'Why eclipses are rare', b: 'The Moon’s orbit is tilted about 5° to Earth’s, so usually its shadow misses us entirely. They only line up at the crossing points.' },
+      { t: 'Looking back in time', b: 'Light takes time to arrive, so every telescope is a time machine. Looking at a galaxy a billion light years away shows it as it was a billion years ago.' }
+    ],
+    links: [
+      { id: 'forces-motion', why: 'an orbit is gravity plus sideways speed, nothing more' },
+      { id: 'light-optics', why: 'shadows, eclipses and telescopes are all optics' },
+      { id: 'energy', why: 'the Sun is the energy source for almost everything on Earth' }
+    ]
+  },
+
+  'evolution': {
+    formulas: [
+      { f: 'variation → competition → survival → inheritance', what: 'the four steps, in order. Every evolution answer is really one of these four being asked about.' },
+      { f: 'over 99% of species are extinct', what: 'extinction is the normal outcome, not a failure of the theory.' }
+    ],
+    mistakes: [
+      { wrong: 'Individuals evolve during their lives.', right: 'Populations evolve across generations. A giraffe cannot stretch its neck and pass that on; giraffes with longer necks simply left more offspring.' },
+      { wrong: 'Evolution has a goal, or makes things better.', right: 'It has no direction. It only tracks whatever survives in the conditions of the moment, and conditions change.' },
+      { wrong: 'Humans evolved from monkeys.', right: 'We share a common ancestor with them. We are cousins on the same tree, not descendants.' }
+    ],
+    deeper: [
+      { t: 'Why the peppered moth is the standard example', b: 'Soot darkened the trees, dark moths were suddenly camouflaged and pale ones were eaten, so dark forms went from rare to common in decades. Clean Air Acts reversed it.' },
+      { t: 'What "fittest" really means', b: 'Not strongest or fastest — best fitted to the current conditions. In a drought the fittest finch is the one whose beak matches the seeds that are left.' },
+      { t: 'Evidence stacked up', b: 'Fossils in age order, matching bone structures across species, embryos that look alike early on, and DNA similarity that puts every species on one tree. They all agree.' }
+    ],
+    links: [
+      { id: 'genetics', why: 'mutation and inheritance supply the variation selection acts on' },
+      { id: 'ecosystems', why: 'the environment is what does the selecting' },
+      { id: 'microbes-disease', why: 'antibiotic resistance is evolution you can watch in a week' }
+    ]
+  },
+
+  'mixtures': {
+    formulas: [
+      { f: 'solute + solvent = solution', what: 'the thing that dissolves, the liquid doing it, and the result.' },
+      { f: 'insoluble solid → filter · dissolved solid → evaporate · the liquid → distil', what: 'the decision tree for almost every separation question.' },
+      { f: 'pure = one sharp melting point', what: 'a mixture melts over a range. That is the purity test with no equipment.' }
+    ],
+    mistakes: [
+      { wrong: 'Filtering separates salt from water.', right: 'Dissolved salt passes straight through the paper. Filtering only catches what did not dissolve.' },
+      { wrong: 'Dissolving is a chemical change.', right: 'It is physical. Nothing new is made, which is why evaporating gets your salt back unchanged.' },
+      { wrong: 'Pure means clean or healthy.', right: 'In chemistry it means one single substance. Pure water, pure sodium and pure arsenic are all pure.' }
+    ],
+    deeper: [
+      { t: 'Reading a solubility curve', b: 'Grams of solute per 100 g of water, plotted against temperature. Above the line it cannot all dissolve; cool a saturated solution and the excess drops out as crystals.' },
+      { t: 'Fractional distillation', b: 'Several liquids with different boiling points separate up a column: the lowest boiling point reaches the top first. It is how crude oil becomes petrol, diesel and tar.' },
+      { t: 'Chromatography with numbers', b: 'Rf = distance moved by the spot ÷ distance moved by the solvent. The same substance gives the same Rf in the same solvent, which is how samples get identified.' }
+    ],
+    links: [
+      { id: 'states-of-matter', why: 'every separation method is a phase change put to work' },
+      { id: 'chemical-change', why: 'the physical half of the physical-or-chemical question' },
+      { id: 'water-cycle', why: 'rain is distillation happening on a planetary scale' }
+    ]
+  },
+
+  'microbes-disease': {
+    formulas: [
+      { f: 'pathogen → transmission → infection → response', what: 'the chain. Break it anywhere and the disease stops spreading.' },
+      { f: 'antibiotics: bacteria yes, viruses no', what: 'viruses hide inside your own cells and lack the structures antibiotics attack.' },
+      { f: 'barrier → white blood cell → memory', what: 'the three layers of defence, in the order they act.' }
+    ],
+    mistakes: [
+      { wrong: 'Antibiotics will help a cold or flu.', right: 'Those are viral. Taking antibiotics does nothing for you and helps resistant bacteria spread.' },
+      { wrong: 'A vaccine gives you the disease in small doses.', right: 'It gives a dead, weakened or partial pathogen — enough to learn from, not enough to infect you.' },
+      { wrong: 'All microbes are germs.', right: 'The vast majority are harmless or essential. Your gut bacteria, bread yeast and yoghurt cultures are all microbes.' }
+    ],
+    deeper: [
+      { t: 'Why the second exposure is easier', b: 'Memory cells persist for years. On a second meeting the right antibody is produced in hours rather than days, so you often never notice being infected.' },
+      { t: 'Herd immunity has a threshold', b: 'The more infectious the disease, the higher the share of immune people needed. Measles needs about 95 per cent, which is why small drops in uptake cause outbreaks.' },
+      { t: 'Why handwashing beats rinsing', b: 'Soap molecules have a water-loving end and an oil-loving end, so they lift the greasy film microbes cling to and let it rinse away. Time matters because that lifting is not instant.' }
+    ],
+    links: [
+      { id: 'cells', why: 'bacteria are cells without a nucleus; viruses are not cells at all' },
+      { id: 'evolution', why: 'antibiotic resistance is natural selection on a timescale you can see' },
+      { id: 'body-systems', why: 'the immune system runs through your blood and lymph' }
+    ]
+  },
+
+  'magnetism': {
+    formulas: [
+      { f: 'like poles repel · opposite poles attract', what: 'and you can never have one pole alone. Cut a magnet in half and each half grows a new pair.' },
+      { f: 'field lines run N → S outside the magnet', what: 'arrows always that way, lines never cross, and closer together means stronger.' },
+      { f: 'more turns + more current + iron core = stronger electromagnet', what: 'the three variables worth testing, one at a time.' }
+    ],
+    mistakes: [
+      { wrong: 'All metals are magnetic.', right: 'Only iron, steel, nickel and cobalt. Aluminium, copper and gold are not, which is how recycling plants sort cans.' },
+      { wrong: 'A compass points to the North Pole.', right: 'It points to the magnetic north pole, which drifts and is not in the same place as the geographic one.' },
+      { wrong: 'A motor and a generator are different machines.', right: 'They are the same machine run in opposite directions. Current in gives motion out; motion in gives current out.' }
+    ],
+    deeper: [
+      { t: 'Why an iron core helps so much', b: 'Iron contains tiny magnetic domains pointing in random directions. The coil’s field swings them into line, and their added fields can multiply the strength many times over.' },
+      { t: 'Induction needs change', b: 'A magnet sitting still next to a coil induces nothing. The field has to be changing — moving the magnet, moving the coil, or switching the current — which is why generators spin.' },
+      { t: 'Earth’s field flips', b: 'Rock hardening at a mid-ocean ridge records the field direction of the time. Those stripes show the poles have reversed many times, and they helped prove seafloor spreading.' }
+    ],
+    links: [
+      { id: 'circuits', why: 'an electromagnet is a circuit, so V = I × R still sets the current' },
+      { id: 'energy', why: 'generators are how almost all our electricity is actually made' },
+      { id: 'plate-tectonics', why: 'magnetic stripes on the seafloor are evidence the plates move' }
+    ]
+  }
+,
   'photosynthesis': {
     formulas: [
       { f: '6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂', what: 'six carbon dioxide plus six water, using light energy, gives one glucose plus six oxygen. Light and chlorophyll go above the arrow because they are conditions, not ingredients.' },

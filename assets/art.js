@@ -456,6 +456,392 @@
       '<path class="a-sway" d="M112 100 L 70 78 M208 100 L 250 78" stroke="' + C[3] + '" stroke-width="8" fill="none"/>', l);
   };
 
+  /* ── acids and bases ── */
+
+  A.phScale = function (l) {
+    var band = '', cols = ['#c0392b', '#d35400', '#e08e0b', '#9aab1f', '#36a65a', '#2a8f8f', '#2b6cb0', '#4a3f9f'];
+    for (var i = 0; i < 8; i++) {
+      band += '<rect x="' + (20 + i * 35) + '" y="70" width="35" height="40" fill="' + cols[i] + '"/>';
+    }
+    return frame(band +
+      '<rect x="20" y="70" width="280" height="40" fill="none" stroke="' + INK + '" stroke-width="2"/>' +
+      '<polygon class="a-slide" points="90,62 100,48 110,62" fill="' + INK + '"/>' +
+      txt(24, 128, '0', 11, INK, 'start') + txt(160, 128, '7', 11) + txt(296, 128, '14', 11, INK, 'end') +
+      txt(60, 60, 'acid', 11) + txt(160, 60, 'neutral', 11) + txt(262, 60, 'base', 11), l);
+  };
+
+  A.gasTest = function (l) {
+    return frame(
+      '<path d="M60 30 L 60 95 Q 60 125 90 125 Q 120 125 120 95 L 120 30" fill="none" stroke="' + INK + '" stroke-width="4"/>' +
+      '<path d="M60 80 L 60 95 Q 60 125 90 125 Q 120 125 120 95 L 120 80 Z" fill="' + C[1] + '" opacity=".4"/>' +
+      '<circle class="a-bubble" cx="80" cy="100" r="5" fill="' + C[1] + '"/>' +
+      '<circle class="a-bubble" style="--d:.8s" cx="100" cy="110" r="4" fill="' + C[1] + '"/>' +
+      '<path class="a-march" d="M120 45 Q 180 20 215 60" fill="none" stroke="' + INK + '" stroke-width="4" stroke-dasharray="10 6"/>' +
+      '<path d="M190 60 L 190 120 Q 190 148 218 148 Q 246 148 246 120 L 246 60" fill="none" stroke="' + INK + '" stroke-width="4"/>' +
+      '<path d="M190 105 L 190 120 Q 190 148 218 148 Q 246 148 246 120 L 246 105 Z" fill="' + C[2] + '" opacity=".45"/>' +
+      '<circle class="a-glow" cx="218" cy="126" r="14" fill="#e8e8ee" opacity=".8"/>', l);
+  };
+
+  /* ── light and optics ── */
+
+  A.rayBox = function (l) {
+    var rays = '';
+    for (var i = 0; i < 3; i++) {
+      rays += '<line class="a-travel" style="--d:' + (i * .2) + 's" x1="80" y1="' + (55 + i * 30) +
+        '" x2="285" y2="' + (55 + i * 30) + '" stroke="' + C[1] + '" stroke-width="3" stroke-dasharray="20 8"/>';
+    }
+    return frame('<rect x="22" y="48" width="56" height="94" rx="6" fill="' + INK + '" opacity=".55"/>' +
+      '<circle class="a-glow" cx="68" cy="95" r="12" fill="' + C[1] + '"/>' + rays, l);
+  };
+
+  A.mirror = function (l) {
+    return frame(
+      '<line x1="40" y1="140" x2="280" y2="140" stroke="' + C[2] + '" stroke-width="7"/>' +
+      '<line x1="40" y1="147" x2="280" y2="147" stroke="' + INK + '" stroke-width="3" opacity=".4"/>' +
+      '<line x1="160" y1="30" x2="160" y2="140" stroke="' + INK + '" stroke-width="2" stroke-dasharray="6 5"/>' +
+      txt(176, 44, 'normal', 11, INK, 'start') +
+      '<g class="a-ping">' + arrow(60, 40, 155, 136, C[1], 3) + '</g>' +
+      '<g class="a-ping" style="--d:.5s">' + arrow(165, 136, 262, 40, C[4], 3) + '</g>' +
+      '<path d="M160 110 A 30 30 0 0 0 138 122" fill="none" stroke="' + C[1] + '" stroke-width="2"/>' +
+      '<path d="M160 110 A 30 30 0 0 1 182 122" fill="none" stroke="' + C[4] + '" stroke-width="2"/>' +
+      txt(126, 112, 'i', 12) + txt(196, 112, 'r', 12), l);
+  };
+
+  A.refract = function (l) {
+    return frame(
+      '<rect x="95" y="50" width="130" height="92" rx="4" fill="' + C[2] + '" opacity=".28" stroke="' + C[2] + '" stroke-width="3"/>' +
+      '<line x1="95" y1="30" x2="95" y2="160" stroke="' + INK + '" stroke-width="2" stroke-dasharray="6 5"/>' +
+      '<path class="a-travel" d="M22 48 L 95 78 L 225 128 L 292 146" fill="none" stroke="' + C[1] + '" stroke-width="3.5" stroke-dasharray="18 7"/>' +
+      txt(60, 44, 'air', 11) + txt(160, 42, 'glass: slower', 11) + txt(268, 130, 'air', 11), l);
+  };
+
+  A.prism = function (l) {
+    var fan = '', cols = ['#c0392b', '#d97b22', '#d8b219', '#37a05a', '#2d7fb8', '#5c4a9e'];
+    for (var i = 0; i < 6; i++) {
+      fan += '<line x1="196" y1="96" x2="296" y2="' + (56 + i * 17) + '" stroke="' + cols[i] + '" stroke-width="3.5"/>';
+    }
+    return frame(
+      '<path class="a-travel" d="M18 82 L 132 92" fill="none" stroke="#e9e9ee" stroke-width="4" stroke-dasharray="16 7"/>' +
+      '<polygon points="160,38 216,130 104,130" fill="' + C[2] + '" opacity=".3" stroke="' + C[2] + '" stroke-width="3"/>' +
+      fan + txt(58, 72, 'white light', 11), l);
+  };
+
+  A.lens = function (l) {
+    var rays = '';
+    for (var i = 0; i < 3; i++) {
+      var y = 56 + i * 36;
+      rays += '<line class="a-travel" style="--d:' + (i * .15) + 's" x1="20" y1="' + y + '" x2="150" y2="' + y +
+        '" stroke="' + C[1] + '" stroke-width="3" stroke-dasharray="16 7"/>' +
+        '<line x1="170" y1="' + y + '" x2="262" y2="92" stroke="' + C[1] + '" stroke-width="3"/>';
+    }
+    return frame(rays +
+      '<path d="M160 34 Q 192 92 160 150 Q 128 92 160 34 Z" fill="' + C[2] + '" opacity=".35" stroke="' + C[2] + '" stroke-width="3"/>' +
+      '<circle class="a-pulse" cx="262" cy="92" r="6" fill="' + C[4] + '"/>' +
+      txt(268, 118, 'focus', 11, INK, 'start'), l);
+  };
+
+  A.fibre = function (l) {
+    return frame(
+      '<path d="M20 60 Q 160 20 300 70" fill="none" stroke="' + C[2] + '" stroke-width="4" opacity=".6"/>' +
+      '<path d="M20 120 Q 160 84 300 134" fill="none" stroke="' + C[2] + '" stroke-width="4" opacity=".6"/>' +
+      '<path class="a-travel" d="M24 92 L 70 64 L 116 108 L 162 56 L 208 100 L 254 70 L 296 104" fill="none" stroke="' + C[1] + '" stroke-width="3.5" stroke-dasharray="14 8"/>' +
+      '<circle class="a-glow" cx="296" cy="104" r="9" fill="' + C[1] + '"/>', l);
+  };
+
+  A.eclipse = function (l) {
+    return frame(
+      '<circle class="a-pulse" cx="42" cy="92" r="30" fill="' + C[1] + '"/>' +
+      '<polygon points="72,70 160,84 160,100 72,114" fill="' + C[1] + '" opacity=".25"/>' +
+      '<circle cx="168" cy="92" r="18" fill="' + INK + '"/>' +
+      '<polygon points="186,86 282,60 282,124 186,98" fill="' + INK + '" opacity=".35"/>' +
+      '<circle cx="268" cy="92" r="34" fill="' + C[2] + '" opacity=".55" stroke="' + C[2] + '" stroke-width="3"/>' +
+      '<path d="M234 92 A 34 34 0 0 1 302 92 Z" fill="' + INK + '" opacity=".25"/>', l);
+  };
+
+  /* ── the solar system ── */
+
+  A.solarSystem = function (l) {
+    var out = '<circle class="a-pulse" cx="34" cy="92" r="26" fill="' + C[1] + '"/>';
+    var sizes = [5, 7, 7.5, 6, 13, 11, 8, 8];
+    for (var i = 0; i < 8; i++) {
+      var x = 76 + i * 28;
+      out += '<ellipse cx="34" cy="92" rx="' + (x - 34) + '" ry="' + ((x - 34) * 0.42) +
+        '" fill="none" stroke="' + INK + '" stroke-width="1" opacity=".3"/>' +
+        '<circle class="a-float" style="--d:' + (i * .3) + 's" cx="' + x + '" cy="92" r="' + sizes[i] +
+        '" fill="' + C[i % 2 ? 2 : 3] + '"/>';
+    }
+    return frame(out, l);
+  };
+
+  A.dayNight = function (l) {
+    return frame(
+      '<circle class="a-glow" cx="36" cy="92" r="22" fill="' + C[1] + '"/>' +
+      '<line class="a-travel" x1="60" y1="92" x2="130" y2="92" stroke="' + C[1] + '" stroke-width="3" stroke-dasharray="14 7"/>' +
+      '<circle cx="200" cy="92" r="52" fill="' + INK + '" opacity=".6"/>' +
+      '<path d="M200 40 A 52 52 0 0 0 200 144 Z" fill="' + C[2] + '"/>' +
+      '<line x1="200" y1="24" x2="200" y2="160" stroke="' + INK + '" stroke-width="2" stroke-dasharray="5 5"/>' +
+      '<path class="a-spin-slow" style="--ox:200px;--oy:92px" d="M236 56 A 50 50 0 0 1 248 84" fill="none" stroke="' + C[0] + '" stroke-width="3"/>' +
+      txt(152, 96, 'day', 11) + txt(250, 96, 'night', 11), l);
+  };
+
+  A.seasons = function (l) {
+    var out = '<circle class="a-pulse" cx="160" cy="92" r="24" fill="' + C[1] + '"/>' +
+      '<ellipse cx="160" cy="92" rx="120" ry="52" fill="none" stroke="' + INK + '" stroke-width="1.5" opacity=".35"/>';
+    [[40, 92, 'tilted away'], [280, 92, 'tilted toward']].forEach(function (p, i) {
+      out += '<g transform="rotate(-23 ' + p[0] + ' ' + p[1] + ')">' +
+        '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="20" fill="' + C[2] + '" opacity=".7"/>' +
+        '<line x1="' + p[0] + '" y1="' + (p[1] - 28) + '" x2="' + p[0] + '" y2="' + (p[1] + 28) +
+        '" stroke="' + INK + '" stroke-width="2.5"/></g>' +
+        txt(p[0], p[1] + 46, p[2], 10);
+    });
+    return frame(out, l);
+  };
+
+  A.moonPhases = function (l) {
+    var out = '';
+    for (var i = 0; i < 5; i++) {
+      var x = 44 + i * 58, lit = i / 4;
+      out += '<circle cx="' + x + '" cy="88" r="22" fill="' + INK + '" opacity=".75"/>';
+      if (i > 0) {
+        out += '<path class="a-glow-fill" d="M' + x + ' 66 A 22 22 0 0 ' + (i >= 3 ? 1 : 0) + ' ' + x + ' 110 A ' +
+          (22 * Math.abs(1 - lit * 2)) + ' 22 0 0 ' + (i > 2 ? 1 : 0) + ' ' + x + ' 66 Z" fill="#efe9d6"/>';
+      }
+    }
+    return frame(out + txt(44, 138, 'new', 10) + txt(160, 138, 'half', 10) + txt(276, 138, 'full', 10), l);
+  };
+
+  A.orbitPull = function (l) {
+    return frame(
+      '<ellipse cx="160" cy="92" rx="112" ry="62" fill="none" stroke="' + INK + '" stroke-width="1.5" stroke-dasharray="7 6" opacity=".45"/>' +
+      '<circle class="a-pulse" cx="160" cy="92" r="26" fill="' + C[1] + '"/>' +
+      '<g class="a-orbit"><circle cx="272" cy="92" r="11" fill="' + C[2] + '"/></g>' +
+      arrow(258, 78, 196, 88, C[4], 3) + arrow(276, 72, 276, 30, C[0], 3) +
+      txt(216, 70, 'pull', 11) + txt(286, 26, 'speed', 11, INK, 'start'), l);
+  };
+
+  A.tides = function (l) {
+    return frame(
+      '<ellipse class="a-breathe" cx="150" cy="92" rx="78" ry="56" fill="' + C[2] + '" opacity=".4"/>' +
+      '<circle cx="150" cy="92" r="48" fill="' + C[0] + '" opacity=".75"/>' +
+      '<circle cx="286" cy="92" r="15" fill="' + INK + '" opacity=".7"/>' +
+      arrow(250, 92, 216, 92, C[4], 3) +
+      txt(226, 44, 'bulge', 11) + txt(74, 44, 'bulge', 11) + txt(286, 126, 'Moon', 10), l);
+  };
+
+  A.stars = function (l) {
+    var out = '', seed = 11;
+    for (var i = 0; i < 26; i++) {
+      seed = (seed * 9301 + 49297) % 233280;
+      var x = 14 + (seed / 233280) * 292;
+      seed = (seed * 9301 + 49297) % 233280;
+      var y = 20 + (seed / 233280) * 140;
+      var r = 1.2 + (i % 4) * 0.9;
+      out += '<circle class="a-glow" style="--d:' + ((i % 7) * 0.35).toFixed(2) + 's" cx="' + x.toFixed(1) +
+        '" cy="' + y.toFixed(1) + '" r="' + r + '" fill="#f3efdf"/>';
+    }
+    return frame(out + '<circle class="a-pulse" cx="214" cy="60" r="13" fill="' + C[1] + '"/>', l);
+  };
+
+  A.comet = function (l) {
+    return frame(
+      '<circle class="a-pulse" cx="56" cy="130" r="20" fill="' + C[1] + '"/>' +
+      '<circle cx="232" cy="62" r="13" fill="' + C[2] + '"/>' +
+      '<path class="a-travel" d="M245 68 Q 290 86 308 120" fill="none" stroke="' + C[2] + '" stroke-width="9" opacity=".35" stroke-dasharray="18 8"/>' +
+      '<path class="a-travel" d="M243 56 Q 288 60 310 46" fill="none" stroke="#dfe8f5" stroke-width="5" opacity=".5" stroke-dasharray="14 9"/>' +
+      '<ellipse cx="140" cy="100" rx="120" ry="58" fill="none" stroke="' + INK + '" stroke-width="1.5" stroke-dasharray="6 6" opacity=".4"/>', l);
+  };
+
+  /* ── evolution ── */
+
+  A.beaks = function (l) {
+    function bird(x, y, beak, col) {
+      return '<ellipse cx="' + x + '" cy="' + y + '" rx="30" ry="22" fill="' + col + '"/>' +
+        '<circle cx="' + (x + 24) + '" cy="' + (y - 14) + '" r="14" fill="' + col + '"/>' +
+        '<circle cx="' + (x + 29) + '" cy="' + (y - 17) + '" r="2.2" fill="' + INK + '"/>' + beak;
+    }
+    return frame(
+      bird(70, 80, '<polygon class="a-nudge" points="38,66 72,70 38,76" transform="translate(60,0)" fill="' + C[1] + '"/>', C[3]) +
+      txt(70, 124, 'crushes seeds', 10) +
+      bird(210, 80, '<polygon class="a-nudge" points="38,68 92,72 38,74" transform="translate(200,0)" fill="' + C[1] + '"/>', C[0]) +
+      txt(214, 124, 'probes flowers', 10) +
+      txt(160, 158, 'same species, different beaks', 11), l);
+  };
+
+  A.fossil = function (l) {
+    var layers = '';
+    for (var i = 0; i < 4; i++) {
+      layers += '<rect x="22" y="' + (44 + i * 28) + '" width="276" height="28" fill="' + C[1] +
+        '" opacity="' + (0.18 + i * 0.12) + '"/>' +
+        '<line x1="22" y1="' + (44 + i * 28) + '" x2="298" y2="' + (44 + i * 28) + '" stroke="' + INK + '" stroke-width="1.5" opacity=".4"/>';
+    }
+    var spine = '';
+    for (var j = 0; j < 7; j++) {
+      spine += '<line x1="' + (104 + j * 16) + '" y1="112" x2="' + (104 + j * 16) + '" y2="' + (100 + (j % 2) * 6) + '" stroke="' + INK + '" stroke-width="3"/>';
+    }
+    return frame(layers +
+      '<path class="a-pulse" d="M96 118 Q 160 100 226 120" fill="none" stroke="' + INK + '" stroke-width="4"/>' + spine +
+      '<circle cx="92" cy="118" r="9" fill="' + INK + '" opacity=".8"/>' +
+      txt(258, 36, 'older ↓', 10), l);
+  };
+
+  A.treeOfLife = function (l) {
+    return frame(
+      '<path d="M160 150 L 160 112" stroke="' + C[1] + '" stroke-width="7" fill="none"/>' +
+      '<path class="a-sway-top" d="M160 112 Q 110 96 86 56 M160 112 Q 210 96 234 56 M160 112 L 160 60 M86 56 Q 70 40 56 30 M86 56 Q 102 40 116 30 M234 56 Q 218 40 204 30 M234 56 Q 250 40 264 30 M160 60 Q 150 44 142 32 M160 60 Q 170 44 178 32" fill="none" stroke="' + C[0] + '" stroke-width="4"/>' +
+      '<circle class="a-pulse" cx="56" cy="28" r="6" fill="' + C[3] + '"/>' +
+      '<circle class="a-pulse" style="--d:.4s" cx="116" cy="28" r="6" fill="' + C[2] + '"/>' +
+      '<circle class="a-pulse" style="--d:.8s" cx="142" cy="30" r="6" fill="' + C[4] + '"/>' +
+      '<circle class="a-pulse" style="--d:1.2s" cx="178" cy="30" r="6" fill="' + C[0] + '"/>' +
+      '<circle class="a-pulse" style="--d:1.6s" cx="204" cy="28" r="6" fill="' + C[3] + '"/>' +
+      '<circle class="a-pulse" style="--d:2s" cx="264" cy="28" r="6" fill="' + C[2] + '"/>' +
+      txt(160, 168, 'one common ancestor', 11), l);
+  };
+
+  /* ── mixtures and separating ── */
+
+  A.filterFunnel = function (l) {
+    return frame(
+      '<polygon points="90,36 230,36 168,116 152,116" fill="none" stroke="' + INK + '" stroke-width="4"/>' +
+      '<polygon points="100,44 220,44 166,108 154,108" fill="' + C[1] + '" opacity=".3"/>' +
+      dots(112, 50, 96, 22, 8, C[1], true, 'a-jiggle-slow') +
+      '<path class="a-rain" d="M160 118 L 160 134" stroke="' + C[2] + '" stroke-width="4"/>' +
+      '<path d="M118 140 L 118 170 Q 118 186 160 186 Q 202 186 202 170 L 202 140" fill="none" stroke="' + INK + '" stroke-width="4"/>' +
+      '<path d="M118 158 L 118 170 Q 118 186 160 186 Q 202 186 202 170 L 202 158 Z" fill="' + C[2] + '" opacity=".45"/>' +
+      txt(252, 60, 'solid stays', 10, INK, 'start') + txt(238, 172, 'liquid through', 10, INK, 'start'), l);
+  };
+
+  A.distill = function (l) {
+    return frame(
+      '<path d="M44 110 Q 44 150 82 150 Q 120 150 120 110 L 120 72 L 100 72" fill="none" stroke="' + INK + '" stroke-width="4"/>' +
+      '<path d="M46 124 Q 50 150 82 150 Q 114 150 118 124 Z" fill="' + C[2] + '" opacity=".45"/>' +
+      '<circle class="a-bubble" cx="70" cy="132" r="4" fill="' + C[2] + '"/>' +
+      '<circle class="a-bubble" style="--d:.9s" cx="94" cy="138" r="3.5" fill="' + C[2] + '"/>' +
+      '<path class="a-march" d="M100 72 L 206 72" fill="none" stroke="' + INK + '" stroke-width="5" stroke-dasharray="12 7"/>' +
+      '<rect x="138" y="58" width="76" height="28" rx="8" fill="' + C[3] + '" opacity=".3" stroke="' + C[3] + '" stroke-width="2.5"/>' +
+      txt(176, 46, 'cooled', 10) +
+      '<path d="M208 76 L 208 100 L 236 100" fill="none" stroke="' + INK + '" stroke-width="4"/>' +
+      '<path d="M234 104 L 234 142 Q 234 158 262 158 Q 290 158 290 142 L 290 104" fill="none" stroke="' + INK + '" stroke-width="4"/>' +
+      '<path d="M234 138 Q 236 158 262 158 Q 288 158 290 138 Z" fill="' + C[0] + '" opacity=".5"/>' +
+      '<path class="a-rain" d="M240 104 L 240 118" stroke="' + C[0] + '" stroke-width="3.5"/>' +
+      '<line x1="36" y1="166" x2="128" y2="166" stroke="' + C[4] + '" stroke-width="4"/>', l);
+  };
+
+  A.chromatography = function (l) {
+    var spots = '', cols = [C[4], C[0], C[3]];
+    for (var i = 0; i < 3; i++) {
+      var x = 92 + i * 56;
+      spots += '<circle cx="' + x + '" cy="128" r="7" fill="' + cols[i] + '" opacity=".85"/>' +
+        '<circle class="a-climb" cx="' + x + '" cy="' + (96 - i * 10) + '" r="6" fill="' + cols[i] + '" opacity=".7"/>' +
+        '<circle class="a-climb" style="--d:.6s" cx="' + x + '" cy="' + (68 - i * 14) + '" r="5" fill="' + cols[i] + '" opacity=".5"/>';
+    }
+    return frame(
+      '<rect x="62" y="24" width="196" height="124" rx="4" fill="#f6f4ec" opacity=".35" stroke="' + INK + '" stroke-width="2.5"/>' +
+      spots +
+      '<line x1="62" y1="140" x2="258" y2="140" stroke="' + C[2] + '" stroke-width="4"/>' +
+      txt(160, 168, 'the solvent carries them up', 11), l);
+  };
+
+  /* ── microbes and disease ── */
+
+  A.bacteria = function (l) {
+    function rod(x, y, rot) {
+      var tail = '';
+      for (var i = 0; i < 3; i++) tail += '<path d="M' + (x + 30) + ' ' + (y + i * 5 - 5) + ' q 12 -6 24 0" fill="none" stroke="' + C[0] + '" stroke-width="2"/>';
+      return '<g class="a-jiggle" style="--d:' + (rot / 60) + 's" transform="rotate(' + rot + ' ' + x + ' ' + y + ')">' +
+        '<rect x="' + (x - 30) + '" y="' + (y - 13) + '" width="60" height="26" rx="13" fill="' + C[0] + '" opacity=".8"/>' +
+        '<ellipse cx="' + (x - 6) + '" cy="' + y + '" rx="12" ry="7" fill="' + C[0] + '"/>' + tail + '</g>';
+    }
+    return frame(rod(92, 62, -14) + rod(196, 106, 10) +
+      '<circle class="a-pulse" cx="256" cy="48" r="15" fill="' + C[2] + '" opacity=".75"/>' +
+      '<circle class="a-pulse" style="--d:.7s" cx="64" cy="134" r="12" fill="' + C[2] + '" opacity=".75"/>', l);
+  };
+
+  A.virus = function (l) {
+    var spikes = '';
+    for (var i = 0; i < 14; i++) {
+      var a = i * Math.PI / 7;
+      spikes += '<line x1="' + (160 + 42 * Math.cos(a)) + '" y1="' + (92 + 42 * Math.sin(a)) +
+        '" x2="' + (160 + 60 * Math.cos(a)) + '" y2="' + (92 + 60 * Math.sin(a)) + '" stroke="' + C[4] + '" stroke-width="4"/>' +
+        '<circle cx="' + (160 + 64 * Math.cos(a)) + '" cy="' + (92 + 64 * Math.sin(a)) + '" r="5" fill="' + C[4] + '"/>';
+    }
+    return frame('<g class="a-spin-slow" style="--ox:160px;--oy:92px">' + spikes + '</g>' +
+      '<circle class="a-pulse" cx="160" cy="92" r="42" fill="' + C[4] + '" opacity=".45" stroke="' + C[4] + '" stroke-width="3"/>' +
+      '<path class="a-helix" d="M142 80 q 18 12 36 0 q -18 12 -36 24 q 18 -12 36 0" fill="none" stroke="' + INK + '" stroke-width="2.5"/>', l);
+  };
+
+  A.whiteCell = function (l) {
+    return frame(
+      '<path class="a-breathe" d="M60 92 Q 60 36 124 34 Q 196 32 212 84 Q 226 140 150 150 Q 76 152 60 92 Z" fill="#eef1f6" opacity=".9" stroke="' + C[2] + '" stroke-width="3"/>' +
+      '<circle cx="118" cy="88" r="22" fill="' + C[3] + '" opacity=".55"/>' +
+      '<path class="a-nudge" d="M206 70 q 34 -10 56 4" fill="none" stroke="#eef1f6" stroke-width="12" stroke-linecap="round"/>' +
+      '<rect class="a-jiggle" x="240" y="96" width="42" height="19" rx="9" fill="' + C[0] + '" opacity=".85"/>' +
+      txt(256, 140, 'engulfed', 10), l);
+  };
+
+  A.syringe = function (l) {
+    return frame(
+      '<rect x="78" y="76" width="140" height="34" rx="5" fill="none" stroke="' + INK + '" stroke-width="3.5"/>' +
+      '<rect class="a-slide" x="84" y="80" width="80" height="26" fill="' + C[0] + '" opacity=".55"/>' +
+      '<rect x="46" y="80" width="34" height="26" rx="4" fill="' + INK + '" opacity=".6"/>' +
+      '<rect x="30" y="68" width="14" height="50" rx="4" fill="' + INK + '" opacity=".6"/>' +
+      '<line x1="218" y1="93" x2="286" y2="93" stroke="' + INK + '" stroke-width="4"/>' +
+      '<circle class="a-ping" cx="292" cy="93" r="6" fill="' + C[1] + '"/>' +
+      txt(160, 148, 'a safe practice run for your immune system', 10), l);
+  };
+
+  /* ── magnetism ── */
+
+  A.fieldLines = function (l) {
+    var lines = '';
+    for (var i = 1; i <= 3; i++) {
+      var k = i * 26;
+      lines += '<path class="a-march" style="--d:' + (i * .25) + 's" d="M106 92 Q 160 ' + (92 - k - 14) + ' 214 92" fill="none" stroke="' + C[3] + '" stroke-width="2.5" stroke-dasharray="11 7"/>' +
+        '<path class="a-march" style="--d:' + (i * .25) + 's" d="M106 92 Q 160 ' + (92 + k + 14) + ' 214 92" fill="none" stroke="' + C[3] + '" stroke-width="2.5" stroke-dasharray="11 7"/>';
+    }
+    return frame(lines +
+      '<rect x="106" y="78" width="54" height="28" fill="' + C[4] + '"/>' +
+      '<rect x="160" y="78" width="54" height="28" fill="' + C[2] + '"/>' +
+      txt(132, 97, 'N', 13, 'var(--art-bg)') + txt(188, 97, 'S', 13, 'var(--art-bg)'), l);
+  };
+
+  A.compass = function (l) {
+    return frame(
+      '<circle cx="160" cy="92" r="58" fill="#f4f2ea" opacity=".3" stroke="' + INK + '" stroke-width="3.5"/>' +
+      '<circle cx="160" cy="92" r="48" fill="none" stroke="' + INK + '" stroke-width="1.5" opacity=".4"/>' +
+      txt(160, 48, 'N', 12) + txt(160, 144, 'S', 12) + txt(216, 97, 'E', 12) + txt(104, 97, 'W', 12) +
+      '<g class="a-tip" style="transform-origin:160px 92px">' +
+      '<polygon points="160,54 170,92 150,92" fill="' + C[4] + '"/>' +
+      '<polygon points="160,130 170,92 150,92" fill="' + C[2] + '"/></g>' +
+      '<circle cx="160" cy="92" r="5" fill="' + INK + '"/>', l);
+  };
+
+  A.electromagnet = function (l) {
+    var coils = '';
+    for (var i = 0; i < 7; i++) {
+      coils += '<ellipse cx="' + (104 + i * 22) + '" cy="96" rx="9" ry="30" fill="none" stroke="' + C[2] + '" stroke-width="4"/>';
+    }
+    return frame(
+      '<rect x="88" y="84" width="170" height="24" rx="4" fill="' + INK + '" opacity=".55"/>' +
+      coils +
+      '<path class="a-current" d="M96 126 L 40 126 L 40 56 L 96 56" fill="none" stroke="' + C[2] + '" stroke-width="3.5" stroke-dasharray="10 7"/>' +
+      '<rect x="22" y="76" width="34" height="30" rx="4" fill="none" stroke="' + INK + '" stroke-width="3"/>' +
+      txt(39, 97, '+−', 12) +
+      '<g class="a-nudge"><rect x="266" y="86" width="26" height="20" rx="3" fill="' + C[4] + '"/></g>' +
+      txt(280, 128, 'pulled in', 10), l);
+  };
+
+  A.motor = function (l) {
+    return frame(
+      '<rect x="30" y="52" width="34" height="84" rx="4" fill="' + C[4] + '" opacity=".75"/>' + txt(47, 100, 'N', 13, 'var(--art-bg)') +
+      '<rect x="256" y="52" width="34" height="84" rx="4" fill="' + C[2] + '" opacity=".75"/>' + txt(273, 100, 'S', 13, 'var(--art-bg)') +
+      '<g class="a-spin-slow" style="--ox:160px;--oy:94px">' +
+      '<rect x="112" y="64" width="96" height="60" rx="6" fill="none" stroke="' + C[0] + '" stroke-width="5"/>' +
+      '<line x1="160" y1="64" x2="160" y2="124" stroke="' + C[0] + '" stroke-width="3"/></g>' +
+      '<line x1="72" y1="94" x2="112" y2="94" stroke="' + INK + '" stroke-width="2.5" stroke-dasharray="5 4"/>' +
+      '<line x1="208" y1="94" x2="248" y2="94" stroke="' + INK + '" stroke-width="2.5" stroke-dasharray="5 4"/>' +
+      txt(160, 158, 'the coil turns', 11), l);
+  };
+
   window.ART = {
     render: function (key, labels) {
       var fn = A[key] || A.checklist;

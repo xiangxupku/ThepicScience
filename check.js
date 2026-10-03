@@ -5,6 +5,8 @@ global.window = {};
 eval(fs.readFileSync(path + 'art.js', 'utf8'));
 eval(fs.readFileSync(path + 'topics.js', 'utf8'));
 eval(fs.readFileSync(path + 'topics-b.js', 'utf8'));
+eval(fs.readFileSync(path + 'topics-c.js', 'utf8'));
+eval(fs.readFileSync(path + 'topics-d.js', 'utf8'));
 
 const T = window.TOPICS, ART = window.ART;
 let errs = [], warns = [];

@@ -4,6 +4,139 @@
 
 window.PROJECTS = {
 
+  'acids-bases': {
+    title: 'Red cabbage tells you the pH',
+    question: 'Can one home-made indicator sort the acids from the bases in your kitchen?',
+    days: 'Takes about an hour, plus 20 minutes of boiling',
+    needs: ['Half a red cabbage, chopped', 'A pan and hot water (an adult for this part)', 'A sieve and a jug', 'Six clear glasses or jars', 'Things to test: lemon juice, vinegar, water, washing-up liquid, bicarbonate of soda solution, milk'],
+    steps: [
+      'Ask an adult to simmer the chopped cabbage in water for 15 minutes, then sieve it. Keep the purple liquid and let it cool.',
+      'Put the same amount of each test liquid into its own glass, and label them.',
+      'Add the same small amount of cabbage water to each one and swirl.',
+      'Photograph all six side by side in the same light.',
+      'Order them from most acidic to most basic by colour, and write your predicted pH for each.',
+      'Check two of them against shop-bought pH paper if you have any.'
+    ],
+    look: 'Pink or red for acids, purple for neutral, blue or green for bases. Washing-up liquid often goes a startling green.',
+    why: 'Red cabbage contains anthocyanin, a pigment whose molecule changes shape depending on how many hydrogen ions are around it. A different shape absorbs different colours of light, so you see a different colour.',
+    fair: 'Same amount of indicator in every glass, same amount of liquid, and photograph them all together — colour judgement changes under different lighting.',
+    stretch: 'Add bicarbonate of soda to a pink glass drop by drop and watch it travel through purple to blue. You have just done a titration.'
+  },
+
+  'light-optics': {
+    title: 'Does the law of reflection actually hold?',
+    question: 'Is the angle light leaves a mirror really equal to the angle it arrived at?',
+    days: 'Takes about 45 minutes',
+    needs: ['A small flat mirror', 'A torch, or a phone torch', 'Card and scissors to make a narrow slit', 'A protractor and a ruler', 'A large sheet of paper', 'A darkened room'],
+    steps: [
+      'Stand the mirror upright on the paper and draw a line along its base.',
+      'Draw the normal: a line at exactly 90° to the mirror line, where the beam will hit.',
+      'Cut a 2 mm slit in the card and hold it over the torch to make one narrow ray.',
+      'Shine the ray at the mirror so it hits where the normal meets it. Mark two points along the incoming ray and two along the reflected one.',
+      'Join the marks, then measure both angles from the normal with the protractor.',
+      'Repeat for at least five different incoming angles and tabulate: angle in, angle out, difference.'
+    ],
+    look: 'The two angles should agree to within a degree or two every time. Your differences column should hover around zero with no pattern.',
+    why: 'Light reflects so that the angle of incidence equals the angle of reflection, both measured from the normal. A smooth surface keeps the rays organised, which is why you get an image rather than a glow.',
+    fair: 'Measure from the normal, never from the mirror. Keep the same slit and the same spot on the mirror, and repeat five times so one bad measurement is obvious.',
+    stretch: 'Crinkle a piece of foil and shine the ray at that. The law still holds at every point, but the surface faces every direction, so you get scattering instead of an image.'
+  },
+
+  'solar-system': {
+    title: 'A solar system you have to walk',
+    question: 'How much empty space is there really between the planets?',
+    days: 'Takes about 90 minutes, outdoors',
+    needs: ['A long tape measure or a known pace length', 'Eight small labels or stones', 'A football for the Sun', 'A calculator', 'A long space: a field, playground or quiet street'],
+    steps: [
+      'Make the Sun a football, 22 cm across. That sets your scale at about 1 cm to 6.4 million km.',
+      'Work out each planet distance at that scale: Mercury 9 m, Venus 17 m, Earth 23 m, Mars 36 m, Jupiter 122 m, Saturn 223 m, Uranus 449 m, Neptune 703 m.',
+      'Put the football down and walk out each distance, dropping a labelled marker at each planet.',
+      'At each marker, note what size the planet would be. Earth is a grain of sand, 2 mm across. Jupiter is a small marble.',
+      'Walk back and photograph the view from Neptune toward the Sun.',
+      'Write down how long it took you to walk the whole thing.'
+    ],
+    look: 'The four rocky planets fit in the first 40 metres. Then there is almost nothing for hundreds of metres. Nearly every textbook diagram is a lie about distance.',
+    why: 'Diagrams squash the distances so the planets fit on a page. At true scale the solar system is overwhelmingly empty, which is why spacecraft take years to cross it.',
+    fair: 'Not a fair test — it is a scale model. State your scale clearly and keep every distance on that same scale, including the planet sizes.',
+    stretch: 'Work out where the nearest star would be at your scale. It is about 6,400 km away — roughly the far side of a continent.'
+  },
+
+  'evolution': {
+    title: 'Bird beak buffet',
+    question: 'Does one beak shape win at every food, or does each food favour a different beak?',
+    days: 'Takes about an hour',
+    needs: ['Tweezers, a teaspoon, chopsticks or a clothes peg — these are the beaks', 'Rice grains, dried beans, and water in a shallow dish — these are the foods', 'A cup per player, as the stomach', 'A stopwatch', 'A notebook'],
+    steps: [
+      'Put 30 rice grains in a tray. Give each player a different beak and 20 seconds to move as many as possible into their cup, one at a time.',
+      'Record how many each beak collected.',
+      'Repeat with the beans, then with water (count teaspoons moved, or weigh the cup).',
+      'Swap beaks between players and repeat the whole set, so it is the beak being tested and not the person.',
+      'Draw a bar chart with three groups of bars: one group per food, one bar per beak.',
+      'Write a sentence predicting which beak would die out if only beans were left.'
+    ],
+    look: 'No beak wins everything. Tweezers dominate rice, the spoon dominates water, the peg handles beans. Each food has a different champion.',
+    why: 'This is natural selection in twenty seconds. If the environment offers mostly one food, the birds whose beaks suit it eat more, survive better and leave more chicks — so the population shifts toward that beak shape.',
+    fair: 'Same time limit, same number of items, one item at a time, and swap the beaks between people to remove the skill of the player.',
+    stretch: 'Run a drought: replace the rice with beans halfway through and keep playing. Watch which beak suddenly has nothing to eat.'
+  },
+
+  'mixtures': {
+    title: 'Pull a four-way mixture apart',
+    question: 'Can you get back four separate substances from one jar of mess?',
+    days: 'Takes about an hour, plus overnight drying',
+    needs: ['Sand', 'Salt', 'Iron filings or steel wool snippets', 'Water', 'A magnet in a plastic bag', 'Filter paper or a coffee filter, and a funnel', 'Two jars and a saucer'],
+    steps: [
+      'Mix a spoon of sand, a spoon of salt and a pinch of iron filings in a dry jar. Photograph the mixture.',
+      'Hold the bagged magnet over the mixture and lift out the iron. Peel the bag off to drop it cleanly into a dish.',
+      'Add water and stir hard. The salt dissolves; the sand does not.',
+      'Pour through the filter. The sand stays as residue; the salty water goes through.',
+      'Pour the filtered water into a saucer and leave it somewhere warm overnight.',
+      'In the morning, weigh or photograph all four recovered substances and compare with what you started with.'
+    ],
+    look: 'Four separate substances back, with no chemical reaction anywhere. The salt comes back as crystals, not powder.',
+    why: 'Nothing in a mixture is chemically bonded, so each part keeps its own properties — magnetic, soluble, insoluble — and each property gives you a way to pull it out.',
+    fair: 'Measure what you start with so you can say how much you recovered. Losing some is normal; say where you think it went.',
+    stretch: 'Put the magnet in a bag before you use it and explain why. Then try recovering the water too, by distilling instead of evaporating.'
+  },
+
+  'microbes-disease': {
+    title: 'Track an invisible infection',
+    question: 'How far does one pair of unwashed hands spread something?',
+    days: 'Takes about 45 minutes',
+    needs: ['Fine glitter, or cinnamon', 'Hand lotion', 'Four or more willing people', 'A notebook', 'Soap, water and a sink', 'A timer'],
+    steps: [
+      'Patient zero rubs a little lotion on their hands, then a pinch of glitter. Nobody else is told who it is.',
+      'Everyone mingles normally for three minutes: handshakes, passing a cup, touching door handles.',
+      'Freeze. Photograph everyone’s hands and record who has glitter and how much.',
+      'Map it: who shook hands with whom, and where the glitter ended up.',
+      'Now test washing. One person rinses in cold water for 3 seconds, another uses soap for 20 seconds. Photograph both pairs of hands.',
+      'Repeat the whole round with a rule that everyone washes properly first, and compare how far it spread.'
+    ],
+    look: 'Glitter reaches people who never touched patient zero — it travels through objects. A 3-second rinse barely works; 20 seconds with soap gets most of it.',
+    why: 'Glitter behaves like a pathogen on skin: it moves by contact, including indirect contact through surfaces. Soap matters because it lifts the oily film that microbes cling to, which is why time and soap beat water alone.',
+    fair: 'Same amount of glitter, same mingling time, and photograph hands under the same light. Change only the washing method between rounds.',
+    stretch: 'Add one person who refuses to shake hands at all and see whether they stay clean. That is what isolating a case does.'
+  },
+
+  'magnetism': {
+    title: 'How many paperclips can you lift?',
+    question: 'Does adding more coils make an electromagnet stronger?',
+    days: 'Takes about 45 minutes',
+    needs: ['An iron nail, 8 cm or longer', 'About 2 m of thin insulated copper wire with the ends stripped', 'One 1.5 V battery in a holder', 'A pile of small steel paperclips', 'Sticky tape', 'A notebook'],
+    steps: [
+      'Wind 10 neat turns of wire round the nail, leaving both ends free. Tape them down.',
+      'Touch the ends to the battery, dip the nail into the paperclips, lift, and count what comes up. Disconnect straight away.',
+      'Repeat that count five times and take an average.',
+      'Add more turns to make 20, then 30, then 40, and repeat the five counts each time.',
+      'Plot a line graph: number of turns along the bottom, average paperclips up the side.',
+      'Disconnect the battery and check that the nail drops nearly everything.'
+    ],
+    look: 'More turns lifts more clips, and the line climbs steeply at first then starts to flatten. Disconnecting drops the load almost completely.',
+    why: 'Each turn of wire adds its own magnetic field, and inside the coil those fields line up and add together. The iron core concentrates them further. No current means no field, which is why it switches off.',
+    fair: 'Same battery, same nail, same paperclips, same dipping depth. Change only the number of turns, and repeat five times because counting paperclips is noisy.',
+    stretch: 'Let the battery go flat and run the test again. Then explain which variable changed, and why your graph is no longer comparable.'
+  }
+,
   'photosynthesis': {
     title: 'The leaf that lost its light',
     question: 'Does a leaf really need light to keep working?',

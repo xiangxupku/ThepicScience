@@ -709,6 +709,7 @@
   });
 
   $('rate-select').addEventListener('change', function () { S.rateTouched = true; });
+  $('voice-select').addEventListener('change', function () { S.voiceTouched = true; });
   ['pages', 'minutes'].forEach(function (n) {
     document.querySelectorAll('input[name="' + n + '"]').forEach(function (r) {
       r.addEventListener('click', function () { S.lengthTouched = true; });
@@ -803,10 +804,23 @@
       $('voice-select').innerHTML = '<option value="">Your device default voice</option>';
       return;
     }
-    $('voice-select').innerHTML = '<option value="">Your device default voice</option>' + use.map(function (v) {
-      return '<option value="' + esc(v.voiceURI) + '">' + esc(v.name) + ' (' + esc(v.lang) + ')</option>';
-    }).join('');
-    $('voice-note').textContent = use.length + ' voices found on this device. They work offline.';
+
+    /* Most devices carry both a smooth modern voice and an old robotic one, and the default
+       is often the robot. Rank them so the good one is picked for you. */
+    use = use.slice().sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
+    var best = use[0];
+
+    $('voice-select').innerHTML = use.map(function (v, i) {
+      return '<option value="' + esc(v.voiceURI) + '">' + esc(v.name) + ' (' + esc(v.lang) + ')' +
+        (i === 0 ? ' — smoothest here' : '') + '</option>';
+    }).join('') + '<option value="">Your device default voice</option>';
+
+    if (!S.voiceTouched && best) {
+      $('voice-select').value = best.voiceURI;
+      S.voiceURI = best.voiceURI;
+    }
+    $('voice-note').textContent = use.length + ' voices on this device' +
+      (best ? ', and we have picked ' + best.name + ' as the smoothest' : '') + '. They work offline.';
   }
 
   if (synth) {
@@ -816,11 +830,63 @@
     loadVoices();
   }
 
+  /* ── making the narration speakable ───────────────────
+     A speech engine reads "6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂" as noise. Spelling the chemistry and
+     the symbols out first is the single biggest difference to how the narration sounds. The
+     captions still show the proper notation — only the spoken version is rewritten. */
+
+  var SPOKEN = [
+    /* whole formulas first, because they read far better as names */
+    [/C₆H₁₂O₆/g, ' glucose '], [/6CO₂/g, ' six carbon dioxide '], [/6H₂O/g, ' six water '],
+    [/6O₂/g, ' six oxygen '], [/CO₂/g, ' carbon dioxide '], [/H₂O/g, ' water '],
+    [/O₂/g, ' oxygen '], [/CH₄/g, ' methane '], [/CO₃/g, ' carbonate '],
+    [/NaCl/g, ' sodium chloride '], [/H⁺/g, ' H plus '], [/OH⁻/g, ' O H minus '],
+    [/\bpH\b/g, 'P H'], [/\bDNA\b/g, 'D N A'], [/\bCO\b/g, 'C O'],
+    /* units */
+    [/°C/g, ' degrees Celsius'], [/m\/s²/g, ' metres per second squared'],
+    [/m\/s/g, ' metres per second'], [/N\/kg/g, ' newtons per kilogram'],
+    [/g\/cm³/g, ' grams per cubic centimetre'], [/km\/h/g, ' kilometres per hour'],
+    /* maths symbols */
+    [/→/g, ' gives '], [/×/g, ' times '], [/÷/g, ' divided by '],
+    [/\s=\s/g, ' equals '], [/\s\+\s/g, ' plus '], [/%/g, ' per cent'],
+    [/⁺/g, ' plus'], [/⁻/g, ' minus'], [/²/g, ' squared'], [/³/g, ' cubed'],
+    [/₀/g, ' zero'], [/₁/g, ' one'], [/₂/g, ' two'], [/₃/g, ' three'], [/₄/g, ' four'],
+    [/₅/g, ' five'], [/₆/g, ' six'], [/₇/g, ' seven'], [/₈/g, ' eight'], [/₉/g, ' nine'],
+    /* a dash is a pause when it is read, not a word */
+    [/\s[—–]\s/g, ', '], [/\.\.\./g, ', '],
+    [/½/g, ' a half '], [/¼/g, ' a quarter '], [/¾/g, ' three quarters '],
+    /* tidy up */
+    [/(\d)([A-Za-z])/g, '$1 $2'], [/\s{2,}/g, ' '], [/\s+([.,!?])/g, '$1']
+  ];
+
+  function speechText(text) {
+    var out = ' ' + String(text) + ' ';
+    SPOKEN.forEach(function (rule) { out = out.replace(rule[0], rule[1]); });
+    out = out.trim();
+    /* finish on a full stop so the engine lands the last word instead of clipping it */
+    if (!/[.!?]$/.test(out)) out += '.';
+    return out;
+  }
+
+  /* higher is smoother: modern neural voices beat the old formant ones by a mile */
+  function voiceScore(v) {
+    var n = (v.name || '') + ' ' + (v.voiceURI || '');
+    var score = 0;
+    if (/natural|neural/i.test(n)) score += 60;
+    if (/google/i.test(n)) score += 40;
+    if (/premium|enhanced|siri|online/i.test(n)) score += 30;
+    if (/espeak|compact|pico|festival|flite/i.test(n)) score -= 60;
+    if (/^en-GB/i.test(v.lang)) score += 6;
+    if (/^en-US/i.test(v.lang)) score += 5;
+    if (v.localService === false) score += 8;      /* cloud voices are usually the good ones */
+    return score;
+  }
+
   function speak(text, onEnd, onWord) {
     if (!synth) { if (onEnd) onEnd(); return null; }
-    var u = new SpeechSynthesisUtterance(text);
+    var u = new SpeechSynthesisUtterance(speechText(text));
     u.rate = S.rate;
-    u.pitch = 1;
+    u.pitch = 1.02;        /* a hair above flat sounds less robotic */
     if (S.voiceURI) {
       var v = voices.filter(function (x) { return x.voiceURI === S.voiceURI; })[0];
       if (v) { u.voice = v; u.lang = v.lang; }
@@ -833,7 +899,20 @@
     return u;
   }
 
-  function stopSpeech() { if (synth) { try { synth.cancel(); } catch (e) {} } }
+  function stopSpeech() {
+    clearTimeout(speakTimer);
+    if (synth) { try { synth.cancel(); } catch (e) {} }
+  }
+
+  /* Chrome drops an utterance queued in the same tick as a cancel, which is what made the
+     first word of each scene disappear. Leaving a beat fixes it. */
+  var speakTimer = null;
+  function speakSoon(text, onEnd, onWord) {
+    clearTimeout(speakTimer);
+    var wasSpeaking = !!(synth && (synth.speaking || synth.pending));
+    if (synth) { try { synth.cancel(); } catch (e) {} }
+    speakTimer = setTimeout(function () { speak(text, onEnd, onWord); }, wasSpeaking ? 110 : 20);
+  }
 
   $('voice-sample').addEventListener('click', function () {
     stopSpeech();
@@ -1104,6 +1183,8 @@
     $('layer-b').className = 'layer';
     $('step4-sub').textContent = 'A ' + fmtTime(S.board.total) + ' video about ' + S.board.topic.title.toLowerCase() + '. Press play, or hit the space bar.';
     V.i = 0; V.t = 0; V.playing = false; V.spoken = -1;
+    $('presenter').hidden = !$('pres-toggle').checked;
+    talking(false);
     if (!synth) $('speech-warn').hidden = false;
     drawScene();
     renderTicks();
@@ -1242,7 +1323,28 @@
     V.spans = box.querySelectorAll('.cw');
   }
 
+  /* The presenter only moves her mouth while an utterance is actually running. If the device
+     has no voices at all she mimes along with playback instead, so the frame still reads as a
+     video rather than a slide. */
+  function talking(on) {
+    var p = $('presenter');
+    if (!p) return;
+    p.classList.toggle('is-talking', !!on && !p.hidden);
+  }
+
+  var browTimer = null;
+  function wordBeat() {
+    var p = $('presenter');
+    if (!p || p.hidden) return;
+    p.classList.remove('is-word');
+    void p.offsetWidth;
+    p.classList.add('is-word');
+    clearTimeout(browTimer);
+    browTimer = setTimeout(function () { p.classList.remove('is-word'); }, 280);
+  }
+
   function highlightWord(charIndex) {
+    wordBeat();
     if (!V.spans || !V.spans.length) return;
     var hit = -1;
     for (var i = 0; i < V.words.length; i++) {
@@ -1275,11 +1377,11 @@
   }
 
   function speakScene() {
-    if (!synth) return;
+    if (!synth) { talking(true); return; }
     if (V.spoken === V.i) return;
     V.spoken = V.i;
-    stopSpeech();
-    speak(S.board.items[V.i].narration, null, highlightWord);
+    talking(true);
+    speakSoon(S.board.items[V.i].narration, function () { talking(false); }, highlightWord);
   }
 
   function now() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
@@ -1312,6 +1414,7 @@
 
   function pause() {
     V.playing = false;
+    talking(false);
     clearInterval(V.timer);
     $('play-btn').textContent = '▶ Play';
     $('play-btn').setAttribute('aria-label', 'Play the video');
@@ -1323,6 +1426,7 @@
 
   function finishVideo() {
     V.playing = false;
+    talking(false);
     clearInterval(V.timer);
     V.t = S.board.items[V.i].dur;
     updateBar();
@@ -1351,6 +1455,13 @@
   $('back-scene').addEventListener('click', function () { jump(-1); });
   $('cc-toggle').addEventListener('change', function () {
     renderCaption(S.board.items[V.i]);
+  });
+
+  $('pres-toggle').addEventListener('change', function () {
+    $('presenter').hidden = !this.checked;
+    if (!this.checked) talking(false);
+    else if (V.playing) talking(true);
+    toast(this.checked ? 'Presenter on' : 'Presenter hidden');
   });
 
   /* ── fullscreen, and the shortcuts a real player has ── */

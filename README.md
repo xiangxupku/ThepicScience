@@ -11,6 +11,10 @@ the photo, the text reading and the narration all happen inside the browser.
 
 1. **📸 Take a picture.** Camera, file picker, drag and drop, or paste. Give it a video and it
    grabs a frame about a second in.
+   The library covers **21 topics**, chosen to line up with what US, Canadian and UK schools
+   actually teach. Each one carries a `taught` line naming the unit as your own curriculum
+   usually calls it — "Optics (Ontario Gr 10)", "Waves (GCSE Physics)", "NGSS MS-PS4". That is
+   the common unit name, not an official specification mapping.
 2. **🤖 Read what you are learning.** The text on the board is read on your own device, matched
    to a topic, and the science words it recognised are listed for you. Photos get a light
    denoise first, which is worth a lot on a real phone shot — on a deliberately bad board
@@ -34,7 +38,18 @@ the photo, the text reading and the narration all happen inside the browser.
    report. A bathroom mirror for the water cycle, one dead bulb in a string of fairy lights
    for series circuits, counting the seconds after lightning for waves.
 
-   The video is a real player, not a slideshow: a title slide, an example slide and a recap
+   The video has **a presenter who talks**: a head-and-shoulders tile in the corner whose mouth
+   moves only while an utterance is actually running, with blinking, a gentle head rock, and an
+   eyebrow lift on each spoken word. The frame never sits still — dust drifts upward behind the
+   artwork, the drawing has a slow camera move, and the scene title arrives as a lower third.
+
+   The narration is **rewritten before it is spoken**. A speech engine reads "6CO₂ + 6H₂O →
+   C₆H₁₂O₆ + 6O₂" as noise; it now says "six carbon dioxide plus six water gives glucose plus
+   six oxygen". Units, symbols, superscripts and dashes all get the same treatment, the
+   captions still show the proper notation, and the app ranks the voices on your device and
+   picks the smoothest one instead of whatever the browser hands over first.
+
+   It is a real player, not a slideshow: a title slide, an example slide and a recap
    slide, a slow camera
    drift over each drawing, and **every one of the 43 drawings animates** — the sun's rays
    turn, rain falls, current runs round the circuit, the heart beats, particles jiggle faster
@@ -110,6 +125,8 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/app.js` | Flow, text reading, board matching, storyboard, player, quiz, exports |
 | `assets/topics.js` | Science library, topics 1–7 |
 | `assets/topics-b.js` | Science library, topics 8–14 |
+| `assets/topics-c.js` | Science library, topics 15–17: acids, optics, space |
+| `assets/topics-d.js` | Science library, topics 18–21: evolution, mixtures, microbes, magnetism |
 | `assets/projects.js` | One hands-on project per topic: materials, steps, the science |
 | `assets/chase.js` | The monster chase: canvas drawing, physics, and the balance numbers |
 | `assets/detail.js` | The deeper layer per topic: formulas, misconceptions, links |
@@ -132,6 +149,8 @@ Copy an existing block in `assets/topics.js` and fill it in. The rules the app r
 - `art` must name a drawing that exists in `assets/art.js`. `labels` is up to 3 short lines.
 - `keywords` is what a photo gets matched against — include the misspellings and short forms
   students actually write on a board.
+- `taught` names the unit as the US, Canadian and UK curricula usually label it. Keep it to
+  the common name — do not claim an official specification code you have not checked.
 - `quiz` is exactly **10 questions**, 3 options each, `c` is the index of the right answer.
   The app asks 3 at a time and rotates, and shows all 10 if the student digs deeper.
 - Add a matching entry in `assets/detail.js` with the same topic id: at least one formula

@@ -282,7 +282,7 @@ p { margin: 0; }
   border-radius: 999px; padding: .22rem .6rem; margin-left: .5rem; vertical-align: middle;
 }
 .stage .from-board {
-  position: absolute; left: 1rem; bottom: .7rem; margin: 0;
+  position: absolute; left: 1rem; top: .85rem; margin: 0;
   background: color-mix(in srgb, var(--art-1) 18%, transparent); color: var(--art-ink);
 }
 
@@ -458,13 +458,13 @@ p { margin: 0; }
 /* two stacked slides; only the front one is visible, and they swap with a cross-fade */
 .layer {
   position: absolute; inset: 0; display: grid; place-items: center;
-  padding: 1rem 1rem 1.6rem;
+  padding: 1rem 1rem 3.1rem;     /* room for the lower third underneath */
   opacity: 0; pointer-events: none;
   transition: opacity 460ms ease;
 }
 .layer.is-front { opacity: 1; pointer-events: auto; z-index: 2; }
 .layer.is-out { opacity: 0; z-index: 1; }
-.stage svg { width: 100%; height: 100%; max-height: 100%; }
+.layer svg { width: 95%; height: 95%; max-height: 100%; margin: auto; }
 /* the title, the drawing and the labels arrive one after another, not all at once */
 .layer.is-front > * { animation: slide-in 520ms cubic-bezier(.2, .7, .3, 1) both; }
 .layer.is-front > .scene-count { animation-delay: 320ms; }
@@ -480,18 +480,25 @@ p { margin: 0; }
   to { opacity: 1; transform: none; filter: blur(0); }
 }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+/* The title sits at the BOTTOM, like a lower third on a real video. It used to be at the top,
+   where the sticky step-nav covered it as soon as the player filled the screen. The right-hand
+   padding keeps the text clear of the presenter tile. */
 .scene-head {
-  position: absolute; top: 0; left: 0; right: 0; padding: .8rem 1rem;
-  font-weight: 650; font-size: clamp(.95rem, 2.4vw, 1.2rem); color: var(--art-ink);
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--art-bg) 92%, transparent), transparent);
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 1.5rem 1rem .7rem;
+  padding-right: clamp(4.6rem, 17%, 8rem);
+  font-weight: 650; font-size: clamp(.8rem, 2.1vw, 1.15rem); line-height: 1.25;
+  color: var(--art-ink);
+  background: linear-gradient(to top, color-mix(in srgb, var(--art-bg) 94%, transparent) 55%, transparent);
 }
 
 /* ── the drawings come alive, but only in the video ──
    Every rule is scoped to .stage, so the picture book, the exports and the printed pages
    stay perfectly still. The reduced-motion block at the bottom switches all of it off. */
+/* 95% artwork × 1.05 zoom = 99.75% of the frame, so nothing is ever cropped */
 @keyframes kenburns {
   from { transform: scale(1) translate(0, 0); }
-  to { transform: scale(1.06) translate(-1%, -1.4%); }
+  to { transform: scale(1.05) translate(-0.8%, -1.2%); }
 }
 
 .stage .a-spin       { transform-box: view-box; transform-origin: 160px 85px; animation: a-spin 26s linear infinite; }
@@ -568,11 +575,105 @@ p { margin: 0; }
 @keyframes a-tick   { 0%, 12% { opacity: 0; transform: scale(.6); } 26%, 100% { opacity: 1; transform: scale(1); } }
 @keyframes a-climb  { 0%, 100% { transform: scaleY(.55); } 50% { transform: scaleY(1); } }
 @keyframes a-pupil  { 0%, 100% { transform: scale(1); } 50% { transform: scale(.62); } }
+/* ── the presenter ──
+   A head-and-shoulders in the corner, like the little camera tile on an explainer video.
+   Her mouth moves only while the voice is actually speaking: app.js adds .is-talking when an
+   utterance starts and takes it off when that utterance ends. */
+.presenter {
+  --pres-bg: #e9eef5; --pres-coat: #f4f7fb; --pres-shirt: #0d6a5f;
+  --pres-skin: #f0c9a4; --pres-hair: #3a2a1f;
+  position: absolute; right: .75rem; bottom: .75rem; z-index: 3;
+  width: clamp(62px, 13%, 104px); aspect-ratio: 1;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .18), 0 0 0 2px color-mix(in srgb, var(--art-ink) 12%, transparent);
+  animation: pres-in 600ms cubic-bezier(.2, .7, .3, 1) both 260ms;
+}
+@media (prefers-color-scheme: dark) {
+  .presenter { --pres-bg: #2a3038; --pres-coat: #e4e9f0; --pres-hair: #2a1f18; }
+}
+.presenter[hidden] { display: none; }
+.presenter svg { display: block; width: 100%; height: 100%; }
+@keyframes pres-in { from { opacity: 0; transform: translateY(14px) scale(.9); } to { opacity: 1; transform: none; } }
+
+.pres-live {
+  position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%);
+  font-size: 7px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: #fff; background: rgba(12, 14, 18, .62); padding: 1px 5px; border-radius: 99px;
+  opacity: 0; transition: opacity 200ms ease;
+}
+.presenter.is-talking .pres-live { opacity: 1; }
+
+/* the head rocks gently the whole time, so she never looks frozen */
+.presenter .pres-head { transform-box: view-box; transform-origin: 60px 84px; animation: pres-bob 5.5s ease-in-out infinite; }
+@keyframes pres-bob {
+  0%, 100% { transform: rotate(-1.6deg) translateY(0); }
+  50% { transform: rotate(1.6deg) translateY(-1.5px); }
+}
+
+/* blink: a long pause, then a quick squash */
+.presenter .pres-eyes { transform-box: view-box; transform-origin: 60px 55px; animation: pres-blink 6.4s steps(1, end) infinite; }
+@keyframes pres-blink {
+  0%, 95%, 100% { transform: scaleY(1); }
+  96%, 98% { transform: scaleY(.12); }
+}
+
+/* mouth shut when quiet, flapping through four shapes when she is speaking */
+.presenter .pres-mouth { transform-box: fill-box; transform-origin: center; transform: scaleY(.35); }
+.presenter.is-talking .pres-mouth { animation: pres-talk .34s steps(1, end) infinite; }
+@keyframes pres-talk {
+  0% { transform: scaleY(.4) scaleX(1); }
+  25% { transform: scaleY(1.5) scaleX(.88); }
+  50% { transform: scaleY(.75) scaleX(1.08); }
+  75% { transform: scaleY(1.9) scaleX(.82); }
+}
+/* a tiny eyebrow lift on each word keeps it from looking mechanical */
+.presenter .pres-brows { transform-box: view-box; transform-origin: 60px 47px; }
+.presenter.is-word .pres-brows { animation: pres-emph 260ms ease both; }
+@keyframes pres-emph { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
+
+@media (max-width: 34rem) {
+  .scene-head { padding: 1rem .7rem .5rem; padding-right: 4.4rem; font-size: .78rem; }
+  .layer { padding: .6rem .6rem 2.3rem; }
+  .layer.is-front > .scene-head::before { bottom: .5rem; height: 1.1rem; width: 3px; }
+  .scene-count { right: .55rem; top: .55rem; font-size: .66rem; }
+}
+
+/* ── dust in the air, so the frame is never completely still ── */
+.motes { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.motes i {
+  position: absolute; bottom: -8px; width: 4px; height: 4px; border-radius: 50%;
+  background: color-mix(in srgb, var(--art-ink) 26%, transparent);
+  animation: mote-rise linear infinite;
+}
+.motes i:nth-child(1) { left: 8%;  animation-duration: 15s; animation-delay: 0s;    width: 3px; height: 3px; }
+.motes i:nth-child(2) { left: 21%; animation-duration: 19s; animation-delay: -4s;   opacity: .7; }
+.motes i:nth-child(3) { left: 34%; animation-duration: 13s; animation-delay: -8s;   width: 5px; height: 5px; opacity: .5; }
+.motes i:nth-child(4) { left: 47%; animation-duration: 21s; animation-delay: -2s;   opacity: .6; }
+.motes i:nth-child(5) { left: 59%; animation-duration: 16s; animation-delay: -11s;  width: 3px; height: 3px; }
+.motes i:nth-child(6) { left: 71%; animation-duration: 18s; animation-delay: -6s;   opacity: .45; }
+.motes i:nth-child(7) { left: 84%; animation-duration: 14s; animation-delay: -14s;  width: 5px; height: 5px; opacity: .55; }
+.motes i:nth-child(8) { left: 93%; animation-duration: 20s; animation-delay: -9s;   opacity: .5; }
+@keyframes mote-rise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  12%  { opacity: .8; }
+  88%  { opacity: .5; }
+  100% { transform: translateY(-104%) translateX(16px); opacity: 0; }
+}
+
+/* ── the lower third, like a real explainer video ── */
 .scene-count {
-  position: absolute; right: .8rem; bottom: .7rem;
+  position: absolute; right: .9rem; top: .85rem;
   font-size: .74rem; font-weight: 700; letter-spacing: .06em;
   color: var(--art-ink); opacity: .55; font-variant-numeric: tabular-nums;
 }
+
+/* the title bar wipes in from the left, the way a lower third does */
+.layer.is-front > .scene-head::before {
+  content: ""; position: absolute; left: 0; bottom: .85rem; height: 1.6rem; width: 4px;
+  background: var(--art-1); transform-origin: bottom;
+  animation: lower-third 520ms ease both 120ms;
+}
+@keyframes lower-third { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
 /* title and end slides */
 .card-slide { text-align: center; padding: 1rem clamp(1rem, 5vw, 3rem); max-width: 40rem; color: var(--art-ink); }
