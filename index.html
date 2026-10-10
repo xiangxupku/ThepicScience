@@ -19,6 +19,9 @@
       <span class="brand-name">ThepicScience</span>
     </div>
     <p class="brand-tag">Photo of the board in. A lesson you understand out.</p>
+    <button type="button" class="spark-chip" id="spark-chip" title="Your sparks. Earn them by doing science.">
+      <span class="spark-icon" aria-hidden="true">⚡</span><span id="spark-count">0</span>
+    </button>
     <button type="button" class="grade-chip" id="grade-chip" hidden></button>
   </div>
 </header>
@@ -52,6 +55,58 @@
         <p class="lbl" id="learn-h">What your grade covers</p>
         <p class="hint">Tap one to start, or scroll down and photograph your own board instead.</p>
         <ul class="topic-list" id="learn-list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card shop" id="shop" aria-labelledby="shop-h">
+    <div class="shop-head">
+      <div>
+        <p class="eyebrow">Pets</p>
+        <h2 id="shop-h">Earn sparks, raise a study pet</h2>
+        <p class="step-sub">Answer questions and finish lessons to earn sparks. Spend them on a pet, then level it up — the higher its level, the more it can tell you when you are stuck on a question.</p>
+      </div>
+      <button type="button" class="btn btn-quiet" id="shop-toggle" aria-expanded="false" aria-controls="shop-body">Open the shop</button>
+    </div>
+
+    <div class="shop-active" id="shop-active" hidden>
+      <div class="pet-stage" id="active-pet-art"></div>
+      <div class="shop-active-text">
+        <p class="eyebrow">Helping you</p>
+        <p class="pet-name" id="active-pet-name"></p>
+        <div class="pet-level" id="active-pet-level"></div>
+        <p class="hint" id="active-pet-can"></p>
+      </div>
+      <button type="button" class="btn btn-primary" id="level-btn"></button>
+    </div>
+
+    <div id="shop-body" hidden>
+      <p class="shop-note">Sparks are not money. There is no way to buy them with anything real, nothing in this app costs money, and the egg prints its exact chances below before you spend a single spark.</p>
+
+      <div class="egg-machine">
+        <div class="egg-visual" aria-hidden="true">
+          <svg viewBox="0 0 100 120"><g class="egg-wiggle">
+            <ellipse cx="50" cy="72" rx="34" ry="42" fill="#f3ead6"/>
+            <ellipse cx="50" cy="72" rx="34" ry="42" fill="none" stroke="#d9c9a8" stroke-width="3"/>
+            <path d="M28 64 q 10 -8 20 0 q 10 8 22 -2" fill="none" stroke="#d9c9a8" stroke-width="3"/>
+            <circle cx="40" cy="88" r="5" fill="#e4d6b8"/><circle cx="60" cy="96" r="4" fill="#e4d6b8"/>
+          </g></svg>
+        </div>
+        <div class="egg-text">
+          <p class="pet-name">Mystery egg</p>
+          <p class="hint" id="egg-count"></p>
+          <button type="button" class="btn btn-primary btn-big" id="egg-btn"></button>
+        </div>
+        <ul class="egg-odds" id="egg-odds"></ul>
+      </div>
+
+      <div class="egg-result" id="egg-result" hidden></div>
+
+      <p class="lbl pet-grid-label">Your collection</p>
+      <ul class="pet-grid" id="pet-grid"></ul>
+      <div class="shop-earn">
+        <p class="lbl">How to earn sparks</p>
+        <ul class="doc-list" id="earn-list"></ul>
       </div>
     </div>
   </section>
@@ -200,6 +255,13 @@
             </span>
           </label>
           <label class="choice">
+            <input type="radio" name="format" value="duel">
+            <span class="choice-body">
+              <span class="choice-title">⚔️ Duel a friend</span>
+              <span class="choice-desc">Two of you, one device. Pick which question to send, and your pet decides how nasty you can be.</span>
+            </span>
+          </label>
+          <label class="choice">
             <input type="radio" name="format" value="report">
             <span class="choice-body">
               <span class="choice-title">📝 Report</span>
@@ -340,6 +402,31 @@
       </div>
     </div>
 
+    <div id="duel-view" hidden>
+      <div class="duel-setup" id="duel-setup">
+        <p class="lbl">Who is playing?</p>
+        <div class="duel-names">
+          <span class="vf"><label class="sub-lbl" for="p1-name">Player 1</label>
+            <input class="input" id="p1-name" value="Player 1" maxlength="14"></span>
+          <span class="vf"><label class="sub-lbl" for="p1-pet">Player 1 pet</label>
+            <select class="input" id="p1-pet"></select></span>
+        </div>
+        <div class="duel-names">
+          <span class="vf"><label class="sub-lbl" for="p2-name">Player 2</label>
+            <input class="input" id="p2-name" value="Player 2" maxlength="14"></span>
+          <span class="vf"><label class="sub-lbl" for="p2-pet">Player 2 pet</label>
+            <select class="input" id="p2-pet"></select></span>
+        </div>
+        <p class="hint">You both share this device and take turns. An attacking pet gets harder questions to send; a defending pet gives better hints when it is your turn to answer.</p>
+        <button type="button" class="btn btn-primary btn-big" id="duel-start">Start the duel</button>
+      </div>
+
+      <div class="duel" id="duel-board" hidden>
+        <div class="duel-hp" id="duel-hp"></div>
+        <div class="duel-stage" id="duel-stage"></div>
+      </div>
+    </div>
+
     <div id="chase-view" hidden>
       <div class="chase" id="chase-wrap">
         <canvas id="chase-canvas" aria-label="A monster chasing a student down a dark path"></canvas>
@@ -392,6 +479,7 @@
       <form id="quiz-form"></form>
       <div class="quiz-foot">
         <button type="button" class="btn btn-primary" id="quiz-check">Check my answers</button>
+        <button type="button" class="btn" id="hint-btn">🐾 Ask my pet</button>
         <button type="button" class="btn" id="quiz-deeper" hidden>Dig deeper — all 10 questions</button>
         <button type="button" class="btn btn-quiet" id="quiz-reset" hidden>Ask me different questions</button>
         <p class="quiz-score" id="quiz-score" role="status"></p>
@@ -452,7 +540,9 @@
 <script src="assets/topics-d.js"></script>
 <script src="assets/projects.js"></script>
 <script src="assets/detail.js"></script>
+<script src="assets/pets.js"></script>
 <script src="assets/chase.js"></script>
+<script src="assets/duel.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

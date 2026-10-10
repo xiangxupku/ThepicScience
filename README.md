@@ -43,6 +43,13 @@ the photo, the text reading and the narration all happen inside the browser.
    eyebrow lift on each spoken word. The frame never sits still — dust drifts upward behind the
    artwork, the drawing has a slow camera move, and the scene title arrives as a lower third.
 
+   It is graded like footage rather than a web page: a vignette darkens the corners, a fine
+   film grain moves over the whole frame, a slow light sweep crosses it every thirteen
+   seconds, every drawing casts a soft shadow so it sits in the scene instead of on top of
+   it, and scenes push in from alternating sides rather than always the same one. All of it
+   is CSS over the same SVG — nothing extra is downloaded, and `prefers-reduced-motion`
+   still stops the lot.
+
    The narration is **rewritten before it is spoken**. A speech engine reads "6CO₂ + 6H₂O →
    C₆H₁₂O₆ + 6O₂" as noise; it now says "six carbon dioxide plus six water gives glucose plus
    six oxygen". Units, symbols, superscripts and dashes all get the same treatment, the
@@ -51,7 +58,7 @@ the photo, the text reading and the narration all happen inside the browser.
 
    It is a real player, not a slideshow: a title slide, an example slide and a recap
    slide, a slow camera
-   drift over each drawing, and **every one of the 43 drawings animates** — the sun's rays
+   drift over each drawing, and **every one of the 74 drawings animates** — the sun's rays
    turn, rain falls, current runs round the circuit, the heart beats, particles jiggle faster
    in a gas than a solid. Captions **highlight each word as the voice says it**, driven by the
    speech engine's own word events rather than a timer. There is a clickable scene strip,
@@ -82,8 +89,32 @@ the photo, the text reading and the narration all happen inside the browser.
    button to jump to it in your lesson. Then it asks you **new** questions about that same
    idea, built from the page's own key word and text (four ways: definition to word, word to
    definition, the main point of the page, and fill the gap), followed by the original
-   question so you can prove you have it. 383 of these are possible across the library, and
+   question so you can prove you have it. 577 of these are possible across the library, and
    `check.js` verifies every one of them is correct.
+
+7. **⚡ Sparks, pets and eggs.** Answering well earns **sparks** — a made-up number that
+   lives in `localStorage` on that one device. **There is no money anywhere in this app. You
+   cannot buy sparks, and nothing asks for a card.** Sparks hatch eggs and level up pets.
+
+   An egg costs **10 sparks** and hatches one of **50 pets**, drawn as SVG like everything
+   else. The odds are printed on the machine before you spend anything: Common 50%, Rare 25%,
+   Gold 14%, Legendary 7%, Mythic 3%, Impossible 1% — and a roll can only ever give you a pet
+   you do not already have, so 50 eggs collects the set and a duplicate is impossible. Rarer
+   pets hatch with a level head start (up to +6).
+
+   Every pet is an **attacker (⚔)** or a **defender (🛡)** — 29 and 21 of them. Levelling
+   goes to **20**, costing 6 sparks for the first level and 32% more each time, 3,645 sparks
+   for a maxed pet. A defender unlocks a better hint every 4 levels: which page it came from,
+   then the key word, then an option ruled out, then the sentence that answers it. An attacker
+   unlocks a harder question to send every 5 levels, and one fed past 0.7 bite hits for two
+   hearts instead of one.
+
+8. **⚔ Duel a friend.** Two players, one device, one topic. On your attack your pet finds
+   **three questions and you choose which one to send** — the stronger your attacker, the
+   harder the three. A hand-over screen sits in between so the person answering never sees
+   which one was picked. They get one hint from their own pet, then answer. Five hearts each,
+   wrong answers cost one (or two against a strong attacker), and every question is retired
+   once used. There is no internet matchmaking, because that would need a server.
 
 Before making a video it also offers a one-tap search of YouTube, Khan Academy, Bilibili and
 the web for your topic, because a real teacher on video often beats anything we can draw.
@@ -120,7 +151,7 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 
 | File | What it does |
 | --- | --- |
-| `index.html` | The whole page: four steps, book reader, video player, quiz, fix-what-you-missed |
+| `index.html` | The whole page: four steps, book reader, video player, duel, quiz, pet shop |
 | `assets/styles.css` | All styling, light and dark mode, print styles for the PDF export |
 | `assets/app.js` | Flow, text reading, board matching, storyboard, player, quiz, exports |
 | `assets/topics.js` | Science library, topics 1–7 |
@@ -129,6 +160,8 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/topics-d.js` | Science library, topics 18–21: evolution, mixtures, microbes, magnetism |
 | `assets/projects.js` | One hands-on project per topic: materials, steps, the science |
 | `assets/chase.js` | The monster chase: canvas drawing, physics, and the balance numbers |
+| `assets/pets.js` | The 50 pets: shapes, rarities, egg odds, levelling, and the hint ladder |
+| `assets/duel.js` | The two-player duel: question difficulty, the three-way pick, hearts |
 | `assets/detail.js` | The deeper layer per topic: formulas, misconceptions, links |
 | `assets/art.js` | Every drawing, as SVG built in code so it works in dark mode |
 | `vercel.json` | Static hosting config |
@@ -169,9 +202,14 @@ measured — a run with no answers is caught at about 13 seconds.
 
 ## Known limits
 
+- Sparks and pets are stored in `localStorage` on that one device too, so they do not
+  follow you to another computer and clearing site data clears them. They are not money
+  and cannot be bought.
+- The duel is hot-seat only: two people at one screen. Playing someone in another house
+  would need a server to pass the moves through, and this app does not have one.
 - The grade sign-in is stored in `localStorage` on that one device. There is no account, so
   nothing follows you to another computer — and nothing about you leaves the browser.
-- The library covers 14 topics. Anything outside it is reported as "no topic matched" rather
+- The library covers 21 topics. Anything outside it is reported as "no topic matched" rather
   than guessed at.
 - Text recognition needs the internet the first time, to fetch the reader. Everything after
   that works offline.

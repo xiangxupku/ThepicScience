@@ -51,6 +51,11 @@
     rate: 0.95,
     grade: 'middle',     // elementary | middle | high
     gradeNum: null,      // the actual school year, 3 to 12, if they signed in
+    sparks: 0,           // earned, never bought
+    owned: {},           // pet id -> level
+    pet: '',             // whichever one is helping right now
+    seenTopics: {},      // topics already rewarded, so the bonus is once each
+    hinted: {},          // question index -> true, one hint per question
     boardTerms: [],      // science words found on the student's own photo
     boardOff: {},        // the ones they switched off
     questions: [],
@@ -730,7 +735,7 @@
   var MAKE_LABEL = {
     book: 'Make my picture book', video: 'Make my video',
     project: 'Plan my project', report: 'Build my report outline',
-    chase: 'Start running'
+    chase: 'Start running', duel: 'Set up the duel'
   };
 
   function updateMakeButton() {
@@ -749,6 +754,8 @@
       $('make-sub').textContent = p ? p.title + ' — ' + p.days.toLowerCase() + '.' : 'A hands-on project about ' + name + '.';
     } else if (S.format === 'chase') {
       $('make-sub').textContent = 'Outrun it by answering questions about ' + name + '.';
+    } else if (S.format === 'duel') {
+      $('make-sub').textContent = 'Two players, one device, questions about ' + name + '.';
     } else {
       $('make-sub').textContent = 'A full writing plan for a report about ' + name + '.';
     }
@@ -1047,7 +1054,9 @@
     $('video-view').hidden = true;
     $('doc-view').hidden = true;
     $('chase-view').hidden = true;
+    $('duel-view').hidden = true;
     if (window.CHASE) window.CHASE.stop();
+    if (window.DUEL) window.DUEL.stop();
     $('deeper').hidden = true;
     $('quiz').hidden = true;
     $('exports').hidden = true;
@@ -1070,11 +1079,17 @@
       if (S.board.format === 'book') showBook();
       else if (S.board.format === 'video') showVideo();
       else if (S.board.format === 'chase') showChase();
+      else if (S.board.format === 'duel') showDuel();
       else showDoc();
       buildQuiz();
       showDeeper();
-      $('quiz').hidden = S.board.format === 'chase';
-      $('exports').hidden = S.board.format === 'chase';
+      if (!S.seenTopics[S.board.topic.id]) {
+        S.seenTopics[S.board.topic.id] = true;
+        earn(window.PETS.earn.newTopic, 'a new topic: ' + S.board.topic.title.toLowerCase());
+      }
+      var isGame = S.board.format === 'chase' || S.board.format === 'duel';
+      $('quiz').hidden = isGame;
+      $('exports').hidden = isGame;
     }
 
     if (reduceMotion || document.hidden) { reveal(); return; }
@@ -1092,6 +1107,7 @@
 
   /* ── the picture book ──────────────────────────────── */
   function showBook() {
+    S.finishedBook = false;
     $('book-view').hidden = false;
     $('step4-sub').textContent = S.board.items.length + '-page picture book about ' + S.board.topic.title.toLowerCase() + '. Use the arrow keys to turn pages.';
     renderPage();
@@ -1135,6 +1151,10 @@
 
   function turn(d) {
     var n = S.board.items.length;
+    if (d > 0 && S.page === n - 1 && !S.finishedBook) {
+      S.finishedBook = true;
+      earn(window.PETS.earn.finishedLesson, 'reading to the last page');
+    }
     S.page = (S.page + d + n) % n;
     stopSpeech();
     renderPage();
@@ -1295,7 +1315,8 @@
     var back = front.id === 'layer-a' ? $('layer-b') : $('layer-a');
 
     back.innerHTML = slideHtml(it);
-    back.classList.remove('is-out');
+    back.classList.remove('is-out', 'push-left', 'push-right');
+    back.classList.add(V.i % 2 ? 'push-left' : 'push-right');
     void back.offsetWidth;                /* restart the entry animation */
     back.classList.add('is-front');
     front.classList.remove('is-front');
@@ -1431,6 +1452,7 @@
     V.t = S.board.items[V.i].dur;
     updateBar();
     $('play-btn').textContent = '↺ Watch again';
+    earn(window.PETS.earn.finishedLesson, 'watching it to the end');
     $('captions').innerHTML = '<span class="cw is-said">That is the end. Try the quick check below, or press play to watch it again.</span>';
     say('Video finished.');
   }
@@ -1677,6 +1699,9 @@
       reduced: reduceMotion,
       calm: $('chase-calm').checked,
       onEnd: function (result) {
+        var prize = result.right * window.PETS.earn.rightAnswer +
+          (result.escaped ? window.PETS.earn.escaped : 0);
+        if (prize) earn(prize, result.escaped ? 'escaping the monster' : 'the questions you got right');
         S.missed = result.wrong.filter(function (q) { return typeof q.teach === 'number'; });
         $('chase-learn').hidden = !S.missed.length;
         say(result.escaped ? 'You escaped.' : 'It caught you.');
@@ -1778,6 +1803,316 @@
     this.textContent = open ? 'Hide it again' : 'Show me';
     if (open) { goTo($('deeper')); say('Showing the deeper notes.'); }
   });
+
+  /* ── sparks and pets ───────────────────────────────────
+     Sparks are earned by doing science. There is no way to buy them and nothing here touches
+     real money. A pet's level decides how much of a hint it can give, and every hint is built
+     from the same checked library data as the lesson, so a pet cannot invent an answer. */
+
+  var SPARK_KEY = 'thepicscience.sparks';
+  var PET_KEY = 'thepicscience.pets';
+
+  function loadSparks() {
+    try {
+      var raw = window.localStorage.getItem(SPARK_KEY);
+      S.sparks = Math.max(0, parseInt(raw, 10) || 0);
+      var saved = JSON.parse(window.localStorage.getItem(PET_KEY) || 'null');
+      if (saved && saved.owned) {
+        S.owned = saved.owned;
+        S.pet = saved.pet && saved.owned[saved.pet] ? saved.pet : '';
+        S.seenTopics = saved.seenTopics || {};
+      }
+    } catch (e) { /* private mode: play on, just do not remember */ }
+    var first = window.PETS.starter;
+    if (!S.owned[first]) S.owned[first] = 1;        /* the starter is always yours */
+    if (!S.pet || !S.owned[S.pet]) S.pet = first;
+  }
+
+  function saveSparks() {
+    try {
+      window.localStorage.setItem(SPARK_KEY, String(S.sparks));
+      window.localStorage.setItem(PET_KEY, JSON.stringify({
+        owned: S.owned, pet: S.pet, seenTopics: S.seenTopics
+      }));
+    } catch (e) {}
+  }
+
+  function earn(amount, reason) {
+    if (!amount) return;
+    S.sparks += amount;
+    saveSparks();
+    paintSparks(true);
+    toast('+' + amount + ' sparks — ' + reason);
+    say('Earned ' + amount + ' sparks for ' + reason + '. You now have ' + S.sparks + '.');
+  }
+
+  function paintSparks(pop) {
+    $('spark-count').textContent = S.sparks;
+    var chip = $('spark-chip');
+    chip.setAttribute('aria-label', S.sparks + ' sparks earned');
+    if (pop) {
+      chip.classList.remove('is-pop');
+      void chip.offsetWidth;
+      chip.classList.add('is-pop');
+    }
+    renderShop();
+  }
+
+  function activePet() {
+    var p = window.PETS.byId(S.pet) || window.PETS.byId(window.PETS.starter);
+    return { def: p, level: S.owned[p.id] || 1 };
+  }
+
+  function renderActivePet() {
+    var cur = activePet();
+    var max = window.PETS.maxLevel;
+    var r = window.PETS.rarity(cur.def.rarity);
+    $('shop-active').hidden = false;
+    $('active-pet-art').innerHTML = window.PETS.draw(cur.def.id, cur.level);
+    $('active-pet-name').innerHTML = esc(cur.def.name) +
+      ' <span class="pet-kind is-' + cur.def.rarity + '">' + esc(r.name) + '</span>' +
+      ' <span class="pet-kind is-' + cur.def.type + '">' +
+      (cur.def.type === 'attack' ? '⚔ attacker' : '🛡 defender') + '</span>';
+
+    var pips = '';
+    for (var i = 1; i <= max; i++) pips += '<span class="pip' + (i <= cur.level ? ' is-on' : '') + '"></span>';
+    $('active-pet-level').innerHTML = pips + '<span class="pip-label">level ' + cur.level + ' of ' + max + '</span>';
+
+    var n = window.PETS.rungs(cur.def, cur.level);
+    $('active-pet-can').innerHTML = esc(cur.def.name + ' ' + window.PETS.ladder.slice(0, n).join(', ')) + '.<br>' +
+      esc(window.PETS.summary(cur.def, cur.level)) +
+      (r.bonus ? ' <b>' + esc(r.name) + ' gives a +' + r.bonus + ' head start.</b>' : '');
+
+    var btn = $('level-btn');
+    if (cur.level >= max) {
+      btn.disabled = true;
+      btn.textContent = 'Fully grown';
+    } else {
+      var cost = window.PETS.levelCost(cur.level);
+      btn.disabled = S.sparks < cost;
+      btn.textContent = 'Level up for ' + cost + ' ⚡';
+    }
+  }
+
+  function renderShop() {
+    if (!window.PETS) return;
+    renderActivePet();
+
+    var owned = window.PETS.list.filter(function (p) { return S.owned[p.id]; }).length;
+    var total = window.PETS.list.length;
+    $('egg-count').textContent = owned + ' of ' + total + ' pets found';
+    $('egg-btn').disabled = S.sparks < window.PETS.eggPrice || owned >= total;
+    $('egg-btn').textContent = owned >= total
+      ? 'You have found every pet'
+      : 'Hatch an egg — ' + window.PETS.eggPrice + ' ⚡';
+
+    $('egg-odds').innerHTML = window.PETS.rarities.map(function (r) {
+      var have = window.PETS.list.filter(function (p) { return p.rarity === r.id && S.owned[p.id]; }).length;
+      var all = window.PETS.list.filter(function (p) { return p.rarity === r.id; }).length;
+      return '<li><span class="odds-dot is-' + r.id + '"></span>' +
+        '<b>' + esc(r.name) + '</b><span class="odds-pct">' + r.chance + '%</span>' +
+        '<span class="odds-have">' + have + '/' + all + '</span></li>';
+    }).join('');
+
+    $('pet-grid').innerHTML = window.PETS.list.map(function (p) {
+      var level = S.owned[p.id] || 0;
+      var have = level > 0;
+      var active = S.pet === p.id;
+      if (!have) {
+        return '<li class="pet-card is-locked"><div class="pet-stage small">' +
+          '<span class="pet-unknown">?</span></div>' +
+          '<p class="pet-card-name">Not found yet<span class="pet-kind is-' + p.rarity + '">' +
+          esc(window.PETS.rarity(p.rarity).name) + '</span></p></li>';
+      }
+      return '<li class="pet-card is-owned' + (active ? ' is-active' : '') + '">' +
+        '<div class="pet-stage small">' + window.PETS.draw(p.id, level) + '</div>' +
+        '<p class="pet-card-name">' + esc(p.name) +
+        '<span class="pet-kind is-' + p.rarity + '">' + esc(window.PETS.rarity(p.rarity).name) + '</span></p>' +
+        '<p class="pet-card-blurb">' + (p.type === 'attack' ? '⚔ attacker' : '🛡 defender') +
+        ' · level ' + level + '</p>' +
+        '<button type="button" class="btn ' + (active ? 'btn-quiet' : 'btn-primary') +
+        '" data-pet="' + p.id + '"' + (active ? ' disabled' : '') + '>' +
+        (active ? 'Helping you now' : 'Pick ' + esc(p.name)) + '</button></li>';
+    }).join('');
+
+    $('pet-grid').querySelectorAll('[data-pet]').forEach(function (b) {
+      b.addEventListener('click', function () { choosePet(b.dataset.pet); });
+    });
+
+    $('earn-list').innerHTML = [
+      'A right answer in the quick check: +' + window.PETS.earn.rightAnswer,
+      'Every question right in one round: +' + window.PETS.earn.perfectRound + ' on top',
+      'Getting a practice question right after missing it: +' + window.PETS.earn.fixedMistake,
+      'Reaching the end of a lesson: +' + window.PETS.earn.finishedLesson,
+      'Your first lesson on a new topic: +' + window.PETS.earn.newTopic,
+      'Escaping the monster: +' + window.PETS.earn.escaped,
+      'Winning a duel: +' + window.PETS.earn.wonDuel
+    ].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+  }
+
+  function choosePet(id) {
+    if (!S.owned[id]) return;
+    S.pet = id;
+    saveSparks();
+    renderShop();
+    toast(window.PETS.byId(id).name + ' is helping you now');
+  }
+
+  /* ── eggs ─────────────────────────────────────────────
+     The odds are printed on the machine before you spend anything, and the roll can only
+     ever give you a pet you do not already have. */
+  $('egg-btn').addEventListener('click', function () {
+    if (S.sparks < window.PETS.eggPrice) { toast('You need ' + window.PETS.eggPrice + ' sparks'); return; }
+    var result = window.PETS.hatch(S.owned);
+    if (!result) { toast('You already have every pet'); return; }
+
+    S.sparks -= window.PETS.eggPrice;
+    S.owned[result.pet.id] = 1;
+    saveSparks();
+
+    var r = window.PETS.rarity(result.pet.rarity);
+    var box = $('egg-result');
+    box.hidden = false;
+    box.className = 'egg-result is-' + result.pet.rarity;
+    box.innerHTML = '<div class="egg-pop">' + window.PETS.draw(result.pet.id, 1) + '</div>' +
+      '<div><p class="egg-rarity">' + esc(r.name) + '</p>' +
+      '<p class="egg-name">' + esc(result.pet.name) + '</p>' +
+      '<p class="hint">' + (result.pet.type === 'attack' ? '⚔ An attacker' : '🛡 A defender') +
+      (r.bonus ? ' with a +' + r.bonus + ' level head start' : '') + '.</p>' +
+      '<button type="button" class="btn btn-primary" id="egg-use">Make ' + esc(result.pet.name) + ' my helper</button></div>';
+    box.querySelector('#egg-use').addEventListener('click', function () { choosePet(result.pet.id); });
+
+    paintSparks(true);
+    toast(r.name + '! You got ' + result.pet.name);
+    say('The egg hatched a ' + r.name + ' pet: ' + result.pet.name + '.');
+  });
+
+  $('level-btn').addEventListener('click', function () {
+    var cur = activePet();
+    if (cur.level >= window.PETS.maxLevel) return;
+    var cost = window.PETS.levelCost(cur.level);
+    if (S.sparks < cost) { toast('Not enough sparks yet'); return; }
+    S.sparks -= cost;
+    S.owned[cur.def.id] = cur.level + 1;
+    saveSparks();
+    paintSparks(true);
+    toast(cur.def.name + ' is level ' + (cur.level + 1) + '!');
+    say(cur.def.name + ' reached level ' + (cur.level + 1) + ' and can now tell you more.');
+  });
+
+  $('shop-toggle').addEventListener('click', function () {
+    var body = $('shop-body');
+    var open = body.hidden;
+    body.hidden = !open;
+    this.setAttribute('aria-expanded', String(open));
+    this.textContent = open ? 'Close the shop' : 'Open the shop';
+    if (open) goTo($('shop'));
+  });
+
+  $('spark-chip').addEventListener('click', function () {
+    goTo($('shop'));
+    if ($('shop-body').hidden) $('shop-toggle').click();
+  });
+
+  /* ── the hint itself ──────────────────────────────── */
+
+  function firstUnanswered() {
+    for (var i = 0; i < S.questions.length; i++) {
+      if (!$('quiz-form').querySelector('input[name="q' + i + '"]:checked')) return i;
+    }
+    return S.questions.length ? 0 : -1;
+  }
+
+  $('hint-btn').addEventListener('click', function () {
+    if (!S.board || !S.questions || !S.questions.length) { toast('Make a lesson first'); return; }
+    var qi = firstUnanswered();
+    if (qi < 0) return;
+    if (S.hinted[qi]) { toast('Your pet already helped with that one'); return; }
+
+    var cur = activePet();
+    var lines = window.PETS.hints(S.questions[qi], S.board.topic, cur.def, cur.level);
+    S.hinted[qi] = true;
+
+    var box = document.createElement('div');
+    box.className = 'pet-hint';
+    box.innerHTML = '<div class="pet-hint-who">' + window.PETS.draw(cur.def.id, cur.level) +
+      '<span>' + esc(cur.def.name) + ' says</span></div>' +
+      '<div class="pet-hint-lines">' + lines.map(function (l) {
+        return '<p><span aria-hidden="true">' + l.icon + '</span>' + esc(l.text) + '</p>';
+      }).join('') + '</div>' +
+      (function () {
+        var now = window.PETS.rungs(cur.def, cur.level);
+        if (now >= window.PETS.ladder.length) return '';
+        for (var L = cur.level + 1; L <= window.PETS.maxLevel; L++) {
+          if (window.PETS.rungs(cur.def, L) > now) {
+            return '<p class="pet-hint-more">At level ' + L + ', ' + esc(cur.def.name) + ' ' +
+              esc(window.PETS.ladder[now].replace(/^and /, '')) + '.</p>';
+          }
+        }
+        return '';
+      })();
+
+    var fs = $('quiz-form').querySelectorAll('.q')[qi];
+    var old = fs.querySelector('.pet-hint');
+    if (old) old.remove();
+    fs.appendChild(box);
+    goTo(fs);
+    say(cur.def.name + ' gave you a hint on question ' + (qi + 1) + '.');
+  });
+
+  /* ── duelling a friend ─────────────────────────────────
+     Same device, taking turns. app.js supplies the questions and the pets; duel.js owns the
+     turn order, the hearts and the screens. */
+
+  function ownedPetOptions(selected) {
+    return window.PETS.list.filter(function (p) { return S.owned[p.id]; }).map(function (p) {
+      var lv = S.owned[p.id];
+      return '<option value="' + p.id + '"' + (p.id === selected ? ' selected' : '') + '>' +
+        esc(p.name) + ' · L' + lv + ' · ' + window.PETS.rarity(p.rarity).name +
+        ' · ' + (p.type === 'attack' ? 'attacker' : 'defender') + '</option>';
+    }).join('');
+  }
+
+  function showDuel() {
+    $('duel-view').hidden = false;
+    $('duel-setup').hidden = false;
+    $('duel-board').hidden = true;
+    $('step4-sub').textContent = 'Two players on this one device. Pick a question to send, ' +
+      'then hand it over. There is no internet match — that would need a server.';
+    $('p1-pet').innerHTML = ownedPetOptions(S.pet);
+    var others = window.PETS.list.filter(function (p) { return S.owned[p.id] && p.id !== S.pet; });
+    $('p2-pet').innerHTML = ownedPetOptions(others.length ? others[0].id : S.pet);
+  }
+
+  function beginDuel() {
+    var pool = chaseQuestions(S.board.topic);
+    var pick = function (sel, fallbackName) {
+      var def = window.PETS.byId($(sel).value) || window.PETS.byId('bubble');
+      return { def: def, level: S.owned[def.id] || 1 };
+    };
+    var a = pick('p1-pet'), b = pick('p2-pet');
+
+    $('duel-setup').hidden = true;
+    $('duel-board').hidden = false;
+
+    window.DUEL.start({
+      el: { hp: $('duel-hp'), stage: $('duel-stage') },
+      topic: S.board.topic,
+      questions: pool,
+      players: [
+        { name: ($('p1-name').value || 'Player 1').slice(0, 14), pet: a.def, level: a.level },
+        { name: ($('p2-name').value || 'Player 2').slice(0, 14), pet: b.def, level: b.level }
+      ],
+      onEnd: function (r) {
+        earn(window.PETS.earn.wonDuel, r.winner.name + ' winning the duel');
+        say(r.winner.name + ' won the duel after ' + r.rounds + ' rounds.');
+      },
+      onAgain: function () { showDuel(); }
+    });
+    say('Duel started. ' + $('p1-name').value + ' picks the first question.');
+  }
+
+  $('duel-start').addEventListener('click', beginDuel);
 
   /* ── the quick check ───────────────────────────────────
      Questions come from two places: the library's own three, and — when the photo gave us
@@ -2031,6 +2366,7 @@
         }).join('') + '</div><p class="q-why" data-why="' + qi + '" hidden></p></fieldset>';
     }).join('');
 
+    S.hinted = {};
     $('quiz-score').textContent = '';
     $('quiz-reset').hidden = true;
     $('quiz-check').disabled = false;
@@ -2055,6 +2391,17 @@
       if (picked && Number(picked.value) === q.c) score++;
       else if (picked) missed.push(q);
     });
+
+    if (answered) {
+      var gained = score * window.PETS.earn.rightAnswer;
+      if (score === qs.length && qs.length > 1) gained += window.PETS.earn.perfectRound;
+      var fixed = qs.filter(function (q, i) {
+        var picked = $('quiz-form').querySelector('input[name="q' + i + '"]:checked');
+        return q.source === 'practice' && picked && Number(picked.value) === q.c;
+      }).length;
+      gained += fixed * window.PETS.earn.fixedMistake;
+      if (gained) earn(gained, score + ' right' + (fixed ? ' and ' + fixed + ' fixed' : ''));
+    }
 
     if (!answered) {
       $('quiz-score').textContent = 'Pick an answer for at least one question first — the right answers are shown above now anyway.';
@@ -2313,7 +2660,9 @@
     $('video-view').hidden = true;
     $('doc-view').hidden = true;
     $('chase-view').hidden = true;
+    $('duel-view').hidden = true;
     if (window.CHASE) window.CHASE.stop();
+    if (window.DUEL) window.DUEL.stop();
     $('deeper').hidden = true;
     $('quiz').hidden = true;
     $('exports').hidden = true;
@@ -2334,6 +2683,8 @@
   window.addEventListener('beforeunload', stopSpeech);
 
   /* ── boot ──────────────────────────────────────────── */
+  loadSparks();
+  paintSparks(false);
   renderTopics('');
   renderGradeButtons();
   var saved = readGrade();
