@@ -855,6 +855,123 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 @keyframes spark-pop { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
 .spark-icon { font-size: .9em; }
 
+/* ── your profile ──
+   The chip sits in the top right corner. The avatar is SVG built in profile.js, so every
+   cosmetic works in both themes without a second copy. */
+
+.me-chip {
+  margin-left: .4rem; font: inherit; cursor: pointer;
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .25rem .8rem .25rem .25rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+  transition: border-color var(--t), background var(--t);
+}
+.me-chip:hover, .me-chip[aria-expanded="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.me-chip-art { width: 2rem; height: 2rem; display: block; flex: 0 0 auto; }
+.me-chip-art .pf-svg { width: 100%; height: 100%; display: block; }
+.me-chip-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.me-chip-name { font-size: .85rem; font-weight: 700; }
+.me-chip-title { font-size: .7rem; color: var(--ink-2); }
+
+.profile { border-left: 4px solid var(--accent); }
+.profile-head { display: flex; flex-wrap: wrap; gap: 1.4rem; align-items: center; justify-content: space-between; }
+.profile-card { display: flex; align-items: center; gap: 1rem; min-width: 15rem; }
+.profile-avatar { width: 6.5rem; height: 6.5rem; flex: 0 0 auto; }
+.profile-avatar .pf-svg { width: 100%; height: 100%; display: block; }
+.profile-id { min-width: 0; }
+.profile-name {
+  font-size: 1.25rem; font-weight: 700; padding: .3rem .6rem; max-width: 12rem;
+  background: transparent; border-color: transparent;
+}
+.profile-name:hover { border-color: var(--line); }
+.profile-name:focus { background: var(--surface); border-color: var(--accent); }
+.profile-title { color: var(--accent); font-weight: 600; font-size: .9rem; padding: 0 .65rem; }
+.profile-id .hint { padding: 0 .65rem; }
+
+.profile-stats { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; padding: 0; }
+.profile-stats li {
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: .5rem .8rem; min-width: 6rem;
+}
+.profile-stats b { display: block; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.profile-stats span { font-size: .78rem; color: var(--ink-2); }
+
+.profile-locker { margin-top: 1.6rem; border-top: 1px solid var(--line); padding-top: 1.3rem; }
+.locker-head { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+
+.slot-tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1rem 0 .5rem; }
+.slot-tab {
+  font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
+  padding: .4rem .9rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  transition: all var(--t);
+}
+.slot-tab:hover { border-color: var(--accent); color: var(--ink); }
+.slot-tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.slot-tab .slot-dot { color: #e0a93c; font-weight: 700; }
+
+.locker-grid {
+  list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .8rem;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+}
+.locker-item {
+  border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface);
+  padding: .8rem; display: flex; flex-direction: column; gap: .5rem; text-align: center;
+}
+.locker-item.is-worn { border-color: var(--accent); background: var(--accent-soft); }
+.locker-item.is-locked { opacity: .92; }
+.locker-art { width: 4.5rem; height: 4.5rem; margin: 0 auto; }
+.locker-art .pf-svg { width: 100%; height: 100%; display: block; }
+.locker-art.is-text {
+  display: grid; place-items: center; width: auto; height: 3.4rem;
+  border-radius: var(--r-sm); background: var(--surface-2); font-weight: 700; font-size: .95rem;
+}
+.locker-name { font-weight: 700; font-size: .9rem; }
+.earned-flag {
+  display: inline-block; margin-left: .35rem; vertical-align: 1px;
+  font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: .1rem .4rem; border-radius: 999px;
+  background: color-mix(in srgb, #ffd36b 30%, transparent); color: #8a6616;
+  border: 1px solid #e0a93c;
+}
+.locker-item.is-earned { border-style: dashed; }
+.locker-item.is-earned.is-worn { border-style: solid; }
+.locker-item.is-earned .locker-art.is-text {
+  background: color-mix(in srgb, #ffd36b 16%, var(--surface-2));
+}
+.locker-blurb { font-size: .78rem; color: var(--ink-2); flex: 1 1 auto; }
+.locker-price { font-size: .82rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.locker-item .btn { width: 100%; font-size: .85rem; padding: .4rem .6rem; }
+
+/* ── cosmetic motion, only inside an avatar ── */
+.pf-svg .pf-turn { transform-origin: 50px 50px; animation: pf-turn 14s linear infinite; }
+.pf-svg .pf-pulse { animation: pf-pulse 2.4s ease-in-out infinite; }
+.pf-svg .pf-halo { animation: pf-float 3.2s ease-in-out infinite; }
+.pf-svg .pf-blink-led { animation: pf-pulse 1.4s steps(2, end) infinite; }
+.pf-svg .pf-rise { animation: pf-rise 6s ease-in-out infinite; }
+.pf-svg .pf-rise-2 { animation-duration: 8s; animation-delay: -2s; }
+.pf-svg .pf-rise-3 { animation-duration: 10s; animation-delay: -5s; }
+.pf-svg .pf-twinkle { animation: pf-pulse 3s ease-in-out infinite; }
+.pf-svg .pf-twinkle-1 { animation-delay: -1s; }
+.pf-svg .pf-twinkle-2 { animation-delay: -2s; }
+.pf-svg .pf-fizz { animation: pf-rise 2.6s ease-in-out infinite; }
+.pf-svg .pf-fizz-2 { animation-duration: 3.4s; animation-delay: -1.2s; }
+.pf-svg .pf-wave { animation: pf-wave 9s ease-in-out infinite; }
+.pf-svg .pf-orbit { transform-box: fill-box; transform-origin: center; animation: pf-turn 9s linear infinite; }
+
+@keyframes pf-turn { to { transform: rotate(360deg); } }
+@keyframes pf-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@keyframes pf-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+@keyframes pf-rise { 0% { transform: translateY(4px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(4px); } }
+@keyframes pf-wave { 0%, 100% { transform: translateX(-4px); } 50% { transform: translateX(4px); } }
+
+@media (max-width: 560px) {
+  .me-chip-text { display: none; }
+  .me-chip { padding: .25rem; }
+  .profile-avatar { width: 5rem; height: 5rem; }
+  .profile-stats li { flex: 1 1 6rem; min-width: 0; }
+}
+
 /* ── the pet shop ── */
 .shop { border-left: 4px solid #e0a93c; }
 .shop-head { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }

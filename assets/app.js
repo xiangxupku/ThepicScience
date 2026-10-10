@@ -52,6 +52,9 @@
     grade: 'middle',     // elementary | middle | high
     gradeNum: null,      // the actual school year, 3 to 12, if they signed in
     sparks: 0,           // earned, never bought
+    lifetime: 0,         // every spark ever earned, for the profile
+    tally: null,         // { escapes, duels } — what the earned titles are judged on
+    profile: null,       // { name, worn: slot -> item id, items: 'slot:id' -> true }
     owned: {},           // pet id -> level
     pet: '',             // whichever one is helping right now
     seenTopics: {},      // topics already rewarded, so the bonus is once each
@@ -1701,7 +1704,9 @@
       onEnd: function (result) {
         var prize = result.right * window.PETS.earn.rightAnswer +
           (result.escaped ? window.PETS.earn.escaped : 0);
+        if (result.escaped) { S.tally.escapes++; saveProfile(); }
         if (prize) earn(prize, result.escaped ? 'escaping the monster' : 'the questions you got right');
+        grantEarnedTitles(true);
         S.missed = result.wrong.filter(function (q) { return typeof q.teach === 'number'; });
         $('chase-learn').hidden = !S.missed.length;
         say(result.escaped ? 'You escaped.' : 'It caught you.');
@@ -1811,6 +1816,7 @@
 
   var SPARK_KEY = 'thepicscience.sparks';
   var PET_KEY = 'thepicscience.pets';
+  var PROFILE_KEY = 'thepicscience.profile';
 
   function loadSparks() {
     try {
@@ -1826,6 +1832,43 @@
     var first = window.PETS.starter;
     if (!S.owned[first]) S.owned[first] = 1;        /* the starter is always yours */
     if (!S.pet || !S.owned[S.pet]) S.pet = first;
+    loadProfile();
+  }
+
+  function loadProfile() {
+    var p = null;
+    try { p = JSON.parse(window.localStorage.getItem(PROFILE_KEY) || 'null'); } catch (e) {}
+    S.profile = {
+      name: (p && typeof p.name === 'string' ? p.name : '').slice(0, window.PROFILE.maxName),
+      worn: (p && p.worn) || {},
+      items: (p && p.items) || {}
+    };
+    S.lifetime = Math.max(S.sparks, (p && parseInt(p.lifetime, 10)) || 0);
+    S.tally = {
+      escapes: (p && parseInt(p.tally && p.tally.escapes, 10)) || 0,
+      duels: (p && parseInt(p.tally && p.tally.duels, 10)) || 0
+    };
+    /* the free starters are always yours, even if the save file predates them */
+    window.PROFILE.freeKeys().forEach(function (k) { S.profile.items[k] = true; });
+    window.PROFILE.slots.forEach(function (sl) {
+      var id = S.profile.worn[sl.id];
+      if (!id || !S.profile.items[window.PROFILE.key(sl.id, id)]) {
+        S.profile.worn[sl.id] = window.PROFILE.defaults[sl.id];
+      }
+    });
+  }
+
+  function saveProfile() {
+    try {
+      window.localStorage.setItem(PROFILE_KEY, JSON.stringify({
+        name: S.profile.name, worn: S.profile.worn,
+        items: S.profile.items, lifetime: S.lifetime, tally: S.tally
+      }));
+    } catch (e) {}
+  }
+
+  function displayName() {
+    return S.profile && S.profile.name ? S.profile.name : 'You';
   }
 
   function saveSparks() {
@@ -1840,7 +1883,9 @@
   function earn(amount, reason) {
     if (!amount) return;
     S.sparks += amount;
+    S.lifetime += amount;
     saveSparks();
+    saveProfile();
     paintSparks(true);
     toast('+' + amount + ' sparks — ' + reason);
     say('Earned ' + amount + ' sparks for ' + reason + '. You now have ' + S.sparks + '.');
@@ -1856,6 +1901,7 @@
       chip.classList.add('is-pop');
     }
     renderShop();
+    renderProfile();
   }
 
   function activePet() {
@@ -2014,6 +2060,217 @@
     if ($('shop-body').hidden) $('shop-toggle').click();
   });
 
+  /* ── your profile ──────────────────────────────
+     The chip in the top right corner opens a locker of things to wear. Everything in it is
+     bought with earned sparks and none of it touches a lesson, a question or a hint. */
+
+  var LOCKER_SLOT = 'skin';
+
+  function owns(slot, id) {
+    return !!S.profile.items[window.PROFILE.key(slot, id)];
+  }
+
+  function paintProfileChip() {
+    $('me-chip-art').innerHTML = window.PROFILE.draw(S.profile.worn);
+    $('me-chip-name').textContent = displayName();
+    $('me-chip-title').textContent = window.PROFILE.titleText(S.profile.worn.title);
+    $('me-chip').setAttribute('aria-label',
+      'Your profile. ' + displayName() + ', ' + window.PROFILE.titleText(S.profile.worn.title) + '.');
+  }
+
+  /* Every number an earned title can be judged on, counted in one place. */
+  function achieveStats() {
+    var petLevels = window.PETS.list.map(function (p) { return S.owned[p.id] || 0; });
+    var looks = Object.keys(S.profile.items).filter(function (k) {
+      var it = window.PROFILE.byKey(k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':') + 1));
+      return it && it.cost > 0;
+    }).length;
+    return {
+      topics: Object.keys(S.seenTopics).length,
+      topicTotal: window.TOPICS.length,
+      pets: petLevels.filter(function (l) { return l > 0; }).length,
+      petTotal: window.PETS.list.length,
+      petMax: Math.max.apply(null, petLevels.concat([0])),
+      escapes: S.tally.escapes,
+      duels: S.tally.duels,
+      lifetime: S.lifetime,
+      looks: looks,
+      lookTotal: window.PROFILE.buyable()
+    };
+  }
+
+  /* A title is granted the moment the numbers say so, and announced once. */
+  function grantEarnedTitles(announce) {
+    var got = window.PROFILE.earnedTitles(achieveStats());
+    var fresh = [];
+    window.PROFILE.achievements.forEach(function (ach) {
+      var k = window.PROFILE.key('title', ach.id);
+      if (got[ach.id] && !S.profile.items[k]) {
+        S.profile.items[k] = true;
+        fresh.push(ach);
+      }
+    });
+    if (!fresh.length) return [];
+    saveProfile();
+    if (announce) {
+      fresh.forEach(function (ach) {
+        toast('Title earned: ' + ach.name);
+        say('You earned a new title: ' + ach.name + '. ' + ach.need + '.');
+      });
+    }
+    return fresh;
+  }
+
+  function titlesEarned() {
+    return window.PROFILE.achievements.filter(function (ach) {
+      return S.profile.items[window.PROFILE.key('title', ach.id)];
+    }).length;
+  }
+
+  function profileStats() {
+    var petsFound = window.PETS.list.filter(function (p) { return S.owned[p.id]; }).length;
+    var wornCount = achieveStats().looks;
+    var topics = Object.keys(S.seenTopics).length;
+    return [
+      [S.sparks, 'sparks to spend'],
+      [S.lifetime, 'earned in total'],
+      [topics + ' / ' + window.TOPICS.length, 'topics learned'],
+      [petsFound + ' / ' + window.PETS.list.length, 'pets found'],
+      [wornCount + ' / ' + window.PROFILE.buyable(), 'looks unlocked'],
+      [titlesEarned() + ' / ' + window.PROFILE.achievements.length, 'titles earned']
+    ];
+  }
+
+  function renderProfile() {
+    if (!S.profile) return;
+    grantEarnedTitles(true);
+    paintProfileChip();
+    if ($('profile').hidden) return;
+
+    $('profile-avatar').innerHTML = window.PROFILE.draw(S.profile.worn);
+    if ($('profile-name').value !== S.profile.name) $('profile-name').value = S.profile.name;
+    $('profile-title').textContent = window.PROFILE.titleText(S.profile.worn.title);
+
+    $('profile-stats').innerHTML = profileStats().map(function (st) {
+      return '<li><b>' + esc(String(st[0])) + '</b><span>' + esc(st[1]) + '</span></li>';
+    }).join('');
+
+    var bought = achieveStats().looks;
+    $('locker-owned').textContent = bought + ' of ' + window.PROFILE.buyable() +
+      ' unlocked. You have ' + S.sparks + ' spark' + (S.sparks === 1 ? '' : 's') + ' to spend.';
+
+    $('slot-tabs').innerHTML = window.PROFILE.slots.map(function (sl) {
+      var items = window.PROFILE.bySlot(sl.id);
+      var left = items.filter(function (it) { return it.cost > 0 && !owns(sl.id, it.id); }).length;
+      if (sl.id === 'title') {
+        left += window.PROFILE.achievements.filter(function (ach) {
+          return !owns('title', ach.id);
+        }).length;
+      }
+      return '<button type="button" class="slot-tab" role="tab" data-slot="' + sl.id + '" ' +
+        'aria-selected="' + (sl.id === LOCKER_SLOT) + '">' + esc(sl.name) +
+        (left ? ' <span class="slot-dot">' + left + '</span>' : '') + '</button>';
+    }).join('');
+    $('slot-tabs').querySelectorAll('[data-slot]').forEach(function (b) {
+      b.addEventListener('click', function () { LOCKER_SLOT = b.dataset.slot; renderProfile(); });
+    });
+
+    var slot = window.PROFILE.slots.filter(function (sl) { return sl.id === LOCKER_SLOT; })[0];
+    $('slot-note').textContent = slot ? slot.note : '';
+
+    $('locker-grid').innerHTML = window.PROFILE.bySlot(LOCKER_SLOT).map(function (it) {
+      var have = owns(it.slot, it.id);
+      var worn = S.profile.worn[it.slot] === it.id;
+      /* preview the item on your own avatar, so you see it before you pay */
+      var preview = {};
+      for (var k in S.profile.worn) preview[k] = S.profile.worn[k];
+      preview[it.slot] = it.id;
+
+      var art = it.slot === 'title'
+        ? '<div class="locker-art is-text">' + esc(it.name) + '</div>'
+        : '<div class="locker-art">' + window.PROFILE.draw(preview) + '</div>';
+
+      var action, price;
+      if (worn) {
+        action = '<button type="button" class="btn btn-quiet" disabled>Wearing this</button>';
+      } else if (have) {
+        action = '<button type="button" class="btn btn-primary" data-wear="' + it.id + '">Wear it</button>';
+      } else if (it.earned) {
+        action = '<button type="button" class="btn btn-quiet" disabled>Not yet earned</button>';
+      } else {
+        action = '<button type="button" class="btn btn-primary" data-buy="' + it.id + '"' +
+          (S.sparks < it.cost ? ' disabled' : '') + '>Buy for ' + it.cost + ' ⚡</button>';
+      }
+
+      if (it.earned) price = have ? (worn ? 'On you now' : 'Earned') : 'Cannot be bought';
+      else price = have ? (worn ? 'On you now' : 'Yours') : it.cost + ' ⚡';
+
+      return '<li class="locker-item' + (worn ? ' is-worn' : '') + (have ? '' : ' is-locked') +
+        (it.earned ? ' is-earned' : '') + '">' +
+        art +
+        '<p class="locker-name">' + esc(it.name) +
+        (it.earned ? '<span class="earned-flag">earned</span>' : '') + '</p>' +
+        '<p class="locker-blurb">' + esc(it.blurb) + '</p>' +
+        '<p class="locker-price">' + esc(price) + '</p>' +
+        action + '</li>';
+    }).join('');
+
+    $('locker-grid').querySelectorAll('[data-wear]').forEach(function (b) {
+      b.addEventListener('click', function () { wear(LOCKER_SLOT, b.dataset.wear); });
+    });
+    $('locker-grid').querySelectorAll('[data-buy]').forEach(function (b) {
+      b.addEventListener('click', function () { buyLook(LOCKER_SLOT, b.dataset.buy); });
+    });
+  }
+
+  function wear(slot, id) {
+    if (!owns(slot, id)) return;
+    S.profile.worn[slot] = id;
+    saveProfile();
+    renderProfile();
+    var it = window.PROFILE.byKey(slot, id);
+    if (it) toast(it.name + ' — on you now');
+  }
+
+  function buyLook(slot, id) {
+    var it = window.PROFILE.byKey(slot, id);
+    if (!it || owns(slot, id)) return;
+    if (S.sparks < it.cost) { toast('You need ' + it.cost + ' sparks for that'); return; }
+    S.sparks -= it.cost;
+    S.profile.items[window.PROFILE.key(slot, id)] = true;
+    S.profile.worn[slot] = id;
+    saveSparks();
+    saveProfile();
+    paintSparks(true);
+    renderProfile();
+    toast('Unlocked ' + it.name + ' — ' + S.sparks + ' sparks left');
+    say('Unlocked ' + it.name + ' for ' + it.cost + ' sparks. You have ' + S.sparks + ' left.');
+  }
+
+  function openProfile(open) {
+    $('profile').hidden = !open;
+    $('me-chip').setAttribute('aria-expanded', String(open));
+    if (open) { renderProfile(); goTo($('profile')); $('profile-name').focus(); }
+  }
+
+  $('me-chip').addEventListener('click', function () { openProfile($('profile').hidden); });
+  $('profile-close').addEventListener('click', function () {
+    openProfile(false);
+    $('me-chip').focus();
+  });
+
+  $('profile-name').addEventListener('input', function () {
+    S.profile.name = this.value.replace(/\s+/g, ' ').slice(0, window.PROFILE.maxName);
+    saveProfile();
+    paintProfileChip();
+  });
+  $('profile-name').addEventListener('blur', function () {
+    S.profile.name = S.profile.name.trim();
+    this.value = S.profile.name;
+    saveProfile();
+    paintProfileChip();
+  });
+
   /* ── the hint itself ──────────────────────────────── */
 
   function firstUnanswered() {
@@ -2079,6 +2336,7 @@
     $('duel-board').hidden = true;
     $('step4-sub').textContent = 'Two players on this one device. Pick a question to send, ' +
       'then hand it over. There is no internet match — that would need a server.';
+    if ($('p1-name').value === 'Player 1' && S.profile.name) $('p1-name').value = S.profile.name;
     $('p1-pet').innerHTML = ownedPetOptions(S.pet);
     var others = window.PETS.list.filter(function (p) { return S.owned[p.id] && p.id !== S.pet; });
     $('p2-pet').innerHTML = ownedPetOptions(others.length ? others[0].id : S.pet);
@@ -2104,7 +2362,10 @@
         { name: ($('p2-name').value || 'Player 2').slice(0, 14), pet: b.def, level: b.level }
       ],
       onEnd: function (r) {
+        S.tally.duels++;
+        saveProfile();
         earn(window.PETS.earn.wonDuel, r.winner.name + ' winning the duel');
+        grantEarnedTitles(true);
         say(r.winner.name + ' won the duel after ' + r.rounds + ' rounds.');
       },
       onAgain: function () { showDuel(); }
@@ -2685,6 +2946,7 @@
   /* ── boot ──────────────────────────────────────────── */
   loadSparks();
   paintSparks(false);
+  renderProfile();
   renderTopics('');
   renderGradeButtons();
   var saved = readGrade();

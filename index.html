@@ -23,6 +23,14 @@
       <span class="spark-icon" aria-hidden="true">⚡</span><span id="spark-count">0</span>
     </button>
     <button type="button" class="grade-chip" id="grade-chip" hidden></button>
+    <button type="button" class="me-chip" id="me-chip" aria-expanded="false" aria-controls="profile"
+            title="Your profile">
+      <span class="me-chip-art" id="me-chip-art" aria-hidden="true"></span>
+      <span class="me-chip-text">
+        <span class="me-chip-name" id="me-chip-name">You</span>
+        <span class="me-chip-title" id="me-chip-title"></span>
+      </span>
+    </button>
   </div>
 </header>
 
@@ -56,6 +64,38 @@
         <p class="hint">Tap one to start, or scroll down and photograph your own board instead.</p>
         <ul class="topic-list" id="learn-list"></ul>
       </div>
+    </div>
+  </section>
+
+  <section class="card profile" id="profile" aria-labelledby="profile-h" hidden>
+    <div class="profile-head">
+      <div class="profile-card">
+        <div class="profile-avatar" id="profile-avatar"></div>
+        <div class="profile-id">
+          <label class="visually-hidden" for="profile-name">Your display name</label>
+          <input class="input profile-name" id="profile-name" maxlength="16" autocomplete="off"
+                 spellcheck="false" placeholder="Your name">
+          <p class="profile-title" id="profile-title"></p>
+          <p class="hint">Only stored on this device. No account, nothing sent anywhere.</p>
+        </div>
+      </div>
+      <ul class="profile-stats" id="profile-stats"></ul>
+    </div>
+
+    <div class="profile-locker">
+      <div class="locker-head">
+        <div>
+          <p class="eyebrow">Locker</p>
+          <h2 id="profile-h">Spend sparks on how you look</h2>
+          <p class="step-sub" id="locker-owned"></p>
+        </div>
+        <button type="button" class="btn btn-quiet" id="profile-close">Close</button>
+      </div>
+      <p class="shop-note">None of this changes a lesson, a question or a hint. It is only ever
+        a look. Sparks are earned by answering science, never bought with real money.</p>
+      <div class="slot-tabs" id="slot-tabs" role="tablist" aria-label="What to change"></div>
+      <p class="hint" id="slot-note"></p>
+      <ul class="locker-grid" id="locker-grid"></ul>
     </div>
   </section>
 
@@ -541,6 +581,7 @@
 <script src="assets/projects.js"></script>
 <script src="assets/detail.js"></script>
 <script src="assets/pets.js"></script>
+<script src="assets/profile.js"></script>
 <script src="assets/chase.js"></script>
 <script src="assets/duel.js"></script>
 <script src="assets/app.js"></script>

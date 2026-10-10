@@ -270,3 +270,98 @@ console.log('problems:', dBad.length ? dBad.slice(0, 6).join('; ') : 'none');
 const counts = T.map(t => (D[t.id] ? D[t.id].formulas.length + '/' + D[t.id].mistakes.length + '/' + D[t.id].deeper.length : '-'));
 console.log('formulas/mistakes/deeper per topic:', counts.join('  '));
 if (dMissing.length || dBad.length) process.exitCode = 1;
+
+
+// ── the profile: cosmetics and the titles you cannot buy ──
+eval(fsp.readFileSync(__dirname + '/assets/pets.js', 'utf8'));
+eval(fsp.readFileSync(__dirname + '/assets/profile.js', 'utf8'));
+const PF = window.PROFILE;
+let pBad = [];
+
+// every slot needs exactly one free starter, and the default must be it
+PF.slots.forEach(sl => {
+  const items = PF.bySlot(sl.id);
+  if (!items.length) pBad.push(sl.id + ': no items');
+  const free = items.filter(it => it.cost === 0);
+  if (free.length !== 1) pBad.push(sl.id + ': ' + free.length + ' free starters, expected 1');
+  if (!PF.byKey(sl.id, PF.defaults[sl.id])) pBad.push(sl.id + ': default "' + PF.defaults[sl.id] + '" does not exist');
+  else if (PF.byKey(sl.id, PF.defaults[sl.id]).cost !== 0) pBad.push(sl.id + ': default is not free');
+  const seen = new Set();
+  items.forEach(it => {
+    if (seen.has(it.id)) pBad.push(sl.id + ': duplicate item id ' + it.id);
+    seen.add(it.id);
+    if (!it.name || !it.blurb) pBad.push(sl.id + '/' + it.id + ': missing name or blurb');
+    if (it.cost !== null && (typeof it.cost !== 'number' || it.cost < 0)) pBad.push(sl.id + '/' + it.id + ': bad cost');
+    if (it.earned && it.cost !== null) pBad.push(sl.id + '/' + it.id + ': an earned title must not have a price');
+  });
+});
+
+// every cosmetic has to draw, with unique gradient and clip ids
+const seenIds = new Set();
+let drawn = 0;
+PF.slots.forEach(sl => {
+  PF.bySlot(sl.id).forEach(it => {
+    const worn = Object.assign({}, PF.defaults);
+    worn[sl.id] = it.id;
+    const svg = PF.draw(worn);
+    drawn++;
+    if (!/^<svg /.test(svg) || !/<\/svg>$/.test(svg)) pBad.push(sl.id + '/' + it.id + ': not an svg');
+    if (/undefined|NaN|\[object/.test(svg)) pBad.push(sl.id + '/' + it.id + ': placeholder in the markup');
+    if ((svg.match(/</g) || []).length !== (svg.match(/>/g) || []).length) pBad.push(sl.id + '/' + it.id + ': unbalanced tags');
+    (svg.match(/ id="([^"]+)"/g) || []).forEach(m => {
+      const id = m.slice(5, -1);
+      if (seenIds.has(id)) pBad.push(sl.id + '/' + it.id + ': reused id ' + id);
+      seenIds.add(id);
+    });
+    // every url(#x) must point at an id defined in the same drawing
+    (svg.match(/url\(#([^)]+)\)/g) || []).forEach(m => {
+      const id = m.slice(5, -1);
+      if (svg.indexOf('id="' + id + '"') === -1) pBad.push(sl.id + '/' + it.id + ': url(#' + id + ') has no definition');
+    });
+    // colours must be real hex
+    (svg.match(/(?:fill|stroke|stop-color)="#[^"]*"/g) || []).forEach(c => {
+      const v = c.split('"')[1];
+      if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) pBad.push(sl.id + '/' + it.id + ': bad colour ' + v);
+    });
+  });
+});
+
+// the earned titles
+const maxed = {
+  topics: T.length, topicTotal: T.length,
+  pets: window.PETS.list.length, petTotal: window.PETS.list.length,
+  petMax: window.PETS.maxLevel, escapes: 99, duels: 99, lifetime: 999999,
+  looks: PF.buyable(), lookTotal: PF.buyable()
+};
+const nothing = {
+  topics: 0, topicTotal: T.length, pets: 1, petTotal: window.PETS.list.length,
+  petMax: 1, escapes: 0, duels: 0, lifetime: 0, looks: 0, lookTotal: PF.buyable()
+};
+const allGot = PF.earnedTitles(maxed), noneGot = PF.earnedTitles(nothing);
+PF.achievements.forEach(a => {
+  if (!a.name || !a.need || typeof a.test !== 'function') pBad.push('achievement ' + a.id + ': incomplete');
+  if (!allGot[a.id]) pBad.push('achievement ' + a.id + ': not granted at maximum');
+  if (noneGot[a.id]) pBad.push('achievement ' + a.id + ': granted at zero');
+  if (!PF.byKey('title', a.id)) pBad.push('achievement ' + a.id + ': not in the title slot');
+});
+
+// the legend has to need every other one: drop any single title and it must fall away
+PF.achievements.filter(a => a.id !== 'legend').forEach(a => {
+  const one = Object.assign({}, maxed);
+  if (a.id === 'scholar' || a.id === 'master') one.topics = 0;
+  else if (a.id === 'collector' || a.id === 'keeper') one.pets = 1;
+  else if (a.id === 'survivor') one.escapes = 0;
+  else if (a.id === 'duellist') one.duels = 0;
+  else if (a.id === 'baron') one.lifetime = 0;
+  else if (a.id === 'trainer') one.petMax = 1;
+  else if (a.id === 'stylist') one.looks = 0;
+  if (PF.earnedTitles(one).legend) pBad.push('the legend still fires without ' + a.id);
+});
+
+console.log('\n-- profile --');
+console.log('slots:', PF.slots.length, '| items:', PF.list.length,
+  '| buyable:', PF.buyable(), '| earned titles:', PF.achievements.length, '| drawn:', drawn);
+const totalCost = PF.list.filter(i => i.cost > 0).reduce((n, i) => n + i.cost, 0);
+console.log('sparks to unlock every look:', totalCost);
+console.log('problems:', pBad.length ? pBad.slice(0, 8).join('; ') : 'none');
+if (pBad.length) process.exitCode = 1;

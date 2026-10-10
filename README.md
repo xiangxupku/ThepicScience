@@ -116,6 +116,44 @@ the photo, the text reading and the narration all happen inside the browser.
    wrong answers cost one (or two against a strong attacker), and every question is retired
    once used. There is no internet matchmaking, because that would need a server.
 
+9. **🧑‍🔬 Your profile.** A chip in the top right corner of every page: your
+   avatar, your name and your title. Tap it and the locker opens.
+
+   You start with a plain lab coat and nothing else. **40 cosmetics** across six slots — who
+   you are, a hat, a frame, a background, a badge and a title — and 34 of them are bought
+   with sparks, 3,451 for the lot. Every one is drawn in code as SVG, so a hundred looks cost
+   nothing to download and all of them work in dark mode. The locker previews each item on
+   *your own* avatar before you pay for it.
+
+   The avatar is drawn in the same paper tone as the mystery egg on purpose. It is an
+   illustration of a scientist, not a picture of a person, so none of the cosmetics are
+   about how you actually look — they turn you into a cat, a robot, an astronaut, a dragon.
+
+   Your name is typed in, up to 16 characters, and kept in `localStorage` with everything
+   else. No account, no email, nothing sent anywhere. The duel picks it up automatically as
+   player one.
+
+10. **🏅 Titles you cannot buy.** Ten of them, and no amount of sparks will get you one.
+    Each waits until you have actually done the thing, then arrives with a message:
+
+    | Title | How you get it |
+    | --- | --- |
+    | Scholar | Learn 5 different topics |
+    | Collector | Find 10 pets |
+    | Survivor | Escape the monster 3 times |
+    | Duellist | Win 5 duels |
+    | Spark Baron | Earn 1,000 sparks in total |
+    | Pet Trainer | Raise any pet to level 20 |
+    | Pet Master | Find all 50 pets |
+    | Walking Wardrobe | Unlock every look in the locker |
+    | **Master** | Learn every topic in the library |
+    | **The Legend** | Earn every other title |
+
+    They sit in the same Title slot as the bought ones, marked *earned* and priced *cannot be
+    bought*, so the name under your avatar says what you did rather than what you spent.
+    `check.js` proves each one fires at the top and stays shut at zero, and that The Legend
+    collapses if any single other title is taken away.
+
 Before making a video it also offers a one-tap search of YouTube, Khan Academy, Bilibili and
 the web for your topic, because a real teacher on video often beats anything we can draw.
 
@@ -151,7 +189,7 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 
 | File | What it does |
 | --- | --- |
-| `index.html` | The whole page: four steps, book reader, video player, duel, quiz, pet shop |
+| `index.html` | The whole page: four steps, book reader, video player, duel, quiz, shop, profile |
 | `assets/styles.css` | All styling, light and dark mode, print styles for the PDF export |
 | `assets/app.js` | Flow, text reading, board matching, storyboard, player, quiz, exports |
 | `assets/topics.js` | Science library, topics 1–7 |
@@ -161,6 +199,7 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/projects.js` | One hands-on project per topic: materials, steps, the science |
 | `assets/chase.js` | The monster chase: canvas drawing, physics, and the balance numbers |
 | `assets/pets.js` | The 50 pets: shapes, rarities, egg odds, levelling, and the hint ladder |
+| `assets/profile.js` | Your avatar: 40 cosmetics in six slots, and the ten earned titles |
 | `assets/duel.js` | The two-player duel: question difficulty, the three-way pick, hearts |
 | `assets/detail.js` | The deeper layer per topic: formulas, misconceptions, links |
 | `assets/art.js` | Every drawing, as SVG built in code so it works in dark mode |
@@ -202,9 +241,11 @@ measured — a run with no answers is caught at about 13 seconds.
 
 ## Known limits
 
-- Sparks and pets are stored in `localStorage` on that one device too, so they do not
-  follow you to another computer and clearing site data clears them. They are not money
-  and cannot be bought.
+- Sparks, pets and your profile are stored in `localStorage` on that one device too, so
+  they do not follow you to another computer and clearing site data clears them. They are
+  not money and cannot be bought.
+- Your display name is never checked against anything. It is typed on your own device and
+  shown only on your own screen, so there is nothing to moderate and nobody to clash with.
 - The duel is hot-seat only: two people at one screen. Playing someone in another house
   would need a server to pass the moves through, and this app does not have one.
 - The grade sign-in is stored in `localStorage` on that one device. There is no account, so
