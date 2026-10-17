@@ -31,9 +31,10 @@
   var EGG_PRICE = 10;
   var DUPLICATE_REFUND = 5;
 
+  /* Getting past a monster is paid by that world's chest, not from here — see worlds.js. */
   var EARN = {
     rightAnswer: 2, perfectRound: 5, fixedMistake: 3, finishedLesson: 3,
-    newTopic: 5, escaped: 10, wonDuel: 12, chaseDistance: 1
+    newTopic: 5, wonDuel: 12, chaseDistance: 1
   };
 
   /* ── rarity ───────────────────────────────────────────

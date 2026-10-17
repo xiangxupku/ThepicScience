@@ -855,6 +855,205 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 @keyframes spark-pop { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
 .spark-icon { font-size: .9em; }
 
+/* ── the party lobby ──
+   Two team columns of seats. A seat is a person here, a person on another device, a robot,
+   or still empty — and it has to be obvious at a glance which. */
+
+.mode-row { display: flex; flex-wrap: wrap; gap: .5rem; margin: .5rem 0 1.3rem; }
+.mode-btn {
+  font: inherit; cursor: pointer; text-align: left; flex: 1 1 10rem;
+  display: grid; gap: .15rem; padding: .7rem .9rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  transition: border-color var(--t), background var(--t);
+}
+.mode-btn b { font-size: .98rem; }
+.mode-btn span { font-size: .78rem; color: var(--ink-2); }
+.mode-btn:hover:not(:disabled) { border-color: var(--accent); }
+.mode-btn[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.mode-btn[aria-checked="true"] span { color: var(--ink); }
+.mode-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.party-actions { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; }
+.join-row { display: flex; gap: .4rem; align-items: center; }
+.code-input {
+  width: 6.5rem; text-align: center; font-weight: 700; font-size: 1.1rem;
+  letter-spacing: .2em; text-transform: uppercase;
+}
+#party-msg.is-bad { color: #d9644f; }
+
+.party-code-row {
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
+  padding: .9rem 1rem; border-radius: var(--r-sm); background: var(--surface-2);
+  border: 1px solid var(--line); margin-bottom: 1.2rem;
+}
+.party-code {
+  font-size: 2rem; font-weight: 800; letter-spacing: .22em; line-height: 1.1;
+  font-variant-numeric: tabular-nums; color: var(--accent);
+}
+
+.party-teams { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.party-team {
+  border: 1px solid var(--line); border-radius: var(--r-sm); padding: .9rem; background: var(--surface);
+}
+.team-count { float: right; color: var(--ink-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+.seats { list-style: none; margin: .6rem 0 .7rem; padding: 0; display: grid; gap: .45rem; }
+.seat {
+  display: flex; align-items: center; gap: .6rem; min-height: 3.2rem;
+  padding: .45rem .6rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--surface-2);
+}
+.seat.is-me { border-color: var(--accent); background: var(--accent-soft); }
+.seat.is-ai { border-style: dashed; }
+.seat.is-empty { justify-content: center; border-style: dashed; color: var(--ink-2); font-size: .82rem; }
+.seat-pet { width: 2.4rem; flex: 0 0 auto; }
+.seat-pet .pet-svg { width: 100%; height: auto; display: block; }
+.seat-body { display: grid; gap: .15rem; min-width: 0; flex: 1 1 auto; }
+.seat-name-text { font-size: .92rem; }
+.seat-name { padding: .2rem .4rem; font-size: .9rem; font-weight: 700; }
+.seat-pet-pick { padding: .2rem .4rem; font-size: .76rem; }
+.seat-tag { font-size: .74rem; color: var(--ink-2); }
+.seat-x {
+  font: inherit; font-size: 1.1rem; line-height: 1; cursor: pointer; color: var(--ink-2);
+  border: 0; background: transparent; padding: .2rem .35rem; border-radius: 6px;
+}
+.seat-x:hover { background: var(--surface); color: #d9644f; }
+.seat-add { display: flex; gap: .4rem; flex-wrap: wrap; }
+.seat-add .btn { font-size: .8rem; padding: .32rem .7rem; }
+.party-go { margin-top: 1.2rem; }
+
+/* ── the duel board, now with teams ── */
+
+.duel-team {
+  flex: 1 1 14rem; padding: .8rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--surface);
+}
+.duel-team.is-turn { border-color: var(--accent); background: var(--accent-soft); }
+.duel-team-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
+.duel-seats { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .35rem; }
+.duel-seat {
+  display: flex; align-items: center; gap: .5rem; padding: .3rem .45rem;
+  border-radius: 8px; font-size: .82rem;
+}
+.duel-seat.is-attack { background: color-mix(in srgb, #e0a93c 22%, transparent); }
+.duel-seat.is-defend { background: color-mix(in srgb, #3f6fb5 20%, transparent); }
+.duel-seat-pet { width: 1.9rem; flex: 0 0 auto; }
+.duel-seat-pet .pet-svg { width: 100%; height: auto; display: block; }
+.duel-seat-text { display: grid; line-height: 1.2; min-width: 0; }
+.duel-seat-text span { font-size: .7rem; color: var(--ink-2); }
+.duel-seat.is-ai .duel-seat-text b::after { content: ' \1F916'; }
+.duel-role { margin-left: auto; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+
+.duel-wait { text-align: center; padding: 1.6rem 1rem; }
+.duel-dots { display: flex; gap: .4rem; justify-content: center; margin-top: .9rem; }
+.duel-dots i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--accent); animation: duel-dot 1.1s ease-in-out infinite; }
+.duel-dots i:nth-child(2) { animation-delay: .15s; }
+.duel-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes duel-dot { 0%, 100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+.duel-ai-note { margin-top: .7rem; }
+.duel-next-note { margin-top: .8rem; font-weight: 600; }
+
+@media (max-width: 560px) {
+  .party-code { font-size: 1.6rem; }
+  .party-teams { grid-template-columns: 1fr; }
+}
+
+/* ── the monster ladder and its chests ──
+   One strip above the canvas saying where you are, and a chest you open yourself after a
+   win. The world colours are fixed hex rather than theme tokens, because they have to match
+   what the canvas paints in either theme. */
+
+.chase-level {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
+  margin-bottom: .7rem; font-size: .82rem;
+}
+.chase-level > span {
+  padding: .28rem .7rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2);
+}
+.chase-level .lv-num { font-weight: 700; background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.chase-level .lv-world { font-weight: 600; }
+.chase-level .lv-world.is-slime { background: color-mix(in srgb, #2f8f3f 20%, transparent); border-color: #2f8f3f; }
+.chase-level .lv-world.is-alien { background: color-mix(in srgb, #7a5ad0 22%, transparent); border-color: #7a5ad0; }
+.chase-level .lv-world.is-backrooms { background: color-mix(in srgb, #d9c56a 30%, transparent); border-color: #b9a04a; }
+.chase-level .lv-chest { font-variant-numeric: tabular-nums; }
+.chase-level .lv-lap { color: var(--ink-2); }
+
+.shot-strip {
+  list-style: none; margin: .7rem 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: .4rem; grid-column: 1 / -1;
+}
+.shot {
+  position: relative; width: 4.2rem; height: 4.2rem; border-radius: var(--r-sm);
+  overflow: hidden; border: 1px solid var(--line); background: var(--surface-2);
+}
+.shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.shot-n {
+  position: absolute; left: .2rem; bottom: .2rem; font-size: .66rem; font-weight: 700;
+  padding: .05rem .3rem; border-radius: 999px; background: rgba(0, 0, 0, .62); color: #fff;
+}
+.shot-x {
+  position: absolute; top: .15rem; right: .15rem; width: 1.2rem; height: 1.2rem;
+  border: 0; border-radius: 50%; cursor: pointer; line-height: 1; font-size: .85rem;
+  background: rgba(0, 0, 0, .62); color: #fff; padding: 0;
+}
+.shot-x:hover { background: #d9644f; }
+
+.board {
+  margin-top: 1.4rem; padding: 1rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--surface);
+}
+.board-head { display: flex; flex-wrap: wrap; gap: .8rem; align-items: flex-start; justify-content: space-between; }
+.board-tabs { display: flex; flex-wrap: wrap; gap: .4rem; }
+.board-list { list-style: none; margin: .9rem 0 .6rem; padding: 0; display: grid; gap: .3rem; }
+.board-list li {
+  display: flex; align-items: center; gap: .7rem; padding: .45rem .7rem;
+  border-radius: var(--r-sm); background: var(--surface-2); font-size: .9rem;
+}
+.board-list li.is-me, .board-list li.is-here { background: var(--accent-soft); }
+.board-list li:first-child .board-rank { color: #9a7320; }
+.board-rank {
+  min-width: 2.1rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--ink-2);
+}
+.board-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-right { color: var(--ink-2); font-size: .8rem; }
+.board-time { font-weight: 700; font-variant-numeric: tabular-nums; }
+.board-empty { color: var(--ink-2); justify-content: center; }
+
+.chase-clock {
+  font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem;
+  letter-spacing: .02em; color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .7);
+}
+
+.chest { display: grid; justify-items: center; gap: .5rem; margin-bottom: 1rem; }
+.chest-btn {
+  font: inherit; cursor: pointer; display: grid; justify-items: center; gap: .4rem;
+  padding: 1rem 1.6rem; border-radius: var(--r-sm);
+  border: 2px solid #e0a93c; background: color-mix(in srgb, #ffd36b 14%, transparent);
+  transition: transform var(--t), background var(--t);
+}
+.chest-btn:hover:not(:disabled) { transform: translateY(-2px); background: color-mix(in srgb, #ffd36b 26%, transparent); }
+.chest-btn:disabled { cursor: default; }
+.chest-art { display: block; width: 5.5rem; }
+.chest-svg { width: 100%; height: auto; display: block; }
+.chest-label { font-weight: 700; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.chest-sub { color: var(--ink-2); font-size: .88rem; text-align: center; }
+.chest.is-open .chest-btn { animation: chest-pop 620ms cubic-bezier(.2, .8, .3, 1); }
+.chest.is-open .chest-label { color: #8a6616; font-size: 1.3rem; }
+.chest-spark { animation: chest-rise 900ms ease-out; }
+
+@keyframes chest-pop { 0% { transform: scale(1); } 35% { transform: scale(1.1); } 100% { transform: scale(1); } }
+@keyframes chest-rise {
+  0% { opacity: 0; transform: translateY(10px); }
+  40% { opacity: 1; }
+  100% { opacity: .85; transform: translateY(-4px); }
+}
+
+@media (max-width: 560px) {
+  .chase-level { font-size: .74rem; gap: .3rem; }
+  .chase-level > span { padding: .22rem .55rem; }
+}
+
 /* ── your profile ──
    The chip sits in the top right corner. The avatar is SVG built in profile.js, so every
    cosmetic works in both themes without a second copy. */

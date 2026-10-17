@@ -37,7 +37,8 @@
 
   /* ── state ─────────────────────────────────────────── */
   var S = {
-    file: null,
+    file: null,          // the first one, which is what the preview shows
+    files: [],           // every picture added, up to MAX_SHOTS
     kind: null,          // 'image' | 'video'
     imageForOcr: null,   // data URL we can hand to the reader
     shots: null,         // one cleaned-up image, or several frames from a video
@@ -53,7 +54,16 @@
     gradeNum: null,      // the actual school year, 3 to 12, if they signed in
     sparks: 0,           // earned, never bought
     lifetime: 0,         // every spark ever earned, for the profile
-    tally: null,         // { escapes, duels } — what the earned titles are judged on
+    tally: null,         // { escapes, duels, bestLevel } — what the earned titles are judged on
+    chaseLevel: 1,       // which rung of the monster ladder you are on
+    partyMode: '2v2',    // 1v1 | 2v2 | 3v3 | 4v4
+    party: null,         // the lobby you are in
+    watcher: null,       // the polling handle for an online party
+    netReady: null,      // what the party server said when we asked
+    bestTimes: null,     // level -> fastest escape in ms, on this device
+    boardView: 'me',     // 'me' = your own bests, 'world' = everyone's
+    chestOwed: 0,        // sparks waiting in an unopened chest
+    chestWorld: null,    // which world dropped it
     profile: null,       // { name, worn: slot -> item id, items: 'slot:id' -> true }
     owned: {},           // pet id -> level
     pet: '',             // whichever one is helping right now
@@ -206,8 +216,13 @@
     say('Skipped the grade. You can still make a lesson.');
   });
 
-  /* ── step 1: getting a picture in ──────────────────── */
+  /* ── step 1: getting pictures in ─────────────
+     A whiteboard rarely fits in one photo, so up to ten come in at once and are read one
+     after another into a single piece of text. A video is different — frames are sampled
+     out of it — so it arrives on its own rather than mixed in with stills. */
+
   var MAX_BYTES = 50 * 1024 * 1024;
+  var MAX_SHOTS = 10;
 
   function fileError(msg) {
     var e = $('file-error');
@@ -217,53 +232,127 @@
     say(msg);
   }
 
-  function handleFile(file) {
-    if (!file) return;
-    fileError('');
+  function checkFile(file) {
     var isImg = /^image\//.test(file.type);
     var isVid = /^video\//.test(file.type);
-
     if (!isImg && !isVid) {
-      fileError('That file is ' + (file.type || 'an unknown type') + '. ThepicScience needs a photo or a video — try a JPG, PNG or MP4.');
-      return;
+      return 'One of those is ' + (file.type || 'an unknown type') +
+        '. ThepicScience needs photos or a video \u2014 try a JPG, PNG or MP4.';
     }
     if (file.size > MAX_BYTES) {
-      fileError('That file is ' + (file.size / 1048576).toFixed(0) + ' MB, and the limit is 50 MB. Try a photo instead of a long video, or record a shorter clip.');
-      return;
+      return '"' + file.name + '" is ' + (file.size / 1048576).toFixed(0) +
+        ' MB, and the limit is 50 MB each. Try a photo instead of a long video.';
+    }
+    return '';
+  }
+
+  /* `add` keeps what is already there, which is what the Add more button wants */
+  function handleFiles(list, add) {
+    var incoming = Array.prototype.slice.call(list || []);
+    if (!incoming.length) return;
+    fileError('');
+
+    var problems = [];
+    incoming = incoming.filter(function (f) {
+      var why = checkFile(f);
+      if (why) { problems.push(why); return false; }
+      return true;
+    });
+    if (!incoming.length) { fileError(problems[0] || 'Nothing there we can read.'); return; }
+
+    var video = incoming.filter(function (f) { return /^video\//.test(f.type); })[0];
+    if (video) {
+      /* frames are sampled out of a video, so it stands on its own */
+      clearFile(true);
+      S.files = [video];
+      S.kind = 'video';
+      if (incoming.length > 1) problems.push('A video is read on its own, so the other files were left out.');
+    } else {
+      var kept = (add && S.kind === 'image' ? S.files : []).concat(
+        incoming.filter(function (f) { return /^image\//.test(f.type); })
+      );
+      if (kept.length > MAX_SHOTS) {
+        problems.push('Ten pictures is the limit, so the last ' + (kept.length - MAX_SHOTS) + ' were left out.');
+        kept = kept.slice(0, MAX_SHOTS);
+      }
+      if (!add || S.kind !== 'image') clearFile(true);
+      S.files = kept;
+      S.kind = 'image';
     }
 
-    clearFile(true);
-    S.file = file;
-    S.kind = isImg ? 'image' : 'video';
-    S.previewUrl = URL.createObjectURL(file);
+    S.file = S.files[0];
+    if (S.previewUrl) URL.revokeObjectURL(S.previewUrl);
+    S.previewUrl = URL.createObjectURL(S.file);
+    if (problems.length) fileError(problems[0]);
+    paintPreview();
+  }
+
+  function paintPreview() {
+    var isImg = S.kind === 'image';
+    var n = S.files.length;
+    var total = S.files.reduce(function (a, f) { return a + f.size; }, 0);
 
     $('preview-media').innerHTML = isImg
       ? '<img src="' + S.previewUrl + '" alt="The picture you added">'
       : '<video src="' + S.previewUrl + '" muted playsinline controls></video>';
-    $('preview-name').textContent = file.name;
-    $('preview-sub').textContent = (isImg ? 'Photo' : 'Video') + ' · ' + (file.size / 1048576).toFixed(1) + ' MB · stays on your device';
+
+    $('preview-name').textContent = n > 1 ? n + ' pictures' : S.file.name;
+    $('preview-sub').textContent = (isImg ? (n > 1 ? n + ' photos' : 'Photo') : 'Video') +
+      ' \u00b7 ' + (total / 1048576).toFixed(1) + ' MB \u00b7 stays on your device';
     $('preview').hidden = false;
+    $('add-more').hidden = !isImg || n >= MAX_SHOTS;
+
+    /* the strip, so you can see what is going in and drop any that came out blurred */
+    var strip = $('shot-strip');
+    strip.hidden = !(isImg && n > 1);
+    strip.innerHTML = !strip.hidden ? S.files.map(function (f, i) {
+      return '<li class="shot"><img src="' + URL.createObjectURL(f) + '" alt="Picture ' + (i + 1) + '">' +
+        '<span class="shot-n">' + (i + 1) + '</span>' +
+        '<button type="button" class="shot-x" data-drop-shot="' + i +
+        '" aria-label="Remove picture ' + (i + 1) + '">\u00d7</button></li>';
+    }).join('') : '';
+    strip.querySelectorAll('[data-drop-shot]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        S.files.splice(Number(b.dataset.dropShot), 1);
+        if (!S.files.length) { clearFile(false); return; }
+        S.file = S.files[0];
+        if (S.previewUrl) URL.revokeObjectURL(S.previewUrl);
+        S.previewUrl = URL.createObjectURL(S.file);
+        paintPreview();
+      });
+    });
+
     $('scan-btn').disabled = false;
-    $('scan-btn').textContent = isImg ? 'Read this picture' : 'Read this video';
-    say('Added ' + file.name + '. Now choose Read this picture.');
+    $('scan-btn').textContent = isImg
+      ? (n > 1 ? 'Read these ' + n + ' pictures' : 'Read this picture')
+      : 'Read this video';
+    say('Added ' + (n > 1 ? n + ' pictures' : S.file.name) + '. Now choose Read.');
     $('scan-btn').focus();
   }
 
   function clearFile(quiet) {
     if (S.previewUrl) URL.revokeObjectURL(S.previewUrl);
-    S.file = null; S.kind = null; S.previewUrl = null; S.imageForOcr = null; S.shots = null;
+    S.file = null; S.files = []; S.kind = null; S.previewUrl = null;
+    S.imageForOcr = null; S.shots = null;
     $('preview').hidden = true;
     $('preview-media').innerHTML = '';
+    $('shot-strip').hidden = true;
+    $('shot-strip').innerHTML = '';
     $('file-input').value = '';
     $('camera-input').value = '';
-    if (!quiet) { fileError(''); say('Picture removed.'); }
+    if (!quiet) { fileError(''); say('Pictures removed.'); }
   }
 
   $('pick-file').addEventListener('click', function (e) { e.stopPropagation(); $('file-input').click(); });
   $('pick-camera').addEventListener('click', function (e) { e.stopPropagation(); $('camera-input').click(); });
-  $('file-input').addEventListener('change', function () { handleFile(this.files[0]); });
-  $('camera-input').addEventListener('change', function () { handleFile(this.files[0]); });
+  $('file-input').addEventListener('change', function () { handleFiles(this.files, this.dataset.add === '1'); this.dataset.add = ''; });
+  $('camera-input').addEventListener('change', function () { handleFiles(this.files, true); });
   $('remove-file').addEventListener('click', function () { clearFile(false); });
+  $('add-more').addEventListener('click', function (e) {
+    e.stopPropagation();
+    $('file-input').dataset.add = '1';
+    $('file-input').click();
+  });
 
   var drop = $('drop');
   drop.addEventListener('click', function () { $('file-input').click(); });
@@ -277,12 +366,17 @@
     drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('is-over'); });
   });
   drop.addEventListener('drop', function (e) {
-    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+      handleFiles(e.dataTransfer.files, false);
+    }
   });
   document.addEventListener('paste', function (e) {
     if (!e.clipboardData) return;
     var items = e.clipboardData.files;
-    if (items && items[0]) { handleFile(items[0]); toast('Pasted your picture'); }
+    if (items && items.length) {
+      handleFiles(items, true);      /* pasting one after another builds up a set */
+      toast(items.length > 1 ? 'Pasted ' + items.length + ' pictures' : 'Pasted your picture');
+    }
   });
 
   $('skip-photo').addEventListener('click', function () {
@@ -435,11 +529,19 @@
     showScan(true);
     $('match-result').hidden = true;
     goTo($('step2'));
-    say('Reading your picture. This can take a few seconds.');
+    say(S.files.length > 1
+      ? 'Reading your ' + S.files.length + ' pictures. This can take a few seconds.'
+      : 'Reading your picture. This can take a few seconds.');
 
     var prep = S.kind === 'video'
       ? grabVideoFrames(S.previewUrl, 3)
-      : shrinkImage(S.previewUrl, 1600).then(function (one) { return [one]; });
+      : Promise.all(S.files.map(function (f) {
+          var u = URL.createObjectURL(f);
+          return shrinkImage(u, 1600).then(function (shot) {
+            URL.revokeObjectURL(u);
+            return shot;
+          });
+        }));
 
     prep.then(function (shots) {
       if (ocrCancelled) throw new Error('cancelled');
@@ -466,7 +568,11 @@
       return shots.reduce(function (chain, shot, n) {
         return chain.then(function () {
           if (ocrCancelled) return;
-          if (shots.length > 1) scanProgress(35 + (n / shots.length) * 55, 'Reading frame ' + (n + 1) + ' of ' + shots.length + '…');
+          if (shots.length > 1) {
+            scanProgress(35 + (n / shots.length) * 55,
+              'Reading ' + (S.kind === 'video' ? 'frame ' : 'picture ') + (n + 1) +
+              ' of ' + shots.length + '\u2026');
+          }
           return w.recognize(shot).then(function (r) {
             var t = (r && r.data && r.data.text) ? r.data.text.trim() : '';
             if (t) found.push(t);
@@ -1672,6 +1778,18 @@
      The same questions as the quiz, but with something closing in behind you. Right answers
      are speed; wrong ones cost you ground. Drawing and physics live in chase.js. */
 
+  /* How much work a question is, before you know any science: how many words you have to
+     read, plus how deep into the topic it sits. The chase sorts on this so a run opens with
+     something you can take in at a glance and ends with the long ones. */
+  function askWeight(q, topic) {
+    var words = (q.q + ' ' + q.a.join(' ')).trim().split(/\s+/).length;
+    var sc = topic.scenes[typeof q.teach === 'number' ? q.teach : 0];
+    var tier = sc ? sc.tier : 2;
+    /* words lead, because "can I read this in one glance" is what makes the opening of a
+       run feel fair; the tier only breaks ties between questions of similar length */
+    return words + (tier - 1) * 4;
+  }
+
   function chaseQuestions(topic) {
     var pool = topic.quiz.map(function (q) {
       return { q: q.q, a: q.a, c: q.c, why: q.why, teach: teachIndexFor(q, topic), source: 'library' };
@@ -1681,17 +1799,63 @@
       pool = pool.concat(practiceFor(topic, i, 1));
     });
     if (GRADES[S.grade].cloze) pool = pool.concat(boardQuestions(topic, 2));
+    pool.forEach(function (q) { q.weight = askWeight(q, topic); });
     return pool;
   }
 
-  function showChase() {
+  /* ── the monster ladder ─────────────────────
+     Level 1 is the slime, level 2 the alien, level 3 the backrooms, then round again a
+     little faster. Get out alive and a chest pays the bounty for that world: 10, 30 or 50.
+     The level you reached is remembered, so you carry on where you stopped. */
+
+  function chestArt(world, open) {
+    var lid = open
+      ? '<path d="M8 26 L50 14 L92 26 L92 34 L8 34 Z" transform="rotate(-18 14 30)"/>'
+      : '<path d="M8 34 q 42 -22 84 0 v6 H8 Z"/>';
+    return '<svg viewBox="0 0 100 72" role="img" aria-hidden="true" class="chest-svg' +
+      (open ? ' is-open' : '') + '">' +
+      '<g fill="' + world.door.glow + '" stroke="#3a2a10" stroke-width="3" stroke-linejoin="round">' +
+      lid +
+      '<rect x="8" y="34" width="84" height="30" rx="4"/>' +
+      '</g>' +
+      '<rect x="44" y="36" width="12" height="16" rx="2" fill="#3a2a10"/>' +
+      '<circle cx="50" cy="44" r="2.6" fill="' + world.door.face + '"/>' +
+      (open ? '<g class="chest-spark" fill="#ffd45e">' +
+        '<circle cx="26" cy="16" r="3"/><circle cx="50" cy="8" r="4"/><circle cx="74" cy="18" r="3"/>' +
+        '</g>' : '') +
+      '</svg>';
+  }
+
+  function renderChaseLevel() {
+    var lv = S.chaseLevel;
+    var w = window.WORLDS.forLevel(lv);
+    var lap = Math.floor((lv - 1) / window.WORLDS.count);
+    $('chase-level').innerHTML =
+      '<span class="lv-num">Level ' + lv + '</span>' +
+      '<span class="lv-world is-' + w.id + '">' + esc(w.name) + '</span>' +
+      '<span class="lv-mon">' + esc(w.monster) + '</span>' +
+      '<span class="lv-chest">chest ' + w.bounty + ' ' + BOLT_CHAR + '</span>' +
+      (lap ? '<span class="lv-lap">lap ' + (lap + 1) + ', faster</span>' : '');
+    $('chase-level').title = w.blurb;
+  }
+
+  function showChase(level) {
+    if (typeof level === 'number') S.chaseLevel = Math.max(1, level);
     $('chase-view').hidden = false;
-    $('step4-sub').textContent = 'Answer fast and you outrun it. ' +
-      'Get one wrong and it closes in. Nothing jumps out and there is no sound.';
+    $('chase-chest').hidden = true;
+    $('chase-next').hidden = true;
+    $('chase-restart').hidden = S.chaseLevel <= 1;
+    renderChaseLevel();
+    checkScores();
+    if (S.boardView === 'world') loadBoard(S.chaseLevel);
+
+    var w = window.WORLDS.forLevel(S.chaseLevel);
+    $('step4-sub').textContent = 'Level ' + S.chaseLevel + ': ' + w.blurb +
+      ' Answer fast and you outrun it. Get out and the chest pays ' + w.bounty + ' sparks.';
 
     var el = {
       wrap: $('chase-wrap'), canvas: $('chase-canvas'),
-      bar: $('chase-bar'), dist: $('chase-dist'), gap: $('chase-gap'),
+      bar: $('chase-bar'), dist: $('chase-dist'), gap: $('chase-gap'), clock: $('chase-clock'),
       play: $('chase-play'), q: $('chase-q'), opts: $('chase-opts'), feedback: $('chase-feedback'),
       over: $('chase-over'), overTitle: $('chase-over-title'), overSub: $('chase-over-sub')
     };
@@ -1701,25 +1865,191 @@
       questions: chaseQuestions(S.board.topic),
       reduced: reduceMotion,
       calm: $('chase-calm').checked,
+      level: S.chaseLevel,
       onEnd: function (result) {
-        var prize = result.right * window.PETS.earn.rightAnswer +
-          (result.escaped ? window.PETS.earn.escaped : 0);
-        if (result.escaped) { S.tally.escapes++; saveProfile(); }
-        if (prize) earn(prize, result.escaped ? 'escaping the monster' : 'the questions you got right');
+        /* the per-question sparks are paid straight away; the escape bounty waits in the
+           chest, because opening it yourself is the reward */
+        var prize = result.right * window.PETS.earn.rightAnswer;
+        if (prize) earn(prize, 'the questions you got right');
+
+        if (result.escaped) {
+          S.tally.escapes++;
+          S.chestOwed = result.bounty;
+          S.chestWorld = result.world;
+          recordTime(result);
+          saveProfile();
+          offerChest(result);
+        } else {
+          S.chestOwed = 0;
+          $('chase-chest').hidden = true;
+          $('chase-next').hidden = true;
+        }
         grantEarnedTitles(true);
         S.missed = result.wrong.filter(function (q) { return typeof q.teach === 'number'; });
         $('chase-learn').hidden = !S.missed.length;
-        say(result.escaped ? 'You escaped.' : 'It caught you.');
+        say(result.escaped
+          ? result.world.beat + ' There is a chest to open.'
+          : result.world.lost);
       }
     });
-    say('The chase has started. Answer the question to run faster.');
+    say('Level ' + S.chaseLevel + '. ' + w.monster + ' is chasing you. Answer the question to run faster.');
   }
 
-  $('chase-again').addEventListener('click', function () { showChase(); });
+  /* ── the speed-run board ────────────────────
+     Your own best per level is kept on this device and always works. The shared board
+     needs the score server, so it is only offered when there is one and it is durable —
+     a leaderboard that forgets itself every few minutes is worse than none. */
+
+  function fmtMs(ms) {
+    var s = ms / 1000;
+    var m = Math.floor(s / 60);
+    return m + ':' + ((s - m * 60) < 10 ? '0' : '') + (s - m * 60).toFixed(1);
+  }
+
+  function recordTime(result) {
+    var lv = String(result.level);
+    var prev = S.bestTimes[lv];
+    var best = !prev || result.ms < prev;
+    if (best) S.bestTimes[lv] = result.ms;
+    S.lastRun = {
+      level: result.level, ms: result.ms, right: result.right,
+      asked: result.asked, world: result.world.id, goal: result.world.tune.goal, best: best
+    };
+    if (best) toast('New best on level ' + result.level + ': ' + fmtMs(result.ms));
+    submitTime(S.lastRun);
+  }
+
+  function submitTime(run) {
+    if (!S.scoresReady || !S.scoresReady.durable) { renderBoard(); return; }
+    fetch('/api/scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        level: run.level, ms: run.ms, right: run.right, asked: run.asked,
+        world: run.world, goal: run.goal, name: displayName()
+      })
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      S.boardRows = j.rows || [];
+      if (j.kept && j.place) toast('Number ' + j.place + ' in the world on level ' + run.level);
+      renderBoard();
+    }).catch(function () { renderBoard(); });
+  }
+
+  function checkScores() {
+    if (S.scoresReady) { renderBoard(); return; }
+    fetch('/api/scores?level=1').then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        S.scoresReady = j ? { online: true, durable: !!j.durable } : { online: false, durable: false };
+        renderBoard();
+      })
+      .catch(function () {
+        S.scoresReady = { online: false, durable: false };
+        renderBoard();
+      });
+  }
+
+  function loadBoard(level) {
+    if (!S.scoresReady || !S.scoresReady.durable) return;
+    fetch('/api/scores?level=' + level).then(function (r) { return r.json(); })
+      .then(function (j) { S.boardRows = j.rows || []; renderBoard(); })
+      .catch(function () {});
+  }
+
+  function renderBoard() {
+    var global = S.scoresReady && S.scoresReady.durable;
+    $('board-tabs').innerHTML =
+      '<button type="button" class="slot-tab" role="tab" data-board="me" aria-selected="' +
+      (S.boardView === 'me') + '">Your bests</button>' +
+      (global
+        ? '<button type="button" class="slot-tab" role="tab" data-board="world" aria-selected="' +
+          (S.boardView === 'world') + '">Everyone, level ' + S.chaseLevel + '</button>'
+        : '');
+    $('board-tabs').querySelectorAll('[data-board]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        S.boardView = b.dataset.board;
+        if (S.boardView === 'world') loadBoard(S.chaseLevel);
+        renderBoard();
+      });
+    });
+
+    if (!global && S.boardView === 'world') S.boardView = 'me';
+
+    if (S.boardView === 'me') {
+      var levels = Object.keys(S.bestTimes).map(Number).sort(function (a, b) { return a - b; });
+      $('board-sub').textContent = 'The quickest you have got out of each level, on this device.';
+      $('board-list').innerHTML = levels.length
+        ? levels.map(function (lv) {
+            var w = window.WORLDS.forLevel(lv);
+            return '<li' + (lv === S.chaseLevel ? ' class="is-here"' : '') + '>' +
+              '<span class="board-rank">L' + lv + '</span>' +
+              '<span class="board-name">' + esc(w.monster) + '</span>' +
+              '<span class="board-time">' + fmtMs(S.bestTimes[lv]) + '</span></li>';
+          }).join('')
+        : '<li class="board-empty">No escapes yet. Get past one and your time lands here.</li>';
+      $('board-note').textContent = global
+        ? 'Your times are sent to the shared board too, under the name on your profile.'
+        : (S.scoresReady && !S.scoresReady.online
+          ? 'A shared board needs the score server, which this copy does not have.'
+          : 'The shared board is switched off until the site has somewhere durable to keep it.');
+      return;
+    }
+
+    var rows = S.boardRows || [];
+    var w = window.WORLDS.forLevel(S.chaseLevel);
+    $('board-sub').textContent = 'Level ' + S.chaseLevel + ' \u2014 ' + w.name + ', past ' + w.monster + '.';
+    $('board-list').innerHTML = rows.length
+      ? rows.map(function (r, i) {
+          return '<li' + (r.name === displayName() ? ' class="is-me"' : '') + '>' +
+            '<span class="board-rank">' + (i + 1) + '</span>' +
+            '<span class="board-name">' + esc(r.name) + '</span>' +
+            '<span class="board-right">' + r.right + ' right</span>' +
+            '<span class="board-time">' + fmtMs(r.ms) + '</span></li>';
+        }).join('')
+      : '<li class="board-empty">Nobody has escaped this level yet. Be first.</li>';
+    $('board-note').textContent = 'Fastest twenty. Names are whatever people typed on their own device.';
+  }
+
+  function offerChest(result) {
+    var box = $('chase-chest');
+    box.hidden = false;
+    box.classList.remove('is-open');
+    $('chest-art').innerHTML = chestArt(result.world, false);
+    $('chest-label').textContent = 'Open the chest';
+    $('chest-btn').disabled = false;
+    $('chest-sub').textContent = result.world.monster + ' dropped it. It holds ' +
+      result.bounty + ' sparks.';
+  }
+
+  $('chest-btn').addEventListener('click', function () {
+    if (!S.chestOwed) return;
+    var amount = S.chestOwed, world = S.chestWorld;
+    S.chestOwed = 0;
+    this.disabled = true;
+
+    $('chase-chest').classList.add('is-open');
+    $('chest-art').innerHTML = chestArt(world, true);
+    $('chest-label').textContent = '+' + amount + ' ' + BOLT_CHAR;
+    $('chest-sub').textContent = 'Straight into your sparks. Spend them on an egg or on how you look.';
+    earn(amount, 'the ' + world.monster.toLowerCase() + ' chest');
+
+    /* the next level is a different monster, so say which */
+    var next = S.chaseLevel + 1;
+    S.tally.bestLevel = Math.max(S.tally.bestLevel || 1, next);
+    saveProfile();
+    var nw = window.WORLDS.forLevel(next);
+    var btn = $('chase-next');
+    btn.hidden = false;
+    btn.textContent = 'Level ' + next + ': ' + nw.monster + ' \u2192';
+    btn.focus();
+  });
+
+  $('chase-next').addEventListener('click', function () { showChase(S.chaseLevel + 1); });
+  $('chase-again').addEventListener('click', function () { showChase(S.chaseLevel); });
+  $('chase-restart').addEventListener('click', function () { showChase(1); });
 
   $('chase-calm').addEventListener('change', function () {
     if (window.CHASE) window.CHASE.setCalm(this.checked);
-    toast(this.checked ? 'Friendly shadow mode' : 'Back to scary');
+    toast(this.checked ? 'Friendly monsters' : 'Back to scary');
   });
 
   $('chase-learn').addEventListener('click', function () {
@@ -1814,6 +2144,7 @@
      real money. A pet's level decides how much of a hint it can give, and every hint is built
      from the same checked library data as the lesson, so a pet cannot invent an answer. */
 
+  var BOLT_CHAR = '\u26a1';
   var SPARK_KEY = 'thepicscience.sparks';
   var PET_KEY = 'thepicscience.pets';
   var PROFILE_KEY = 'thepicscience.profile';
@@ -1846,8 +2177,11 @@
     S.lifetime = Math.max(S.sparks, (p && parseInt(p.lifetime, 10)) || 0);
     S.tally = {
       escapes: (p && parseInt(p.tally && p.tally.escapes, 10)) || 0,
-      duels: (p && parseInt(p.tally && p.tally.duels, 10)) || 0
+      duels: (p && parseInt(p.tally && p.tally.duels, 10)) || 0,
+      bestLevel: (p && parseInt(p.tally && p.tally.bestLevel, 10)) || 1
     };
+    S.chaseLevel = Math.max(1, S.tally.bestLevel);
+    S.bestTimes = (p && p.bestTimes) || {};
     /* the free starters are always yours, even if the save file predates them */
     window.PROFILE.freeKeys().forEach(function (k) { S.profile.items[k] = true; });
     window.PROFILE.slots.forEach(function (sl) {
@@ -1862,7 +2196,8 @@
     try {
       window.localStorage.setItem(PROFILE_KEY, JSON.stringify({
         name: S.profile.name, worn: S.profile.worn,
-        items: S.profile.items, lifetime: S.lifetime, tally: S.tally
+        items: S.profile.items, lifetime: S.lifetime, tally: S.tally,
+        bestTimes: S.bestTimes
       }));
     } catch (e) {}
   }
@@ -1991,7 +2326,7 @@
       'Getting a practice question right after missing it: +' + window.PETS.earn.fixedMistake,
       'Reaching the end of a lesson: +' + window.PETS.earn.finishedLesson,
       'Your first lesson on a new topic: +' + window.PETS.earn.newTopic,
-      'Escaping the monster: +' + window.PETS.earn.escaped,
+      'The chest for getting past a monster: +10, +30 or +50 depending on the level',
       'Winning a duel: +' + window.PETS.earn.wonDuel
     ].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
   }
@@ -2317,63 +2652,583 @@
     say(cur.def.name + ' gave you a hint on question ' + (qi + 1) + '.');
   });
 
-  /* ── duelling a friend ─────────────────────────────────
-     Same device, taking turns. app.js supplies the questions and the pets; duel.js owns the
-     turn order, the hearts and the screens. */
+  /* ── duelling: parties, teams and robots ────────
+     A party is seats split over two teams, 1v1 up to 4v4. It can sit entirely on this
+     device — pass it round, robots fill whatever is left — or it can live on the server
+     so people on other devices join with the code.
 
-  function ownedPetOptions(selected) {
+     Online is host-authoritative: the host's phone runs duel.js and publishes what the
+     screen says, guests render that and post back what they tapped. One copy of the rules
+     means the two screens cannot drift. net.js is the wire; this is the wiring. */
+
+  var PARTY_WHERE = 'local';
+  var localSeatNo = 1;
+
+  function myId() {
+    if (!S.profile.deviceId) {
+      S.profile.deviceId = 'p' + Math.random().toString(36).slice(2, 9);
+      saveProfile();
+    }
+    return S.profile.deviceId;
+  }
+
+  function mySeat() {
+    var cur = activePet();
+    return { id: myId(), name: displayName(), petId: cur.def.id, level: cur.level };
+  }
+
+  function ownedPetIds() {
+    return window.PETS.list.filter(function (p) { return S.owned[p.id]; })
+      .map(function (p) { return p.id; });
+  }
+
+  function petOptions(selected) {
     return window.PETS.list.filter(function (p) { return S.owned[p.id]; }).map(function (p) {
       var lv = S.owned[p.id];
       return '<option value="' + p.id + '"' + (p.id === selected ? ' selected' : '') + '>' +
-        esc(p.name) + ' · L' + lv + ' · ' + window.PETS.rarity(p.rarity).name +
-        ' · ' + (p.type === 'attack' ? 'attacker' : 'defender') + '</option>';
+        esc(p.name) + ' \u00b7 L' + lv + ' \u00b7 ' + window.PETS.rarity(p.rarity).name +
+        ' \u00b7 ' + (p.type === 'attack' ? 'attacker' : 'defender') + '</option>';
     }).join('');
+  }
+
+  /* party members carry a pet id; duel.js wants the pet itself */
+  function teamsForDuel(p) {
+    return window.PARTY.sides(p).map(function (t) {
+      return {
+        name: t.name,
+        members: t.members.map(function (m) {
+          return {
+            id: m.id, name: m.name, ai: !!m.ai,
+            pet: window.PETS.byId(m.petId) || window.PETS.byId(window.PETS.starter),
+            level: m.level || 1
+          };
+        })
+      };
+    });
+  }
+
+  function partyMsg(text, bad) {
+    var el = $('party-msg');
+    el.textContent = text || '';
+    el.classList.toggle('is-bad', !!bad);
+  }
+
+  /* ── the opening screen ── */
+
+  function renderModeRow() {
+    $('mode-row').innerHTML = window.PARTY.modes.map(function (m) {
+      return '<button type="button" class="mode-btn" role="radio" data-mode="' + m.id + '" ' +
+        'aria-checked="' + (m.id === S.partyMode) + '">' +
+        '<b>' + esc(m.name) + '</b><span>' + esc(m.blurb) + '</span></button>';
+    }).join('');
+    $('mode-row').querySelectorAll('[data-mode]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        S.partyMode = b.dataset.mode;
+        renderModeRow();
+      });
+    });
+  }
+
+  function setWhere(where) {
+    PARTY_WHERE = where;
+    $('where-row').querySelectorAll('[data-where]').forEach(function (b) {
+      b.setAttribute('aria-checked', String(b.dataset.where === where));
+    });
+    $('join-row').hidden = where !== 'online';
+  }
+
+  function checkOnline() {
+    if (!window.NET) { $('where-online').disabled = true; $('online-note').textContent = 'Not available.'; return; }
+    window.NET.available().then(function (r) {
+      S.netReady = r;
+      $('where-online').disabled = !r.online;
+      $('online-note').textContent = r.online
+        ? (r.durable
+          ? 'Share a code. Other phones and laptops join it.'
+          : 'Share a code. Works best if everyone joins within a few minutes.')
+        : 'Needs the party server, which this copy does not have.';
+      if (!r.online && PARTY_WHERE === 'online') setWhere('local');
+    });
   }
 
   function showDuel() {
     $('duel-view').hidden = false;
     $('duel-setup').hidden = false;
+    $('party-start').hidden = false;
+    $('party-lobby').hidden = true;
     $('duel-board').hidden = true;
-    $('step4-sub').textContent = 'Two players on this one device. Pick a question to send, ' +
-      'then hand it over. There is no internet match — that would need a server.';
-    if ($('p1-name').value === 'Player 1' && S.profile.name) $('p1-name').value = S.profile.name;
-    $('p1-pet').innerHTML = ownedPetOptions(S.pet);
-    var others = window.PETS.list.filter(function (p) { return S.owned[p.id] && p.id !== S.pet; });
-    $('p2-pet').innerHTML = ownedPetOptions(others.length ? others[0].id : S.pet);
+    stopParty();
+    S.party = null;
+    partyMsg('');
+    $('step4-sub').textContent = 'Pick your teams, then throw science questions at each other. ' +
+      'Everyone attacks and everyone answers.';
+    renderModeRow();
+    setWhere(PARTY_WHERE);
+    checkOnline();
   }
 
-  function beginDuel() {
-    var pool = chaseQuestions(S.board.topic);
-    var pick = function (sel, fallbackName) {
-      var def = window.PETS.byId($(sel).value) || window.PETS.byId('bubble');
-      return { def: def, level: S.owned[def.id] || 1 };
-    };
-    var a = pick('p1-pet'), b = pick('p2-pet');
+  /* ── making and joining ── */
+
+  function createParty() {
+    var p = window.PARTY.create({
+      mode: S.partyMode,
+      host: mySeat(),
+      online: PARTY_WHERE === 'online',
+      topicId: S.board && S.board.topic ? S.board.topic.id : ''
+    });
+    localSeatNo = 1;
+
+    if (!p.online) {
+      S.party = p;
+      openLobby();
+      return;
+    }
+    partyMsg('Making the party\u2026');
+    window.NET.create(p.code, p).then(function () {
+      S.party = p;
+      openLobby();
+      hostWatch();
+    }).catch(function (e) {
+      partyMsg(e.message || 'Could not reach the party server.', true);
+    });
+  }
+
+  function joinParty() {
+    var code = window.PARTY.cleanCode($('party-code').value);
+    if (code.length !== 4) { partyMsg('A code is four letters.', true); return; }
+    partyMsg('Looking for ' + code + '\u2026');
+    window.NET.join(code, Object.assign({ team: 0, ai: false }, mySeat())).then(function (j) {
+      S.party = j.party;
+      S.party.code = code;
+      openLobby();
+      guestWatch();
+    }).catch(function (e) {
+      partyMsg(e.message || 'No party with that code.', true);
+    });
+  }
+
+  function amHost() {
+    return S.party && S.party.host === myId();
+  }
+
+  function openLobby() {
+    $('party-start').hidden = true;
+    $('party-lobby').hidden = false;
+    $('party-code-out').textContent = S.party.code;
+    $('party-where').textContent = S.party.online
+      ? (amHost() ? 'Online. Read the code out and they join from their own device.'
+                  : 'Online. Waiting for the host to start.')
+      : 'On this device. Add the people sitting with you, or let robots take the rest.';
+    renderLobby();
+  }
+
+  function renderLobby() {
+    var p = S.party;
+    if (!p) return;
+    var sum = window.PARTY.summary(p);
+    var per = sum.per;
+
+    $('party-teams').innerHTML = [0, 1].map(function (t) {
+      var seats = window.PARTY.teamOf(p, t);
+      var rows = [];
+      for (var i = 0; i < per; i++) {
+        var m = seats[i];
+        if (!m) {
+          rows.push('<li class="seat is-empty">' +
+            (p.online ? '<span class="seat-wait">waiting for a player\u2026</span>'
+                      : '<span class="seat-wait">empty \u2014 a robot will take it</span>') +
+            '</li>');
+          continue;
+        }
+        var isMe = m.id === myId();
+        var canEdit = !p.online && !isMe && !m.ai && amHost();
+        rows.push('<li class="seat' + (m.ai ? ' is-ai' : '') + (isMe ? ' is-me' : '') + '">' +
+          '<span class="seat-pet">' + (m.petId ? window.PETS.draw(m.petId, m.level || 1) : '') + '</span>' +
+          '<span class="seat-body">' +
+          (canEdit
+            ? '<input class="input seat-name" data-rename="' + m.id + '" value="' + esc(m.name) + '" maxlength="14">'
+            : '<b class="seat-name-text">' + esc(m.name) + (isMe ? ' (you)' : '') + '</b>') +
+          (m.ai
+            ? '<span class="seat-tag">robot \u00b7 answers 1 in 3</span>'
+            : (canEdit
+              ? '<select class="input seat-pet-pick" data-pet="' + m.id + '">' + petOptions(m.petId) + '</select>'
+              : '<span class="seat-tag">' + esc((window.PETS.byId(m.petId) || {}).name || 'no pet') +
+                ' L' + (m.level || 1) + '</span>')) +
+          '</span>' +
+          ((amHost() && !isMe) ? '<button type="button" class="seat-x" data-drop="' + m.id +
+            '" aria-label="Remove ' + esc(m.name) + '">\u00d7</button>' : '') +
+          '</li>');
+      }
+      var room = seats.length < per;
+      return '<div class="party-team">' +
+        '<p class="lbl">' + (t === 0 ? 'Team A' : 'Team B') + ' <span class="team-count">' +
+        seats.length + ' / ' + per + '</span></p>' +
+        '<ul class="seats">' + rows.join('') + '</ul>' +
+        (amHost() && room && !p.online
+          ? '<div class="seat-add">' +
+            '<button type="button" class="btn btn-quiet" data-add-human="' + t + '">+ Person here</button>' +
+            '<button type="button" class="btn btn-quiet" data-add-ai="' + t + '">+ Robot</button>' +
+            '</div>'
+          : (amHost() && room && p.online
+            ? '<div class="seat-add"><button type="button" class="btn btn-quiet" data-add-ai="' + t + '">+ Robot</button></div>'
+            : '')) +
+        '</div>';
+    }).join('');
+
+    $('party-teams').querySelectorAll('[data-add-human]').forEach(function (b) {
+      b.addEventListener('click', function () { addHuman(Number(b.dataset.addHuman)); });
+    });
+    $('party-teams').querySelectorAll('[data-add-ai]').forEach(function (b) {
+      b.addEventListener('click', function () { addRobot(Number(b.dataset.addAi)); });
+    });
+    $('party-teams').querySelectorAll('[data-drop]').forEach(function (b) {
+      b.addEventListener('click', function () { dropSeat(b.dataset.drop); });
+    });
+    $('party-teams').querySelectorAll('[data-rename]').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        var m = p.members.filter(function (x) { return x.id === inp.dataset.rename; })[0];
+        if (m) m.name = inp.value.slice(0, 14);
+      });
+    });
+    $('party-teams').querySelectorAll('[data-pet]').forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        var m = p.members.filter(function (x) { return x.id === sel.dataset.pet; })[0];
+        if (m) { m.petId = sel.value; m.level = S.owned[sel.value] || 1; renderLobby(); }
+      });
+    });
+
+    var go = $('party-start-btn');
+    go.hidden = !amHost();
+    go.textContent = sum.empty
+      ? 'Start with ' + sum.empty + ' robot' + (sum.empty === 1 ? '' : 's')
+      : 'Start the duel';
+    $('party-swap').hidden = !!p.online && !amHost() ? false : false;
+    $('party-fill-note').textContent = sum.empty
+      ? sum.empty + ' seat' + (sum.empty === 1 ? '' : 's') + ' still open. Start now and ' +
+        (sum.empty === 1 ? 'a robot takes it' : 'robots take them') + ' \u2014 each one answers at random, so about one in three.'
+      : 'Everyone is in.';
+
+  }
+
+  function addHuman(team) {
+    var p = S.party;
+    if (window.PARTY.teamOf(p, team).length >= window.PARTY.mode(p.mode).per) return;
+    localSeatNo++;
+    var ids = ownedPetIds();
+    p.members.push({
+      id: 'local' + localSeatNo + Math.random().toString(36).slice(2, 5),
+      name: 'Player ' + localSeatNo,
+      team: team,
+      petId: ids[(localSeatNo - 1) % ids.length] || S.pet,
+      level: 1,
+      ai: false
+    });
+    renderLobby();
+    pushParty();
+  }
+
+  function addRobot(team) {
+    var p = S.party;
+    if (window.PARTY.teamOf(p, team).length >= window.PARTY.mode(p.mode).per) return;
+    var n = p.members.filter(function (m) { return m.ai; }).length;
+    p.members.push({
+      id: 'ai' + n + Math.random().toString(36).slice(2, 5),
+      name: window.PARTY.robotNames[n % window.PARTY.robotNames.length],
+      team: team,
+      petId: ownedPetIds()[n % Math.max(1, ownedPetIds().length)] || S.pet,
+      level: 4 + (n % 3) * 2,
+      ai: true
+    });
+    renderLobby();
+    pushParty();
+  }
+
+  function dropSeat(id) {
+    window.PARTY.leave(S.party, id);
+    renderLobby();
+    pushParty();
+  }
+
+  /* ── staying in step with the other devices ── */
+
+  function stopParty() {
+    if (S.watcher) { S.watcher.stop(); S.watcher = null; }
+  }
+
+  function pushParty() {
+    if (!S.party || !S.party.online || !amHost()) return;
+    window.NET.putParty(S.party.code, myId(), S.party).catch(function () {});
+  }
+
+  /* The server only appends whoever asked to join — it runs no rules, so it has no idea
+     which side has room. The host does the seating, and writes the corrected party back. */
+  function seatArrivals(incoming) {
+    var p = S.party;
+    var known = {};
+    p.members.forEach(function (m) { known[m.id] = m; });
+    var changed = false;
+
+    incoming.forEach(function (m) {
+      if (known[m.id]) return;
+      var t = window.PARTY.openTeam(p);
+      if (t < 0) return;                       /* full: they are told when they next poll */
+      p.members.push({
+        id: m.id, name: m.name, team: t,
+        petId: m.petId || '', level: m.level || 1, ai: !!m.ai
+      });
+      changed = true;
+      toast(m.name + ' joined');
+    });
+
+    /* anyone the server has dropped has left on their own device */
+    var still = {};
+    incoming.forEach(function (m) { still[m.id] = true; });
+    var before = p.members.length;
+    p.members = p.members.filter(function (m) {
+      return m.ai || m.id === myId() || still[m.id] || m.id.indexOf('local') === 0;
+    });
+    if (p.members.length !== before) changed = true;
+    return changed;
+  }
+
+  function hostWatch() {
+    stopParty();
+    S.watcher = window.NET.watch({
+      code: S.party.code, id: myId(), host: true,
+      onParty: function (p) {
+        if (!S.party || window.DUEL.running()) return;
+        if (seatArrivals(p.members)) { renderLobby(); pushParty(); }
+      },
+      onActions: function (actions) {
+        actions.forEach(function (a) {
+          if (a.type === 'pick' || a.type === 'answer' || a.type === 'ready') {
+            window.DUEL.applyRemote(a);
+          }
+        });
+      },
+      onError: function (m) { partyMsg(m, true); }
+    });
+  }
+
+  function guestWatch() {
+    stopParty();
+    S.watcher = window.NET.watch({
+      code: S.party.code, id: myId(), host: false,
+      onParty: function (p) {
+        S.party.members = p.members;
+        S.party.started = p.started;
+        S.party.mode = p.mode;
+        if (p.started && $('duel-board').hidden) joinStartedDuel();
+        else if (!p.started) renderLobby();
+      },
+      onState: function (state) { paintGuest(state); },
+      onError: function (m) { partyMsg(m, true); }
+    });
+  }
+
+  /* ── starting ── */
+
+  function startDuel() {
+    var p = S.party;
+    window.PARTY.fill(p, ownedPetIds());
+    p.started = true;
 
     $('duel-setup').hidden = true;
     $('duel-board').hidden = false;
 
+    var teams = teamsForDuel(p);
+    var localIds = p.online
+      ? [myId()]
+      : p.members.filter(function (m) { return !m.ai; }).map(function (m) { return m.id; });
+
     window.DUEL.start({
       el: { hp: $('duel-hp'), stage: $('duel-stage') },
       topic: S.board.topic,
-      questions: pool,
-      players: [
-        { name: ($('p1-name').value || 'Player 1').slice(0, 14), pet: a.def, level: a.level },
-        { name: ($('p2-name').value || 'Player 2').slice(0, 14), pet: b.def, level: b.level }
-      ],
+      questions: chaseQuestions(S.board.topic),
+      teams: teams,
+      maxHp: window.PARTY.teamHp(p.mode),
+      remote: !!p.online,
+      localIds: localIds,
+      reduced: reduceMotion,
+      onState: function (st) {
+        if (p.online && amHost()) window.NET.putState(p.code, myId(), st, p).catch(function () {});
+      },
       onEnd: function (r) {
-        S.tally.duels++;
+        var mine = r.winner.members.some(function (m) { return m.id === myId(); });
+        S.tally.duels += mine ? 1 : 0;
         saveProfile();
-        earn(window.PETS.earn.wonDuel, r.winner.name + ' winning the duel');
+        if (mine) earn(window.PETS.earn.wonDuel, 'winning the duel');
         grantEarnedTitles(true);
         say(r.winner.name + ' won the duel after ' + r.rounds + ' rounds.');
       },
       onAgain: function () { showDuel(); }
     });
-    say('Duel started. ' + $('p1-name').value + ' picks the first question.');
+
+    if (p.online) pushParty();
+    say('Duel started. ' + window.PARTY.mode(p.mode).name + '.');
   }
 
-  $('duel-start').addEventListener('click', beginDuel);
+  function joinStartedDuel() {
+    /* a guest does not run the rules; it renders what the host publishes */
+    $('duel-setup').hidden = true;
+    $('duel-board').hidden = false;
+    $('duel-stage').innerHTML = '<div class="duel-wait"><p class="duel-step">Starting\u2026</p></div>';
+  }
+
+  function paintGuest(st) {
+    if (!S.party || amHost() || !st) return;
+    if ($('duel-board').hidden) joinStartedDuel();
+    var teams = teamsForDuel(S.party);
+    var me = myId();
+
+    $('duel-hp').innerHTML = teams.map(function (t, i) {
+      var hearts = '';
+      for (var h = 0; h < (st.maxHp ? st.maxHp[i] : 5); h++) {
+        hearts += '<span class="hp' + (h < st.hp[i] ? ' is-on' : '') + '"></span>';
+      }
+      return '<div class="duel-team' + (i === st.turn ? ' is-turn' : '') + '">' +
+        '<div class="duel-team-head"><p class="duel-who">' + esc(t.name) + '</p>' +
+        '<div class="hp-row">' + hearts + '</div></div>' +
+        '<ul class="duel-seats">' + t.members.map(function (m) {
+          var role = m.id === st.attacker ? 'attack' : (m.id === st.defender ? 'defend' : '');
+          return '<li class="duel-seat' + (role ? ' is-' + role : '') + (m.ai ? ' is-ai' : '') + '">' +
+            '<span class="duel-seat-pet">' + window.PETS.draw(m.pet.id, m.level) + '</span>' +
+            '<span class="duel-seat-text"><b>' + esc(m.name) + '</b><span>' +
+            (m.ai ? 'robot' : esc(m.pet.name)) + '</span></span></li>';
+        }).join('') + '</ul></div>';
+    }).join('');
+
+    var all = teams[0].members.concat(teams[1].members);
+    var who = function (id) {
+      var m = all.filter(function (x) { return x.id === id; })[0];
+      return m ? m.name : 'someone';
+    };
+
+    if (st.phase === 'over') {
+      var won = st.hp[0] > 0 ? 0 : 1;
+      var mineTeam = teams[0].members.some(function (m) { return m.id === me; }) ? 0 : 1;
+      $('duel-stage').innerHTML = '<div class="duel-outcome ' +
+        (won === mineTeam ? 'is-win' : 'is-lose') + '">' +
+        '<p class="duel-step">' + esc(teams[won].name) + ' wins.</p>' +
+        '<p class="duel-sub">After ' + st.round + ' rounds. Right answers: ' +
+        st.scores.join(' and ') + '.</p>' +
+        '<button type="button" class="btn btn-primary" id="guest-again">Back to the lobby</button></div>';
+      var ga = $('duel-stage').querySelector('#guest-again');
+      if (ga) ga.addEventListener('click', function () { stopParty(); window.DUEL.stop(); showDuel(); });
+      return;
+    }
+    if (st.phase === 'choose' && st.attacker === me && st.choices) {
+      pickGuest(st);
+      return;
+    }
+    if (st.phase === 'answer' && st.defender === me) {
+      askGuest(st);
+      return;
+    }
+    if (st.phase === 'result') {
+      $('duel-stage').dataset.asked = '';
+      $('duel-stage').dataset.picked = '';
+      $('duel-stage').innerHTML = '<div class="duel-outcome ' +
+        (st.lastRight ? 'is-win' : 'is-lose') + '">' +
+        '<p class="duel-step">' + esc(st.lastDefender || 'They') + ' ' +
+        (st.lastRight ? 'defended it.' : 'missed it \u2014 ' + st.lastDamage + ' heart' +
+          (st.lastDamage === 1 ? '' : 's') + ' gone.') + '</p>' +
+        (st.why ? '<p class="duel-sub">' + esc(st.why) + '</p>' : '') + '</div>';
+      return;
+    }
+    $('duel-stage').dataset.asked = '';
+    $('duel-stage').dataset.picked = '';
+    $('duel-stage').innerHTML = '<div class="duel-wait">' +
+      '<p class="duel-step">' + (st.phase === 'choose'
+        ? esc(who(st.attacker)) + ' is choosing a question\u2026'
+        : esc(who(st.defender)) + ' is answering\u2026') + '</p>' +
+      (st.phase !== 'choose' && st.question ? '<p class="duel-sub">' + esc(st.question) + '</p>' : '') +
+      '<div class="duel-dots" aria-hidden="true"><i></i><i></i><i></i></div></div>';
+  }
+
+  function pickGuest(st) {
+    var stage = $('duel-stage');
+    var key = st.round + ':' + st.choices.map(function (c) { return c.q; }).join('|');
+    if (stage.dataset.picked === key) return;
+    stage.dataset.picked = key;
+    stage.innerHTML =
+      '<p class="duel-step">Your turn \u2014 pick a question to send</p>' +
+      '<p class="duel-sub">Whoever is up on the other team has to answer it.</p>' +
+      '<div class="duel-picks">' + st.choices.map(function (c, i) {
+        var pct = Math.round(c.diff * 100);
+        var band = c.diff < 0.35 ? 'easy' : c.diff < 0.62 ? 'medium' : 'hard';
+        return '<button type="button" class="duel-pick" data-gp="' + i + '">' +
+          '<span class="duel-band is-' + band + '">' + band + ' \u00b7 ' + pct + '%</span>' +
+          '<span class="duel-qtext">' + esc(c.q.length > 110 ? c.q.slice(0, 110) + '\u2026' : c.q) + '</span>' +
+          '</button>';
+      }).join('') + '</div>';
+    stage.querySelectorAll('[data-gp]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        stage.querySelectorAll('[data-gp]').forEach(function (x) { x.disabled = true; });
+        window.NET.act(S.party.code, myId(), { type: 'pick', index: Number(b.dataset.gp) })
+          .catch(function () { partyMsg('That did not reach the host.', true); });
+      });
+    });
+  }
+
+  function askGuest(st) {
+    /* the host sends only the stem over the wire, so the guest asks for the options it
+       already has in its own copy of the library */
+    var pool = chaseQuestions(S.board.topic);
+    var q = pool.filter(function (x) { return x.q === st.question; })[0];
+    if (!q) {
+      $('duel-stage').innerHTML = '<div class="duel-wait"><p class="duel-step">Your turn\u2026</p></div>';
+      return;
+    }
+    var key = st.round + ':' + st.question;
+    if ($('duel-stage').dataset.asked === key) return;
+    $('duel-stage').dataset.asked = key;
+    $('duel-stage').innerHTML =
+      '<p class="duel-step">Your turn to answer</p>' +
+      '<p class="duel-q">' + esc(q.q) + '</p>' +
+      '<div class="duel-opts">' + q.a.map(function (a, i) {
+        return '<button type="button" class="chase-opt" data-g="' + i + '">' + esc(a) + '</button>';
+      }).join('') + '</div>';
+    $('duel-stage').querySelectorAll('[data-g]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        $('duel-stage').querySelectorAll('[data-g]').forEach(function (x) { x.disabled = true; });
+        window.NET.act(S.party.code, myId(), { type: 'answer', index: Number(b.dataset.g) })
+          .catch(function () { partyMsg('That did not reach the host.', true); });
+      });
+    });
+  }
+
+  /* ── buttons ── */
+
+  $('where-row').querySelectorAll('[data-where]').forEach(function (b) {
+    b.addEventListener('click', function () { if (!b.disabled) setWhere(b.dataset.where); });
+  });
+  $('party-create').addEventListener('click', createParty);
+  $('party-join').addEventListener('click', joinParty);
+  $('party-code').addEventListener('input', function () {
+    this.value = window.PARTY.cleanCode(this.value);
+  });
+  $('party-start-btn').addEventListener('click', startDuel);
+  $('party-swap').addEventListener('click', function () {
+    if (!S.party) return;
+    if (window.PARTY.swapSide(S.party, myId())) { renderLobby(); pushParty(); }
+    else toast('No room on the other side');
+  });
+  $('party-copy').addEventListener('click', function () {
+    if (!S.party) return;
+    var code = S.party.code;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(function () { toast('Copied ' + code); },
+        function () { toast('Your code is ' + code); });
+    } else toast('Your code is ' + code);
+  });
+  $('party-leave').addEventListener('click', function () {
+    if (S.party && S.party.online) window.NET.leave(S.party.code, myId()).catch(function () {});
+    stopParty();
+    window.DUEL.stop();
+    showDuel();
+  });
+
 
   /* ── the quick check ───────────────────────────────────
      Questions come from two places: the library's own three, and — when the photo gave us

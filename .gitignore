@@ -8,3 +8,7 @@ Desktop.ini
 
 # local scratch
 node_modules/
+
+# screen recordings dropped in the folder (GitHub rejects files this big anyway)
+*.mp4
+*.mov

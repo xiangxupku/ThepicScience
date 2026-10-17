@@ -365,3 +365,124 @@ const totalCost = PF.list.filter(i => i.cost > 0).reduce((n, i) => n + i.cost, 0
 console.log('sparks to unlock every look:', totalCost);
 console.log('problems:', pBad.length ? pBad.slice(0, 8).join('; ') : 'none');
 if (pBad.length) process.exitCode = 1;
+
+
+// ── the monster ladder: three worlds, a chest each, every level winnable ──
+eval(fsp.readFileSync(__dirname + '/assets/worlds.js', 'utf8'));
+const WD = window.WORLDS;
+let wBad = [];
+
+WD.list.forEach(w => {
+  ['id', 'name', 'monster', 'blurb', 'beat', 'lost', 'aria', 'tune', 'door', 'streak'].forEach(k => {
+    if (!w[k]) wBad.push(w.id + ': missing ' + k);
+  });
+  if (typeof w.scene !== 'function') wBad.push(w.id + ': no scene');
+  if (typeof w.monsterArt !== 'function') wBad.push(w.id + ': no monster');
+  if (!(w.bounty > 0)) wBad.push(w.id + ': no chest');
+  ['goal', 'startGap', 'maxGap', 'boost', 'penalty', 'baseClose', 'ramp'].forEach(k => {
+    if (!(w.tune[k] > 0)) wBad.push(w.id + ': tune.' + k + ' must be positive');
+  });
+  if (w.tune.maxGap < w.tune.startGap) wBad.push(w.id + ': maxGap below startGap');
+});
+
+// the chests the user asked for
+const bounty = {};
+WD.list.forEach(w => { bounty[w.id] = w.bounty; });
+if (bounty.slime !== 10) wBad.push('the slime chest should be 10, not ' + bounty.slime);
+if (bounty.alien !== 30) wBad.push('the alien chest should be 30, not ' + bounty.alien);
+if (bounty.backrooms !== 50) wBad.push('the backrooms chest should be 50, not ' + bounty.backrooms);
+
+// a different monster every level, and the rotation comes back round
+for (let L = 1; L <= 12; L++) {
+  if (WD.forLevel(L).id === WD.forLevel(L + 1).id) wBad.push('level ' + L + ' and ' + (L + 1) + ' are the same monster');
+}
+if (WD.forLevel(1).id !== WD.forLevel(1 + WD.count).id) wBad.push('the rotation does not repeat');
+
+// every level has to be beatable by someone who needs a couple of seconds a question
+function slowestWin(level) {
+  const c = WD.tuneFor(level);
+  let best = 0;
+  for (let read = 0.5; read <= 8; read += 0.05) {
+    let gap = c.startGap, t = 0, dist = 0, boost = 0, n = 0, next = read;
+    while (dist < c.goal && gap > 0 && t < 600) {
+      t += 0.05;
+      gap = Math.min(c.maxGap, gap - (c.baseClose + t * c.ramp) * 0.05);
+      if (boost > 0) boost -= 0.05;
+      dist += (26 + (boost > 0 ? 34 : 0)) * 0.05;
+      if (t >= next) {
+        n++;
+        if (n % 5 === 0) { gap -= c.penalty; next = t + read + 1.8; }      // one wrong in five
+        else { gap = Math.min(c.maxGap, gap + c.boost); boost = 1.4; next = t + read + 0.42; }
+      }
+    }
+    if (dist >= c.goal) best = read;
+  }
+  return best;
+}
+
+const paces = [];
+for (let L = 1; L <= 9; L++) {
+  const p = slowestWin(L);
+  paces.push(L + ':' + p.toFixed(1) + 's');
+  if (p < 1.4) wBad.push('level ' + L + ' needs an answer every ' + p.toFixed(2) + 's, which is not fair');
+}
+// and it should actually get harder, not easier, as you climb
+if (slowestWin(9) > slowestWin(1)) wBad.push('level 9 is easier than level 1');
+
+console.log('\n-- the monster ladder --');
+console.log('worlds:', WD.list.length, '| chests:', WD.list.map(w => w.id + ' ' + w.bounty).join(', '));
+console.log('seconds per question you can afford, with one wrong in five:', paces.join('  '));
+console.log('problems:', wBad.length ? wBad.slice(0, 6).join('; ') : 'none');
+if (wBad.length) process.exitCode = 1;
+
+// ── parties: team sizes, seating and the one-in-three robots ──
+eval(fsp.readFileSync(__dirname + '/assets/party.js', 'utf8'));
+const PY = window.PARTY;
+let yBad = [];
+
+['1v1', '2v2', '3v3', '4v4'].forEach(id => {
+  const m = PY.modes.filter(x => x.id === id)[0];
+  if (!m) { yBad.push('no ' + id + ' mode'); return; }
+  if (PY.teamHp(id) < 5) yBad.push(id + ': too few hearts');
+
+  // join one at a time and the sides must stay even
+  const p = PY.create({ mode: id, host: { id: 'h', name: 'Host' } });
+  for (let i = 1; i < m.per * 2; i++) {
+    const r = PY.join(p, { id: 'g' + i, name: 'G' + i });
+    if (!r.ok) yBad.push(id + ': could not seat player ' + (i + 1) + ' — ' + r.why);
+  }
+  if (!PY.isFull(p)) yBad.push(id + ': not full after ' + (m.per * 2) + ' players');
+  if (PY.teamOf(p, 0).length !== m.per || PY.teamOf(p, 1).length !== m.per) {
+    yBad.push(id + ': lopsided — ' + PY.teamOf(p, 0).length + ' v ' + PY.teamOf(p, 1).length);
+  }
+  if (PY.join(p, { id: 'extra', name: 'Extra' }).ok) yBad.push(id + ': let an extra player into a full party');
+
+  // a host on their own plus robots must still make a full game
+  const solo = PY.create({ mode: id, host: { id: 'h', name: 'Host' } });
+  PY.fill(solo, ['bubble']);
+  if (solo.members.length !== m.per * 2) yBad.push(id + ': robots did not fill it');
+  if (solo.members.filter(x => x.ai).length !== m.per * 2 - 1) yBad.push(id + ': wrong number of robots');
+});
+
+// codes: four characters, nothing that can be misread aloud
+const codes = new Set();
+for (let i = 0; i < 4000; i++) {
+  const c = PY.newCode();
+  if (!/^[BCDFGHJKLMNPQRSTVWXYZ23456789]{4}$/.test(c)) yBad.push('bad code ' + c);
+  codes.add(c);
+}
+if (codes.size < 3500) yBad.push('codes collide too often: ' + codes.size + ' in 4000');
+
+// a robot answers one in three, and nothing cleverer
+let hits = 0;
+const q = { a: ['a', 'b', 'c'], c: 1 };
+for (let i = 0; i < 120000; i++) if (PY.robotAnswer(q) === q.c) hits++;
+const rate = hits / 120000;
+if (Math.abs(rate - 1 / 3) > 0.01) yBad.push('robots answer ' + (rate * 100).toFixed(1) + '%, expected 33.3%');
+
+console.log('\n-- parties --');
+console.log('modes:', PY.modes.map(m => m.id + ' (' + PY.teamHp(m.id) + ' hearts)').join(', '));
+console.log('robot accuracy over 120,000 answers:', (rate * 100).toFixed(2) + '%');
+console.log('distinct codes in 4,000 draws:', codes.size);
+console.log('problems:', yBad.length ? yBad.slice(0, 6).join('; ') : 'none');
+if (yBad.length) process.exitCode = 1;

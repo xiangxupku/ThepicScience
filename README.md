@@ -9,8 +9,11 @@ the photo, the text reading and the narration all happen inside the browser.
 
 ## What it does
 
-1. **📸 Take a picture.** Camera, file picker, drag and drop, or paste. Give it a video and it
-   grabs a frame about a second in.
+1. **📸 Take up to ten pictures.** Camera, file picker, drag and drop, or paste — and the
+   picker takes **ten photos at once**. A whiteboard rarely fits in one shot, so all of them
+   are read one after another and joined into a single piece of text before the topic is
+   matched. A strip of thumbnails shows what went in, and any one of them can be dropped if
+   it came out blurred. Give it a video instead and it grabs three frames.
    The library covers **21 topics**, chosen to line up with what US, Canadian and UK schools
    actually teach. Each one carries a `taught` line naming the unit as your own curriculum
    usually calls it — "Optics (Ontario Gr 10)", "Waves (GCSE Physics)", "NGSS MS-PS4". That is
@@ -65,14 +68,40 @@ the photo, the text reading and the narration all happen inside the browser.
    fullscreen, and keyboard shortcuts: space to play, arrows to skip a scene, `F` for
    fullscreen, `C` for captions. None of it animates in the picture book, the exports or the
    printed pages, and `prefers-reduced-motion` switches all of it off.
-   **👹 Escape the monster** is the fifth option. Something is chasing you down a dark path,
-   drawn frame by frame on a canvas: parallax trees, a shadow with glowing eyes, and a student
-   in a lab coat looking back over their shoulder. Every right answer is a burst of speed;
-   every wrong one lets it close in. The chase **freezes while a wrong answer is explained**,
-   because reading why you were wrong should not be the moment you get eaten. It is tuned so a
-   perfect run still tightens from 46 m of head start down to about 18 m — and a "make it less
-   scary" switch turns the shadow friendly and stops the screen shaking. No sound, no jump
-   scares, nothing gory.
+   **👹 Escape the monster** is the fifth option, and it is now a ladder of levels with a
+   different monster and a different place in each. Everything is drawn frame by frame on a
+   canvas, so a whole new world costs nothing to download.
+
+   | Level | Where | What is after you | Chest |
+   | --- | --- | --- | --- |
+   | 1 | The dark wood | **Slime** — a heavy green thing that wobbles as it rolls | 10 ⚡ |
+   | 2 | Deep space | **Alien** — tall, slow-striding, huge black eyes | 30 ⚡ |
+   | 3 | The backrooms | **The long one** — yellow wallpaper, buzzing lights, no face | 50 ⚡ |
+   | 4+ | Round again | the same three, each lap tighter | same |
+
+   Get out alive and a chest drops. You open it yourself and the sparks go straight into your
+   total, then the next level loads with the next monster — never the same one twice in a row.
+   The level you reached is remembered.
+
+   **The questions start short and get longer.** Every question is weighed by how many words
+   you have to read and how deep into the topic it sits, and a run walks that scale from the
+   bottom to the top — so a run opens with "Current is measured in…" and ends on a two-line
+   calculation. Higher levels start further up the scale.
+
+   Every right answer is a burst of speed; every wrong one lets it close in. The chase
+   **freezes while a wrong answer is explained**, because reading why you were wrong should
+   not be the moment you get eaten. `check.js` plays every level out and fails the build if
+   any of them needs answers faster than one every 1.4 seconds.
+
+   Spooky, never nasty. No sound, no jump scares, nothing gory, and "make it less scary"
+   makes all three friendly: the slime smiles, the alien waves, and the long pale figure gets
+   a face and a grin.
+
+   **⏱ Speed run.** A clock runs in the corner to a tenth of a second, and it keeps going
+   while you read an explanation — the pause is part of the cost. Your fastest escape on each
+   level is kept on your own device and shown in a board under the chase. If the site has a
+   durable score store there is a shared board too: the fastest twenty people per level, with
+   whatever name they typed on their own device.
    **📐 Go deeper** sits under every lesson, folded away until you ask for it. It is the layer
    a test actually examines, and it is written per topic: the **formulas with every symbol
    spelled out** (`F = m × a` — force in newtons, mass in kilograms, acceleration in m/s²),
@@ -109,12 +138,29 @@ the photo, the text reading and the narration all happen inside the browser.
    unlocks a harder question to send every 5 levels, and one fed past 0.7 bite hits for two
    hearts instead of one.
 
-8. **⚔ Duel a friend.** Two players, one device, one topic. On your attack your pet finds
-   **three questions and you choose which one to send** — the stronger your attacker, the
-   harder the three. A hand-over screen sits in between so the person answering never sees
-   which one was picked. They get one hint from their own pet, then answer. Five hearts each,
-   wrong answers cost one (or two against a strong attacker), and every question is retired
-   once used. There is no internet matchmaking, because that would need a server.
+8. **⚔ Duel, in teams, online or on one device.** Pick **1v1, 2v2, 3v3 or 4v4**, get a
+   four-letter party code, and fill the seats.
+
+   On your attack your pet finds **three questions and you choose which one to send** — the
+   stronger your attacker, the harder the three. Someone on the other team answers it, with
+   one hint from their own pet. Everyone attacks and everyone answers: each team keeps its own
+   two pointers and both walk round the team. Hearts scale with team size (5, 7, 9, 11) so a
+   4v4 does not end in two rounds, and every question retires once used.
+
+   **Robots fill any empty seat.** A robot picks one of the three answers at random, so it
+   gets one in three right — that is printed on its card, and `check.js` plays 120,000 of its
+   answers to prove the rate. It picks which question to send at random too. A host on their
+   own can start a 4v4 immediately and play seven robots.
+
+   **Online** gives everyone a code to join from their own phone or laptop. It is
+   *host-authoritative*: the host's device runs the rules and publishes what the screen should
+   say, the guests render that and post back what they tapped. One copy of the rules means two
+   screens cannot drift apart. The whole thing rides on one small serverless endpoint that
+   stores a JSON document per code for half an hour — no accounts, no personal data, nothing
+   kept afterwards.
+
+   **On this device** needs no server at all: add the people sitting with you, pass it round,
+   and a hand-over screen keeps the question hidden until it is their turn.
 
 9. **🧑‍🔬 Your profile.** A chip in the top right corner of every page: your
    avatar, your name and your title. Tap it and the locker opens.
@@ -197,15 +243,47 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/topics-c.js` | Science library, topics 15–17: acids, optics, space |
 | `assets/topics-d.js` | Science library, topics 18–21: evolution, mixtures, microbes, magnetism |
 | `assets/projects.js` | One hands-on project per topic: materials, steps, the science |
-| `assets/chase.js` | The monster chase: canvas drawing, physics, and the balance numbers |
+| `assets/chase.js` | The chase: the running, the questions, the ramp, the clock, the chest |
+| `assets/worlds.js` | The three places and the three monsters, with their chests and tuning |
+| `assets/party.js` | Parties: team sizes, seating, codes, and the one-in-three robots |
+| `assets/net.js` | The wire between devices in an online party |
+| `api/party.js` | The one serverless file: a JSON document per party code, for 30 minutes |
+| `api/scores.js` | The speed-run leaderboard, fastest twenty per level |
 | `assets/pets.js` | The 50 pets: shapes, rarities, egg odds, levelling, and the hint ladder |
 | `assets/profile.js` | Your avatar: 40 cosmetics in six slots, and the ten earned titles |
-| `assets/duel.js` | The two-player duel: question difficulty, the three-way pick, hearts |
+| `assets/duel.js` | The team duel: difficulty, the three-way pick, hearts, robots, turns |
 | `assets/detail.js` | The deeper layer per topic: formulas, misconceptions, links |
 | `assets/art.js` | Every drawing, as SVG built in code so it works in dark mode |
 | `vercel.json` | Static hosting config |
 | `check.js` | Checks the library: run `node check.js` after editing any topic or project |
 | `.claude/launch.json` | Local preview config for Claude Code |
+
+## Switching the online parts on
+
+Everything except two things works as plain static files, offline, with no server. The two
+exceptions are **online duels** and the **shared leaderboard**, which need somewhere for two
+devices to leave messages for each other.
+
+Both look for the same environment variables, and both fall back without them:
+
+| Variable | Where it comes from |
+| --- | --- |
+| `KV_REST_API_URL` | Upstash for Redis, added from the Vercel dashboard |
+| `KV_REST_API_TOKEN` | the same |
+
+With them set, parties and scores are stored properly. Without them, each endpoint keeps a
+plain `Map` inside the running function instead. That is fine for `vercel dev` and often fine
+for two phones in the same minute, but a serverless function can be moved to a fresh instance
+at any moment, which drops everything. The app is told which one is in use:
+
+- the **Online** button says "works best if everyone joins within a few minutes" rather than
+  claiming it is reliable, and
+- the **shared leaderboard is hidden entirely** until the store is durable, because a board
+  that forgets itself every few minutes is worse than no board. Your own best times are kept
+  in `localStorage` and always work.
+
+To turn it on: open the project in the Vercel dashboard, go to Storage, add Upstash for Redis
+(there is a free tier), and redeploy. Nothing in the code needs changing.
 
 ## Adding a topic to the library
 
@@ -232,12 +310,23 @@ Copy an existing block in `assets/topics.js` and fill it in. The rules the app r
 - Add a matching entry in `assets/projects.js` with the same topic id. Household materials
   only, nothing hot or sharp, and it has to be a fair test: one thing changed, one measured.
 
-## Tuning the chase
+## Tuning the chase, and adding a monster
 
-The numbers live in one `CFG` block at the top of `assets/chase.js`. Raising `baseClose` or
-`ramp` makes it meaner; raising `boost` or `maxGap` makes it kinder. `CHASE.advance(seconds)`
-runs the simulation without waiting for animation frames, which is how the balance above was
-measured — a run with no answers is caught at about 13 seconds.
+Each world owns its own numbers, in its `tune` block in `assets/worlds.js`. Raising
+`baseClose` or `ramp` makes that world meaner; raising `boost` or `maxGap` makes it kinder.
+`WORLDS.tuneFor(level)` applies the per-lap tightening on top, capped so even lap five stays
+winnable.
+
+A new monster is a new entry in the `LIST` at the bottom of that file: an id, a name, a
+bounty, a `tune`, a `scene(c, g, ground)` that paints the backdrop and a
+`monsterArt(c, g, t, k)` that paints the creature with the ground at y = 0 and `k` running 0
+(far away) to 1 (right behind you). `chase.js` needs no changes; `check.js` will pick the new
+world up and play every level of it to check it is beatable.
+
+Test seams, all used by the checks above: `CHASE.advance(seconds)` runs the simulation without
+waiting for animation frames, `CHASE.forceAnswer(right)` answers the question on screen, and
+`CHASE.plan(pool, level)` returns the order a pool would be asked in, which is how the
+short-to-long ramp is verified.
 
 ## Known limits
 
@@ -246,8 +335,17 @@ measured — a run with no answers is caught at about 13 seconds.
   not money and cannot be bought.
 - Your display name is never checked against anything. It is typed on your own device and
   shown only on your own screen, so there is nothing to moderate and nobody to clash with.
-- The duel is hot-seat only: two people at one screen. Playing someone in another house
-  would need a server to pass the moves through, and this app does not have one.
+- Online duels poll the server about once a second rather than holding a connection open, so
+  a move can take a second to appear on the other screen. A serverless function cannot keep a
+  socket open, and a question-and-answer game is slow enough that it does not matter.
+- If the host closes their tab, the duel stops for everyone: the host's device is the one
+  running the rules. Guests go back to the lobby.
+- A posted speed-run time is a number a browser sent. It is checked against what the level can
+  physically allow and against the questions actually answered, so an obvious impossibility
+  cannot sit at the top of the board, but there is no way to make it cheat-proof without a
+  server that runs the game itself. It is a homework game, not a tournament.
+- Ten pictures is the limit, and each is shrunk to 1600px before reading. Reading ten takes
+  noticeably longer than reading one — the progress bar says which one it is on.
 - The grade sign-in is stored in `localStorage` on that one device. There is no account, so
   nothing follows you to another computer — and nothing about you leaves the browser.
 - The library covers 21 topics. Anything outside it is reported as "no topic matched" rather

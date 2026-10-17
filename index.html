@@ -164,36 +164,38 @@
   <section class="card step" id="step1" aria-labelledby="step1-h">
     <div class="step-head">
       <p class="eyebrow">Step 1</p>
-      <h2 id="step1-h">Add a photo or video of the science</h2>
-      <p class="step-sub">The whiteboard, a page of your textbook, your own notes, or a clip of your teacher talking. Nothing you add ever leaves your device.</p>
+      <h2 id="step1-h">Add photos or a video of the science</h2>
+      <p class="step-sub">The whiteboard, a page of your textbook, your own notes, or a clip of your teacher talking. Add up to ten pictures and they are read together, so a board that took three photos still makes one lesson. Nothing you add ever leaves your device.</p>
     </div>
 
     <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-help">
       <svg class="drop-icon" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="13" width="38" height="27" rx="4"/><circle cx="24" cy="27" r="8"/><path d="M17 13l3-5h8l3 5"/></svg>
-      <p class="drop-title">Drop your picture here</p>
-      <p class="drop-or" id="drop-help">or choose a file, take a photo, or paste one with Ctrl + V</p>
+        <p class="drop-title">Drop your pictures here</p>
+        <p class="drop-or" id="drop-help">up to 10 at once — or choose files, take a photo, or paste one with Ctrl + V</p>
       <div class="drop-actions">
         <button type="button" class="btn btn-primary" id="pick-file">Choose a file</button>
         <button type="button" class="btn" id="pick-camera">Take a photo</button>
       </div>
-      <p class="drop-note">JPG, PNG, WEBP, MP4 or MOV — up to 50 MB</p>
+      <p class="drop-note">JPG, PNG, WEBP, MP4 or MOV — up to 10 photos, 50 MB each</p>
     </div>
 
     <label class="visually-hidden" for="file-input">Choose an image or video file</label>
-    <input type="file" id="file-input" accept="image/*,video/*" hidden>
+    <input type="file" id="file-input" accept="image/*,video/*" multiple hidden>
     <label class="visually-hidden" for="camera-input">Take a photo with your camera</label>
-    <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+    <input type="file" id="camera-input" accept="image/*" capture="environment" multiple hidden>
 
     <p class="field-error" id="file-error" role="alert" hidden></p>
 
     <div class="preview" id="preview" hidden>
       <div class="preview-media" id="preview-media"></div>
+      <ul class="shot-strip" id="shot-strip" hidden aria-label="The pictures you added"></ul>
       <div class="preview-meta">
         <p class="preview-name" id="preview-name"></p>
         <p class="preview-sub" id="preview-sub"></p>
         <div class="preview-actions">
           <button type="button" class="btn btn-primary" id="scan-btn">Read this picture</button>
-          <button type="button" class="btn btn-quiet" id="remove-file">Remove</button>
+          <button type="button" class="btn" id="add-more">Add more</button>
+          <button type="button" class="btn btn-quiet" id="remove-file">Remove all</button>
         </div>
       </div>
     </div>
@@ -444,21 +446,54 @@
 
     <div id="duel-view" hidden>
       <div class="duel-setup" id="duel-setup">
-        <p class="lbl">Who is playing?</p>
-        <div class="duel-names">
-          <span class="vf"><label class="sub-lbl" for="p1-name">Player 1</label>
-            <input class="input" id="p1-name" value="Player 1" maxlength="14"></span>
-          <span class="vf"><label class="sub-lbl" for="p1-pet">Player 1 pet</label>
-            <select class="input" id="p1-pet"></select></span>
+
+        <div class="party-start" id="party-start">
+          <p class="lbl">How many a side?</p>
+          <div class="mode-row" id="mode-row" role="radiogroup" aria-label="Team size"></div>
+
+          <p class="lbl">Where are the other players?</p>
+          <div class="mode-row" id="where-row" role="radiogroup" aria-label="Where everyone is">
+            <button type="button" class="mode-btn" data-where="local" role="radio" aria-checked="true">
+              <b>On this device</b><span>Pass it round. Robots fill any empty seat.</span>
+            </button>
+            <button type="button" class="mode-btn" data-where="online" role="radio" aria-checked="false" id="where-online">
+              <b>Online</b><span id="online-note">Checking…</span>
+            </button>
+          </div>
+
+          <div class="party-actions">
+            <button type="button" class="btn btn-primary btn-big" id="party-create">Create a party</button>
+            <div class="join-row" id="join-row">
+              <label class="visually-hidden" for="party-code">Party code</label>
+              <input class="input code-input" id="party-code" maxlength="4" placeholder="CODE"
+                     autocomplete="off" spellcheck="false" inputmode="text">
+              <button type="button" class="btn" id="party-join">Join a party</button>
+            </div>
+          </div>
+          <p class="hint" id="party-msg" role="status"></p>
         </div>
-        <div class="duel-names">
-          <span class="vf"><label class="sub-lbl" for="p2-name">Player 2</label>
-            <input class="input" id="p2-name" value="Player 2" maxlength="14"></span>
-          <span class="vf"><label class="sub-lbl" for="p2-pet">Player 2 pet</label>
-            <select class="input" id="p2-pet"></select></span>
+
+        <div class="party-lobby" id="party-lobby" hidden>
+          <div class="party-code-row">
+            <div>
+              <p class="lbl">Party code</p>
+              <p class="party-code" id="party-code-out"></p>
+            </div>
+            <p class="hint" id="party-where"></p>
+            <div class="export-row">
+              <button type="button" class="btn" id="party-copy">Copy the code</button>
+              <button type="button" class="btn btn-quiet" id="party-leave">Leave</button>
+            </div>
+          </div>
+
+          <div class="party-teams" id="party-teams"></div>
+
+          <div class="export-row party-go">
+            <button type="button" class="btn btn-primary btn-big" id="party-start-btn"></button>
+            <button type="button" class="btn" id="party-swap">Switch my side</button>
+          </div>
+          <p class="hint" id="party-fill-note" role="status"></p>
         </div>
-        <p class="hint">You both share this device and take turns. An attacking pet gets harder questions to send; a defending pet gives better hints when it is your turn to answer.</p>
-        <button type="button" class="btn btn-primary btn-big" id="duel-start">Start the duel</button>
       </div>
 
       <div class="duel" id="duel-board" hidden>
@@ -468,12 +503,14 @@
     </div>
 
     <div id="chase-view" hidden>
+      <div class="chase-level" id="chase-level"></div>
       <div class="chase" id="chase-wrap">
         <canvas id="chase-canvas" aria-label="A monster chasing a student down a dark path"></canvas>
         <div class="chase-hud">
           <div class="chase-bar"><div class="chase-bar-fill" id="chase-bar"></div></div>
           <p class="chase-dist" id="chase-dist"></p>
           <p class="chase-gap" id="chase-gap"></p>
+          <p class="chase-clock" id="chase-clock">0:00.0</p>
         </div>
       </div>
 
@@ -484,17 +521,39 @@
       </div>
 
       <div class="chase-over" id="chase-over" hidden>
+        <div class="chest" id="chase-chest" hidden>
+          <button type="button" class="chest-btn" id="chest-btn">
+            <span class="chest-art" id="chest-art" aria-hidden="true"></span>
+            <span class="chest-label" id="chest-label">Open the chest</span>
+          </button>
+          <p class="chest-sub" id="chest-sub"></p>
+        </div>
         <h3 id="chase-over-title"></h3>
         <p class="step-sub" id="chase-over-sub"></p>
         <div class="export-row">
-          <button type="button" class="btn btn-primary" id="chase-again">Run again</button>
+          <button type="button" class="btn btn-primary" id="chase-next" hidden></button>
+          <button type="button" class="btn" id="chase-again">Run it again</button>
+          <button type="button" class="btn" id="chase-restart" hidden>Back to level 1</button>
           <button type="button" class="btn" id="chase-learn">Show me what I missed</button>
         </div>
       </div>
 
+      <section class="board" id="chase-board" aria-labelledby="board-h">
+        <div class="board-head">
+          <div>
+            <p class="eyebrow">Speed run</p>
+            <h3 id="board-h">Fastest escapes</h3>
+            <p class="hint" id="board-sub"></p>
+          </div>
+          <div class="board-tabs" id="board-tabs" role="tablist" aria-label="Which board"></div>
+        </div>
+        <ol class="board-list" id="board-list"></ol>
+        <p class="hint" id="board-note"></p>
+      </section>
+
       <div class="book-extra">
         <label class="toggle"><input type="checkbox" id="chase-calm"> Make it less scary</label>
-        <p class="hint">Nothing jumps out and there is no sound. The switch turns the shadow friendly and stops the screen shaking.</p>
+        <p class="hint">Nothing jumps out and there is no sound. The switch makes all three of them friendly and stops the screen shaking.</p>
       </div>
     </div>
 
@@ -581,7 +640,10 @@
 <script src="assets/projects.js"></script>
 <script src="assets/detail.js"></script>
 <script src="assets/pets.js"></script>
+<script src="assets/party.js"></script>
+<script src="assets/net.js"></script>
 <script src="assets/profile.js"></script>
+<script src="assets/worlds.js"></script>
 <script src="assets/chase.js"></script>
 <script src="assets/duel.js"></script>
 <script src="assets/app.js"></script>
