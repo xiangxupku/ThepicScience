@@ -842,6 +842,256 @@
       txt(160, 158, 'the coil turns', 11), l);
   };
 
+  /* ── biology ──────────────────────────────────────── */
+
+  A.atp = function (l) {
+    var coins = '';
+    for (var i = 0; i < 3; i++) {
+      coins += '<circle class="a-pulse" style="--d:' + (i * 0.3).toFixed(2) + 's" cx="' +
+        (212 + i * 34) + '" cy="88" r="17" fill="' + C[1] + '"/>' +
+        txt(212 + i * 34, 93, 'ATP', 9, 'var(--art-bg)');
+    }
+    return frame(
+      '<circle cx="62" cy="88" r="30" fill="' + C[0] + '" opacity=".3" stroke="' + C[0] + '" stroke-width="3"/>' +
+      txt(62, 93, 'sugar', 11) +
+      arrow(100, 88, 182, 88, INK, 3) +
+      txt(141, 72, 'released', 10) +
+      coins +
+      txt(160, 150, 'energy the cell can actually spend', 11), l);
+  };
+
+  A.respire = function (l) {
+    return frame(
+      '<circle cx="58" cy="60" r="24" fill="' + C[0] + '" opacity=".35" stroke="' + C[0] + '" stroke-width="3"/>' +
+      txt(58, 65, 'sugar', 10) +
+      '<circle class="a-float" cx="58" cy="124" r="24" fill="' + C[3] + '" opacity=".35" stroke="' + C[3] + '" stroke-width="3"/>' +
+      txt(58, 129, 'O\u2082', 11) +
+      '<rect class="a-breathe" x="112" y="56" width="96" height="72" rx="14" fill="' + C[4] +
+      '" opacity=".22" stroke="' + C[4] + '" stroke-width="3"/>' +
+      txt(160, 86, 'inside', 11) + txt(160, 104, 'the cell', 11) +
+      arrow(86, 68, 108, 80, INK, 2.5) + arrow(86, 118, 108, 106, INK, 2.5) +
+      arrow(212, 78, 248, 64, INK, 2.5) + arrow(212, 108, 248, 122, INK, 2.5) +
+      '<circle class="a-pulse" cx="274" cy="60" r="21" fill="' + C[1] + '"/>' + txt(274, 65, 'ATP', 10, 'var(--art-bg)') +
+      '<circle cx="274" cy="124" r="21" fill="' + C[2] + '" opacity=".4" stroke="' + C[2] + '" stroke-width="2"/>' +
+      txt(274, 122, 'CO\u2082', 10) + txt(274, 134, '+ H\u2082O', 8), l);
+  };
+
+  A.yeastTube = function (l) {
+    var bub = '';
+    for (var i = 0; i < 7; i++) {
+      bub += '<circle class="a-bubble" style="--d:' + (i * 0.4).toFixed(2) + 's" cx="' +
+        (146 + (i % 3) * 13) + '" cy="' + (132 - (i % 4) * 9) + '" r="' + (3 + (i % 3)) +
+        '" fill="' + C[3] + '" opacity=".75"/>';
+    }
+    return frame(
+      '<path d="M134 24 h52 v112 a26 26 0 0 1 -52 0 z" fill="none" stroke="' + INK + '" stroke-width="3.5"/>' +
+      '<path d="M138 74 h44 v62 a22 22 0 0 1 -44 0 z" fill="' + C[1] + '" opacity=".35"/>' +
+      bub +
+      txt(160, 164, 'no oxygen, so the yeast fizzes', 11), l);
+  };
+
+  A.mitosis = function (l) {
+    return frame(
+      '<circle cx="66" cy="84" r="36" fill="' + C[4] + '" opacity=".18" stroke="' + C[4] + '" stroke-width="3"/>' +
+      '<line x1="54" y1="72" x2="54" y2="96" stroke="' + C[0] + '" stroke-width="5"/>' +
+      '<line x1="78" y1="72" x2="78" y2="96" stroke="' + C[2] + '" stroke-width="5"/>' +
+      arrow(112, 84, 152, 84, INK, 3) +
+      txt(132, 68, 'copy', 10) + txt(132, 150, 'then split', 10) +
+      '<g class="a-nudge">' +
+      '<circle cx="212" cy="54" r="30" fill="' + C[4] + '" opacity=".18" stroke="' + C[4] + '" stroke-width="3"/>' +
+      '<line x1="202" y1="44" x2="202" y2="64" stroke="' + C[0] + '" stroke-width="5"/>' +
+      '<line x1="222" y1="44" x2="222" y2="64" stroke="' + C[2] + '" stroke-width="5"/>' +
+      '</g><g class="a-nudge-back">' +
+      '<circle cx="212" cy="120" r="30" fill="' + C[4] + '" opacity=".18" stroke="' + C[4] + '" stroke-width="3"/>' +
+      '<line x1="202" y1="110" x2="202" y2="130" stroke="' + C[0] + '" stroke-width="5"/>' +
+      '<line x1="222" y1="110" x2="222" y2="130" stroke="' + C[2] + '" stroke-width="5"/>' +
+      '</g>' +
+      txt(282, 60, 'same', 10) + txt(282, 126, 'same', 10), l);
+  };
+
+  A.meiosis = function (l) {
+    var cells = '';
+    var sets = [[C[0], C[2]], [C[0]], [C[2]], [C[1], C[3]]];
+    for (var i = 0; i < 4; i++) {
+      var cy = 36 + i * 36;
+      cells += '<circle class="a-float" style="--d:' + (i * 0.25).toFixed(2) + 's" cx="252" cy="' + cy +
+        '" r="19" fill="' + C[4] + '" opacity=".18" stroke="' + C[4] + '" stroke-width="2.5"/>';
+      for (var k = 0; k < sets[i].length; k++) {
+        cells += '<line x1="' + (246 + k * 12) + '" y1="' + (cy - 8) + '" x2="' + (246 + k * 12) +
+          '" y2="' + (cy + 8) + '" stroke="' + sets[i][k] + '" stroke-width="4"/>';
+      }
+    }
+    return frame(
+      '<circle cx="58" cy="90" r="38" fill="' + C[4] + '" opacity=".18" stroke="' + C[4] + '" stroke-width="3"/>' +
+      '<line x1="44" y1="76" x2="44" y2="104" stroke="' + C[0] + '" stroke-width="5"/>' +
+      '<line x1="58" y1="76" x2="58" y2="104" stroke="' + C[2] + '" stroke-width="5"/>' +
+      '<line x1="72" y1="76" x2="72" y2="104" stroke="' + C[1] + '" stroke-width="5"/>' +
+      arrow(102, 90, 138, 90, INK, 3) + txt(120, 76, 'twice', 10) +
+      '<circle cx="168" cy="66" r="24" fill="' + C[4] + '" opacity=".14" stroke="' + C[4] + '" stroke-width="2.5"/>' +
+      '<circle cx="168" cy="118" r="24" fill="' + C[4] + '" opacity=".14" stroke="' + C[4] + '" stroke-width="2.5"/>' +
+      arrow(196, 70, 226, 48, INK, 2) + arrow(196, 78, 226, 92, INK, 2) +
+      arrow(196, 110, 226, 128, INK, 2) + arrow(196, 118, 226, 158, INK, 2) +
+      txt(160, 176, 'four cells, half the chromosomes, all different', 10), l);
+  };
+
+  A.lockKey = function (l) {
+    return frame(
+      '<path class="a-breathe" d="M48 118 a62 62 0 0 1 124 0 h-30 a14 14 0 0 0 -14 -14 h-36 a14 14 0 0 0 -14 14 z" ' +
+      'fill="' + C[4] + '" opacity=".3" stroke="' + C[4] + '" stroke-width="3"/>' +
+      txt(110, 96, 'enzyme', 11) +
+      '<g class="a-slide"><path d="M118 46 h36 a12 12 0 0 1 0 24 h-36 z" fill="' + C[0] + '"/>' +
+      txt(136, 63, 'fits', 9, 'var(--art-bg)') + '</g>' +
+      '<path d="M212 108 a44 44 0 0 1 88 0 h-24 a10 10 0 0 0 -10 -10 h-20 a10 10 0 0 0 -10 10 z" ' +
+      'fill="' + C[2] + '" opacity=".28" stroke="' + C[2] + '" stroke-width="3"/>' +
+      txt(256, 92, 'different', 10) +
+      '<g><rect x="240" y="46" width="34" height="18" rx="4" fill="' + C[3] + '"/>' +
+      '<line x1="236" y1="40" x2="278" y2="70" stroke="' + C[2] + '" stroke-width="3"/></g>' +
+      txt(256, 150, 'will not fit', 10) + txt(110, 150, 'one shape, one job', 10), l);
+  };
+
+  A.enzymeCurve = function (l) {
+    return frame(
+      '<line x1="44" y1="150" x2="286" y2="150" stroke="' + INK + '" stroke-width="2.5"/>' +
+      '<line x1="44" y1="150" x2="44" y2="30" stroke="' + INK + '" stroke-width="2.5"/>' +
+      '<path class="a-glow" d="M52 146 C 110 142 142 56 168 50 C 190 46 198 118 214 146" fill="none" stroke="' +
+      C[0] + '" stroke-width="5"/>' +
+      '<line x1="168" y1="50" x2="168" y2="150" stroke="' + C[1] + '" stroke-width="2.5" stroke-dasharray="5 4"/>' +
+      '<circle class="a-pulse" cx="168" cy="50" r="6" fill="' + C[1] + '"/>' +
+      txt(168, 40, 'best', 10) +
+      txt(230, 110, 'too hot:', 10) + txt(240, 124, 'shape ruined', 10) +
+      txt(165, 168, 'temperature', 11) +
+      '<text x="30" y="92" font-size="11" fill="' + INK + '" text-anchor="middle" transform="rotate(-90 30 92)">rate</text>', l);
+  };
+
+  A.kingdoms = function (l) {
+    var names = ['animals', 'plants', 'fungi', 'protists', 'bacteria'];
+    var out = '';
+    for (var i = 0; i < 5; i++) {
+      var x = 20 + i * 57;
+      out += '<rect class="a-pulse" style="--d:' + (i * 0.22).toFixed(2) + 's" x="' + x +
+        '" y="56" width="50" height="62" rx="8" fill="' + C[i % 5] + '" opacity=".32" stroke="' +
+        C[i % 5] + '" stroke-width="2.5"/>' + txt(x + 25, 92, names[i], 9);
+    }
+    return frame(
+      txt(160, 38, 'every living thing goes in one box', 11) + out +
+      txt(160, 146, 'grouped by what they are, not what they look like', 10), l);
+  };
+
+  A.dichotomous = function (l) {
+    return frame(
+      '<circle cx="48" cy="90" r="16" fill="' + C[4] + '" opacity=".35" stroke="' + C[4] + '" stroke-width="2.5"/>' +
+      '<path d="M64 90 h22 v-38 h22 M86 90 v38 h22" fill="none" stroke="' + INK + '" stroke-width="2.5"/>' +
+      '<circle cx="124" cy="52" r="14" fill="' + C[0] + '" opacity=".35" stroke="' + C[0] + '" stroke-width="2.5"/>' +
+      '<circle cx="124" cy="128" r="14" fill="' + C[2] + '" opacity=".35" stroke="' + C[2] + '" stroke-width="2.5"/>' +
+      '<path d="M138 52 h20 v-20 h20 M158 52 v20 h20" fill="none" stroke="' + INK + '" stroke-width="2.5"/>' +
+      '<rect class="a-pulse" x="180" y="22" width="56" height="20" rx="5" fill="' + C[1] + '" opacity=".4"/>' +
+      '<rect x="180" y="62" width="56" height="20" rx="5" fill="' + C[3] + '" opacity=".4"/>' +
+      '<rect x="180" y="118" width="56" height="20" rx="5" fill="' + C[2] + '" opacity=".4"/>' +
+      txt(96, 44, 'yes', 9) + txt(96, 140, 'no', 9) +
+      txt(160, 168, 'two choices at a time, until one name is left', 10), l);
+  };
+
+  A.xylemPhloem = function (l) {
+    var up = '', down = '';
+    for (var i = 0; i < 4; i++) {
+      up += '<circle class="a-climb" style="--d:' + (i * 0.4).toFixed(2) + 's" cx="118" cy="' +
+        (130 - i * 26) + '" r="6" fill="' + C[3] + '"/>';
+      down += '<circle class="a-rain" style="--d:' + (i * 0.4).toFixed(2) + 's" cx="202" cy="' +
+        (40 + i * 26) + '" r="6" fill="' + C[1] + '"/>';
+    }
+    return frame(
+      '<rect x="92" y="24" width="52" height="124" rx="10" fill="none" stroke="' + C[3] + '" stroke-width="4"/>' +
+      '<rect x="176" y="24" width="52" height="124" rx="10" fill="none" stroke="' + C[1] + '" stroke-width="4"/>' +
+      up + down +
+      arrow(60, 136, 60, 40, C[3], 3) + arrow(262, 40, 262, 136, C[1], 3) +
+      txt(118, 166, 'xylem: water up', 10) + txt(202, 166, 'phloem: food either way', 10), l);
+  };
+
+  A.stomata = function (l) {
+    return frame(
+      '<rect x="28" y="40" width="264" height="104" rx="14" fill="' + C[0] + '" opacity=".14" stroke="' +
+      C[0] + '" stroke-width="2.5"/>' +
+      '<g class="a-breathe">' +
+      '<path d="M96 60 C 130 72 130 112 96 124 C 70 110 70 74 96 60 Z" fill="' + C[0] + '" opacity=".55" stroke="' + C[0] + '" stroke-width="3"/>' +
+      '<path d="M128 60 C 94 72 94 112 128 124 C 154 110 154 74 128 60 Z" fill="' + C[0] + '" opacity=".55" stroke="' + C[0] + '" stroke-width="3"/>' +
+      '</g>' +
+      '<ellipse cx="112" cy="92" rx="9" ry="22" fill="var(--art-bg)"/>' +
+      arrow(112, 50, 112, 26, C[3], 2.5) + arrow(112, 134, 112, 158, C[1], 2.5) +
+      '<path d="M212 58 C 238 72 238 112 212 126 C 206 110 206 74 212 58 Z" fill="' + C[2] + '" opacity=".55" stroke="' + C[2] + '" stroke-width="3"/>' +
+      '<path d="M224 58 C 198 72 198 112 224 126 C 230 110 230 74 224 58 Z" fill="' + C[2] + '" opacity=".55" stroke="' + C[2] + '" stroke-width="3"/>' +
+      txt(112, 176, 'open: gas in, water out', 10) + txt(224, 176, 'shut: water saved', 10), l);
+  };
+
+  A.transpiration = function (l) {
+    var drops = '';
+    for (var i = 0; i < 5; i++) {
+      drops += '<circle class="a-climb" style="--d:' + (i * 0.45).toFixed(2) + 's" cx="160" cy="' +
+        (138 - i * 22) + '" r="5" fill="' + C[3] + '"/>';
+    }
+    return frame(
+      '<path class="a-sway" d="M160 44 C 112 48 96 78 126 92 C 156 100 182 74 176 50 Z" fill="' + C[0] + '"/>' +
+      '<path class="a-sway" d="M160 44 C 208 48 224 78 194 92 C 164 100 138 74 144 50 Z" fill="' + C[0] + '" opacity=".75"/>' +
+      '<line x1="160" y1="44" x2="160" y2="150" stroke="' + C[1] + '" stroke-width="7"/>' +
+      '<path d="M160 150 l-32 22 M160 150 l32 22 M160 150 v22" stroke="' + C[1] + '" stroke-width="4" fill="none"/>' +
+      drops +
+      '<g class="a-float">' + txt(236, 44, '\u2191 water out', 10) + '</g>' +
+      txt(76, 160, 'water in', 10), l);
+  };
+
+  A.neuron = function (l) {
+    var dend = '';
+    for (var i = 0; i < 5; i++) {
+      var a = -0.9 + i * 0.45;
+      dend += '<line x1="62" y1="88" x2="' + (62 - 36 * Math.cos(a)) + '" y2="' + (88 + 36 * Math.sin(a)) +
+        '" stroke="' + C[4] + '" stroke-width="3.5"/>';
+    }
+    var myelin = '';
+    for (var k = 0; k < 4; k++) {
+      myelin += '<rect x="' + (112 + k * 38) + '" y="78" width="26" height="20" rx="9" fill="' + C[1] + '" opacity=".6"/>';
+    }
+    return frame(
+      dend +
+      '<circle class="a-pulse" cx="62" cy="88" r="24" fill="' + C[4] + '" opacity=".4" stroke="' + C[4] + '" stroke-width="3"/>' +
+      '<circle cx="62" cy="88" r="9" fill="' + C[4] + '"/>' +
+      '<line x1="86" y1="88" x2="270" y2="88" stroke="' + C[4] + '" stroke-width="5"/>' + myelin +
+      '<path d="M270 88 l16 -12 M270 88 l16 12 M270 88 h16" stroke="' + C[4] + '" stroke-width="3.5" fill="none"/>' +
+      '<circle class="a-travel" cy="88" r="7" fill="' + C[1] + '"/>' +
+      txt(62, 134, 'in', 10) + txt(180, 116, 'the message runs this way', 10) + txt(282, 116, 'out', 10), l);
+  };
+
+  A.reflexArc = function (l) {
+    return frame(
+      '<rect x="128" y="26" width="64" height="130" rx="16" fill="' + C[4] + '" opacity=".2" stroke="' + C[4] + '" stroke-width="3"/>' +
+      txt(160, 94, 'spinal', 10) + txt(160, 108, 'cord', 10) +
+      '<circle cx="44" cy="56" r="20" fill="' + C[2] + '" opacity=".4" stroke="' + C[2] + '" stroke-width="2.5"/>' +
+      txt(44, 61, 'hand', 9) +
+      '<circle cx="44" cy="128" r="20" fill="' + C[0] + '" opacity=".4" stroke="' + C[0] + '" stroke-width="2.5"/>' +
+      txt(44, 133, 'muscle', 8) +
+      arrow(66, 56, 124, 60, C[2], 3) + arrow(124, 124, 66, 128, C[0], 3) +
+      '<line x1="160" y1="62" x2="160" y2="120" stroke="' + INK + '" stroke-width="2.5" stroke-dasharray="4 4"/>' +
+      '<circle class="a-ping" cx="226" cy="40" r="16" fill="' + C[1] + '" opacity=".4"/>' +
+      txt(226, 45, 'brain', 9) +
+      '<line x1="192" y1="54" x2="212" y2="44" stroke="' + INK + '" stroke-width="2" stroke-dasharray="3 3"/>' +
+      txt(250, 72, 'told after', 9) +
+      txt(160, 178, 'the loop misses the brain, so it is quicker', 10), l);
+  };
+
+  A.synapse = function (l) {
+    var blobs = '';
+    for (var i = 0; i < 6; i++) {
+      blobs += '<circle class="a-drift" style="--d:' + (i * 0.3).toFixed(2) + 's" cx="' +
+        (150 + (i % 3) * 12) + '" cy="' + (66 + Math.floor(i / 3) * 34) + '" r="5" fill="' + C[1] + '"/>';
+    }
+    return frame(
+      '<path d="M22 88 h88 a24 24 0 0 1 24 24 v-48 a24 24 0 0 1 -24 24 z" fill="' + C[4] + '" opacity=".4" stroke="' + C[4] + '" stroke-width="3"/>' +
+      '<path d="M298 88 h-88 a24 24 0 0 0 -24 24 v-48 a24 24 0 0 0 24 24 z" fill="' + C[2] + '" opacity=".4" stroke="' + C[2] + '" stroke-width="3"/>' +
+      blobs +
+      '<line x1="146" y1="30" x2="146" y2="146" stroke="' + INK + '" stroke-width="2" stroke-dasharray="4 4"/>' +
+      '<line x1="186" y1="30" x2="186" y2="146" stroke="' + INK + '" stroke-width="2" stroke-dasharray="4 4"/>' +
+      txt(166, 24, 'gap', 10) +
+      txt(70, 150, 'electrical', 10) + txt(166, 166, 'chemical across', 10) + txt(250, 150, 'electrical again', 10), l);
+  };
+
   window.ART = {
     render: function (key, labels) {
       var fn = A[key] || A.checklist;

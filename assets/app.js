@@ -751,15 +751,61 @@
   }
 
   /* ── step 2: the library list ──────────────────────── */
+  /* The search box used to be a plain substring test, which had two problems once the
+     library passed twenty topics. Typing two words found nothing unless that exact phrase
+     appeared somewhere, and a word two topics share went to whichever came first in the
+     file — "transpiration" landed on the water cycle rather than the topic about it.
+
+     So: every word in the query has to match somewhere, and the results are ranked. A
+     keyword that is exactly what you typed beats one that merely contains it, which beats
+     a passing mention in a blurb. */
+
+  function topicScore(t, words, whole) {
+    var title = t.title.toLowerCase();
+    var subject = t.subject.toLowerCase();
+    var blurb = t.blurb.toLowerCase();
+    var total = 0;
+
+    /* Typing a whole keyword should beat a topic that merely has both words about it.
+       “nervous system” is a keyword of the nervous system topic; body systems only
+       happens to contain the word system in its title. */
+    for (var e = 0; e < t.keywords.length; e++) {
+      if (t.keywords[e] === whole) { total += 150; break; }
+    }
+
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      var best = 0, hits = 0;
+      for (var k = 0; k < t.keywords.length; k++) {
+        var key = t.keywords[k];
+        if (key.indexOf(w) > -1) hits++;
+        if (key === w) best = Math.max(best, 100);
+        else if (key.indexOf(w) === 0) best = Math.max(best, 40);
+        else if (key.indexOf(w) > -1) best = Math.max(best, 18);
+      }
+      /* Two topics can both own a word outright — the water cycle and plant transport
+         both list transpiration. The one that lists it several ways, including the common
+         misspelling, is the one the word is really about. */
+      if (hits > 1) best += Math.min(9, (hits - 1) * 3);
+      if (title.indexOf(w) > -1) best = Math.max(best, 60);
+      if (subject.indexOf(w) > -1) best = Math.max(best, 8);
+      if (blurb.indexOf(w) > -1) best = Math.max(best, 6);
+      if (!best) return 0;              /* every word has to land somewhere */
+      total += best;
+    }
+    return total;
+  }
+
   function renderTopics(filter) {
     var q = (filter || '').trim().toLowerCase();
-    var list = window.TOPICS.filter(function (t) {
-      if (!q) return true;
-      if (t.title.toLowerCase().indexOf(q) > -1) return true;
-      if (t.subject.toLowerCase().indexOf(q) > -1) return true;
-      if (t.blurb.toLowerCase().indexOf(q) > -1) return true;
-      return t.keywords.some(function (k) { return k.indexOf(q) > -1; });
-    });
+    var words = q ? q.split(/\s+/).filter(Boolean) : [];
+    var list = window.TOPICS;
+    if (words.length) {
+      list = window.TOPICS.map(function (t) { return { t: t, n: topicScore(t, words, q) }; })
+        .filter(function (x) { return x.n > 0; })
+        .sort(function (a, b) { return b.n - a.n; })
+        .map(function (x) { return x.t; });
+    }
 
     $('topic-list').innerHTML = list.map(function (t) {
       var on = S.topic && S.topic.id === t.id;

@@ -14,8 +14,9 @@ the photo, the text reading and the narration all happen inside the browser.
    are read one after another and joined into a single piece of text before the topic is
    matched. A strip of thumbnails shows what went in, and any one of them can be dropped if
    it came out blurred. Give it a video instead and it grabs three frames.
-   The library covers **21 topics**, chosen to line up with what US, Canadian and UK schools
-   actually teach. Each one carries a `taught` line naming the unit as your own curriculum
+   The library covers **27 topics**, chosen to line up with what US, Canadian and UK schools
+   actually teach. Thirteen of them are biology, because that is the subject a timetable
+   spends the most weeks on. Each one carries a `taught` line naming the unit as your own curriculum
    usually calls it — "Optics (Ontario Gr 10)", "Waves (GCSE Physics)", "NGSS MS-PS4". That is
    the common unit name, not an official specification mapping.
 2. **🤖 Read what you are learning.** The text on the board is read on your own device, matched
@@ -61,7 +62,7 @@ the photo, the text reading and the narration all happen inside the browser.
 
    It is a real player, not a slideshow: a title slide, an example slide and a recap
    slide, a slow camera
-   drift over each drawing, and **every one of the 74 drawings animates** — the sun's rays
+   drift over each drawing, and **every one of the 89 drawings animates** — the sun's rays
    turn, rain falls, current runs round the circuit, the heart beats, particles jiggle faster
    in a gas than a solid. Captions **highlight each word as the voice says it**, driven by the
    speech engine's own word events rather than a timer. There is a clickable scene strip,
@@ -118,7 +119,7 @@ the photo, the text reading and the narration all happen inside the browser.
    button to jump to it in your lesson. Then it asks you **new** questions about that same
    idea, built from the page's own key word and text (four ways: definition to word, word to
    definition, the main point of the page, and fill the gap), followed by the original
-   question so you can prove you have it. 577 of these are possible across the library, and
+   question so you can prove you have it. 737 of these are possible across the library, and
    `check.js` verifies every one of them is correct.
 
 7. **⚡ Sparks, pets and eggs.** Answering well earns **sparks** — a made-up number that
@@ -242,6 +243,7 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/topics-b.js` | Science library, topics 8–14 |
 | `assets/topics-c.js` | Science library, topics 15–17: acids, optics, space |
 | `assets/topics-d.js` | Science library, topics 18–21: evolution, mixtures, microbes, magnetism |
+| `assets/topics-e.js` | Science library, topics 22–27: the six biggest gaps in the biology |
 | `assets/projects.js` | One hands-on project per topic: materials, steps, the science |
 | `assets/chase.js` | The chase: the running, the questions, the ramp, the clock, the chest |
 | `assets/worlds.js` | The three places and the three monsters, with their chests and tuning |
@@ -257,6 +259,30 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `vercel.json` | Static hosting config |
 | `check.js` | Checks the library: run `node check.js` after editing any topic or project |
 | `.claude/launch.json` | Local preview config for Claude Code |
+
+## What the biology covers
+
+Biology is the subject school spends the most time on, and the library started with seven
+life science topics against fourteen of everything else. These six closed the gaps that
+matter, measured against what US, UK and Canadian courses set as whole units:
+
+| Topic | Why it was missing a problem |
+| --- | --- |
+| **Respiration** | The partner to photosynthesis, and the one every library seems to skip. Aerobic and anaerobic, ATP, lactic acid, fermentation. |
+| **Cell division** | Genetics gave mitosis and meiosis one scene between them. Now a topic: the cell cycle, why meiosis halves, why siblings differ. |
+| **Enzymes** | A GCSE Biology chapter on its own, and absent entirely. Active site, lock and key, denaturing, optimum pH. |
+| **Classifying living things** | Kingdoms, binomial names, dichotomous keys, and why a whale is not a fish. |
+| **Water and food inside a plant** | Xylem, phloem, stomata, guard cells, and what actually pulls water up a tree. |
+| **Nerves, signals and reflexes** | Body systems gave it one scene. Now neurones, the reflex arc, synapses and myelin. |
+
+Each one follows the same rules as every other topic: twelve scenes, four of each tier, a
+recap last, ten questions, an everyday example, a hands-on project and a go-deeper layer.
+Fifteen new drawings came with them, and `check.js` validates all of it.
+
+The projects are the usual household science: yeast and a balloon for respiration, marked
+bean roots for cell division, fresh pineapple that will not let jelly set for enzymes, a
+dichotomous key tested on a volunteer, dyed celery in front of a fan, and the ruler-drop
+reaction test.
 
 ## Switching the online parts on
 
@@ -284,6 +310,17 @@ at any moment, which drops everything. The app is told which one is in use:
 
 To turn it on: open the project in the Vercel dashboard, go to Storage, add Upstash for Redis
 (there is a free tier), and redeploy. Nothing in the code needs changing.
+
+## Finding a topic by hand
+
+The search box under step 2 scores every topic rather than filtering on a substring. Each
+word you type has to land somewhere, and a keyword that is exactly what you typed beats one
+that merely contains it, which beats a passing mention in a blurb. Where two topics own the
+same word outright — the water cycle and plant transport both list transpiration — the one
+that lists it several ways wins, because that is the topic it is really about.
+
+That matters more than it sounds with 27 topics: before, "dominant allele" found nothing at
+all, because no single field contained that exact phrase.
 
 ## Adding a topic to the library
 
@@ -348,7 +385,7 @@ short-to-long ramp is verified.
   noticeably longer than reading one — the progress bar says which one it is on.
 - The grade sign-in is stored in `localStorage` on that one device. There is no account, so
   nothing follows you to another computer — and nothing about you leaves the browser.
-- The library covers 21 topics. Anything outside it is reported as "no topic matched" rather
+- The library covers 27 topics. Anything outside it is reported as "no topic matched" rather
   than guessed at.
 - Text recognition needs the internet the first time, to fetch the reader. Everything after
   that works offline.

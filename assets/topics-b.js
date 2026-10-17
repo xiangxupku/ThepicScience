@@ -301,7 +301,7 @@ window.TOPICS = (window.TOPICS || []).concat([
   subject: 'Life science',
   grades: 'Grades 4–10',
   blurb: 'Circulatory, respiratory and digestive systems, and how they hand things off to each other.',
-  keywords: ['body systems', 'organ system', 'circulatory', 'heart', 'blood', 'artery', 'arteries', 'vein', 'veins', 'capillary', 'respiratory', 'lungs', 'breathing', 'alveoli', 'diaphragm', 'digestive', 'digestion', 'stomach', 'intestine', 'nervous system', 'skeleton', 'muscle', 'organ', 'homeostasis'],
+  keywords: ['body systems', 'organ system', 'circulatory', 'heart', 'blood', 'artery', 'arteries', 'vein', 'veins', 'capillary', 'respiratory', 'lungs', 'breathing', 'alveoli', 'diaphragm', 'digestive', 'digestion', 'stomach', 'intestine', 'skeleton', 'muscle', 'organ', 'homeostasis'],
   example: { t: 'Running up the stairs', b: 'You arrive panting with your heart thumping. Muscles demanded more oxygen, so the lungs pulled in more air and the heart pumped faster to deliver it.', spot: 'Time how long your breathing takes to settle. That is three systems coordinating.' },
   scenes: [
     { tier: 2, t: 'Systems, not separate machines', art: 'person', labels: ['organs work in teams'],
@@ -374,7 +374,7 @@ window.TOPICS = (window.TOPICS || []).concat([
   subject: 'Life science',
   grades: 'Grades 6–12',
   blurb: 'Genes, dominant and recessive traits, and how to actually fill in a Punnett square.',
-  keywords: ['dna', 'gene', 'genes', 'genetics', 'heredity', 'inherit', 'inherited', 'chromosome', 'chromosomes', 'allele', 'alleles', 'dominant', 'recessive', 'punnett', 'genotype', 'phenotype', 'trait', 'traits', 'mutation', 'heterozygous', 'homozygous', 'mitosis', 'meiosis', 'double helix', 'base pair'],
+  keywords: ['dna', 'gene', 'genes', 'genetics', 'heredity', 'inherit', 'inherited', 'chromosome', 'chromosomes', 'allele', 'alleles', 'dominant', 'recessive', 'punnett', 'genotype', 'phenotype', 'trait', 'traits', 'mutation', 'heterozygous', 'homozygous', 'double helix', 'base pair'],
   example: { t: 'Old family photographs', b: 'People say you have your grandmother\'s eyes because you might literally have her allele, passed down two generations and hidden in between.', spot: 'Look for a trait that skipped your parents and reappeared in you. That one is recessive.' },
   scenes: [
     { tier: 1, t: 'DNA is an instruction manual', art: 'dna', labels: ['double helix'],

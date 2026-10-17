@@ -396,5 +396,155 @@ window.PROJECTS = {
     why: 'Sound is a vibration travelling through air. Amplitude — the size of the vibration — is loudness. Frequency — how many vibrations per second — is pitch. The rice is showing you the air pushing on the film.',
     fair: 'Same bowl, same amount of rice, speaker the same distance away every time.',
     stretch: 'Film the rice in slow motion and count how the jumping changes between two clearly different notes.'
+  },
+
+  'respiration': {
+    title: 'The yeast that blew up a balloon',
+    question: 'Does yeast respire faster with more sugar?',
+    days: 'Takes 1 hour',
+    needs: [
+      'Dried yeast (a supermarket sachet)',
+      'Sugar',
+      'Three small plastic bottles, the same size',
+      'Three balloons',
+      'Warm water from the tap, not hot',
+      'A tape measure or a piece of string and a ruler'
+    ],
+    steps: [
+      'Put one teaspoon of yeast and 150 ml of warm tap water into each bottle.',
+      'Add no sugar to the first bottle, one teaspoon to the second, and three to the third.',
+      'Swirl each bottle gently for ten seconds, then stretch a balloon over the neck.',
+      'Stand all three somewhere warm and leave them.',
+      'Every ten minutes, measure around the widest part of each balloon and write it down.',
+      'Stop after an hour and draw a graph of balloon size against time for all three.'
+    ],
+    look: 'The sugary bottles should inflate and the one with no sugar should barely move. Three teaspoons should start fastest, though it may not end up biggest.',
+    why: 'Yeast respires anaerobically, turning sugar into ethanol and carbon dioxide. The gas has nowhere to go but the balloon, so balloon size is a way of seeing respiration happen. No sugar means no fuel, so no gas.',
+    fair: 'Same yeast, same water, same temperature, same bottles. The only thing you changed was how much sugar.',
+    stretch: 'Run the same test with one bottle in the fridge and one somewhere warm, with equal sugar, and see what temperature does.'
+  },
+
+  'cell-division': {
+    title: 'Where does a root actually grow from?',
+    question: 'Does a root get longer all over, or only at the tip?',
+    days: 'Takes 3 days, about 10 minutes a day',
+    needs: [
+      'Dried beans or peas (mung beans work fastest)',
+      'A glass jar',
+      'Kitchen paper',
+      'A fine permanent marker',
+      'A ruler',
+      'Water'
+    ],
+    steps: [
+      'Line the jar with damp kitchen paper and tuck four beans between the paper and the glass, so you can see them.',
+      'Keep the paper damp and wait until the roots are about two centimetres long.',
+      'Lift one bean out carefully and use the marker to put small dots down the root, two millimetres apart, starting at the tip.',
+      'Put it back exactly as it was and photograph it next to the ruler.',
+      'Leave it for two days, keeping the paper damp.',
+      'Photograph it again next to the ruler and measure the gaps between the dots.'
+    ],
+    look: 'The gaps near the tip should be much wider than they were. The gaps further up should be almost unchanged.',
+    why: 'Cells divide in a small zone just behind the root tip, and the new cells then stretch. Further up the root, the cells finished dividing days ago, so that part is simply carried along. Growth is not spread evenly.',
+    fair: 'Same bean, same jar, same dampness. You are comparing one part of a root with another part of the same root.',
+    stretch: 'Turn the jar on its side for a day and see whether the root bends. Which side of the tip grew faster?'
+  },
+
+  'enzymes': {
+    title: 'The jelly that would not set',
+    question: 'Does fresh pineapple stop jelly setting, and does heating it change that?',
+    days: 'Takes 20 minutes, then 4 hours of waiting',
+    needs: [
+      'A packet of gelatine jelly (not a vegetarian one, which uses no gelatine)',
+      'A small tin of pineapple',
+      'A piece of fresh pineapple',
+      'Three cups or small bowls',
+      'An adult to do the boiling water'
+    ],
+    steps: [
+      'Ask an adult to make up the jelly as the packet says, and let it cool until it is only warm.',
+      'Pour the same amount into three cups.',
+      'Put nothing in the first cup. Put a spoonful of tinned pineapple in the second. Put a spoonful of fresh pineapple in the third.',
+      'Put all three in the fridge on the same shelf.',
+      'Check after four hours by tilting each cup the same way.'
+    ],
+    look: 'The plain cup and the tinned cup should be set. The fresh pineapple cup should still be runny, or set only at the edges.',
+    why: 'Fresh pineapple contains a protease, an enzyme that breaks down protein, and gelatine is a protein. Tinned pineapple was heated during canning, which denatured the enzyme and ruined its shape for good, so it cannot do the job any more.',
+    fair: 'Same jelly, same amount, same fridge shelf, same waiting time. The only thing you changed was which pineapple went in.',
+    stretch: 'Add a fourth cup with fresh pineapple that you have had an adult boil for five minutes first, then cool. Predict what happens before you look.'
+  },
+
+  'classification': {
+    title: 'A key somebody else can actually use',
+    question: 'Can you write a key that leads a stranger to the right answer every time?',
+    days: 'Takes 45 minutes',
+    needs: [
+      'Eight different leaves from outside, or eight different items from one kitchen drawer',
+      'Paper and a pencil',
+      'A willing volunteer who has not watched you make it'
+    ],
+    steps: [
+      'Lay your eight items out and look for one feature that splits them into two groups of roughly four.',
+      'Write that as a pair of statements, such as "edge is smooth" and "edge is toothed".',
+      'Take each group of four and split it again with a new feature. Then split again until every item is on its own.',
+      'Number the steps so each answer says which step to go to next, and give each item a name.',
+      'Hand the key and the items to your volunteer, without saying anything, and watch.',
+      'Write down every step where they hesitated or picked wrongly.'
+    ],
+    look: 'They should reach the right name for most items. The ones they get wrong will cluster on one or two badly worded steps.',
+    why: 'A key only works if every question has exactly two answers and both are things you can see on the spot. Words like "large" fail because large compared to what? A key is a test of your writing as much as your sorting.',
+    fair: 'Same items, same key, no hints from you. The only thing being tested is the key.',
+    stretch: 'Rewrite the two worst steps and test on a second volunteer. Did your score go up?'
+  },
+
+  'plant-transport': {
+    title: 'How fast does celery drink?',
+    question: 'Does moving air make a plant take up water faster?',
+    days: 'Takes 3 hours',
+    needs: [
+      'Two sticks of celery with leaves still on, the same size',
+      'Two identical glasses',
+      'Food colouring',
+      'A ruler',
+      'A fan, or somewhere with a steady draught'
+    ],
+    steps: [
+      'Put the same depth of water in both glasses and add ten drops of food colouring to each.',
+      'Ask an adult to trim the bottom off both celery sticks, and stand one in each glass.',
+      'Mark the starting water level on both glasses with a pen.',
+      'Put one glass in front of a fan on low. Put the other somewhere still, at the same temperature.',
+      'After three hours, mark the new water level on both and measure the drop.',
+      'Have an adult cut across each stick and measure how high the colour reached.'
+    ],
+    look: 'The celery in the draught should have taken up noticeably more water, and the colour should have travelled further up its stem.',
+    why: 'Water evaporates out of the leaves, and that pull drags more water up the xylem behind it. Moving air carries the vapour away before it builds up around the leaf, so evaporation stays fast and the plant keeps drinking.',
+    fair: 'Same celery size, same water, same colouring, same temperature, same three hours. The only thing you changed was the moving air.',
+    stretch: 'Run it again with the leaves cut off one stick. If most water leaves through the leaves, what should happen?'
+  },
+
+  'nervous-system': {
+    title: 'Catching a falling ruler',
+    question: 'Is your reaction slower when you are being distracted?',
+    days: 'Takes 20 minutes',
+    needs: [
+      'A 30 cm ruler',
+      'A partner to drop it',
+      'A chair and a table',
+      'Paper to record on',
+      'Something to provide a distraction, such as counting backwards out loud'
+    ],
+    steps: [
+      'Sit with your arm resting on the table and your hand over the edge, finger and thumb open about three centimetres.',
+      'Your partner holds the ruler so the zero mark sits between your fingers, and drops it without warning.',
+      'Catch it and write down the number at your thumb. The smaller the number, the faster you were.',
+      'Do ten goes and work out the average.',
+      'Now do ten more while counting backwards out loud from one hundred in threes.',
+      'Work out that average too and compare the two.'
+    ],
+    look: 'The distracted average should be a few centimetres higher, which means slower. Your first go or two in each set will probably be your worst.',
+    why: 'Catching a ruler is not a reflex, because you have to see it and decide. That means the signal goes all the way to your brain and back, and anything else your brain is busy with adds to the delay. A true reflex skips the brain and cannot be slowed this way.',
+    fair: 'Same ruler, same hand, same grip, same partner, same drop height. The only thing you changed was the distraction.',
+    stretch: 'Try your other hand, or try again after running up and down the stairs. Predict which will be slower before you test it.'
   }
+
 };

@@ -482,5 +482,140 @@ window.DETAIL = {
       { id: 'energy', why: 'a wave is energy on the move' },
       { id: 'body-systems', why: 'ears and eyes are wave detectors' }
     ]
+  },
+
+  'respiration': {
+    formulas: [
+      { f: 'C\u2086H\u2081\u2082O\u2086 + 6O\u2082 \u2192 6CO\u2082 + 6H\u2082O', what: 'aerobic respiration: one glucose plus six oxygen gives six carbon dioxide plus six water, and releases energy. The energy is not written in the equation because it is released, not made.' },
+      { f: 'glucose \u2192 lactic acid', what: 'anaerobic respiration in a muscle. Far less energy comes out, because the glucose is not broken all the way down.' },
+      { f: 'glucose \u2192 ethanol + CO\u2082', what: 'anaerobic respiration in yeast, which is called fermentation. It is why bread rises.' }
+    ],
+    mistakes: [
+      { wrong: 'Respiration is breathing.', right: 'Breathing moves air with muscles. Respiration is a chemical reaction inside every cell. Breathing supplies the oxygen that respiration needs, which is the only reason they are connected.' },
+      { wrong: 'Plants photosynthesise and animals respire.', right: 'Plants do both, every second. In daylight photosynthesis runs faster, so the plant gives out oxygen overall, but it never stops respiring.' },
+      { wrong: 'Respiration makes energy.', right: 'Energy cannot be made. It was already in the bonds of the glucose, put there by photosynthesis. Respiration releases it and transfers it to ATP.' }
+    ],
+    deeper: [
+      { t: 'Where the energy actually comes from', b: 'Breaking bonds takes energy in; making bonds gives energy out. In respiration the bonds that form in carbon dioxide and water are stronger than the ones broken in glucose and oxygen, and the difference is what gets released. That is the whole accounting.' },
+      { t: 'Why aerobic gives so much more', b: 'Anaerobic respiration releases roughly two ATP per glucose. Aerobic releases somewhere near thirty. Oxygen is what lets the glucose be broken all the way down to carbon dioxide, and almost all of the energy is in those last steps.' },
+      { t: 'Measuring it', b: 'A respirometer measures how fast small living things use oxygen. Soda lime soaks up the carbon dioxide they produce, so the gas volume falls by exactly the oxygen used, and a drop of liquid in a tube moves to show it.' }
+    ],
+    links: [
+      { id: 'photosynthesis', why: 'the same equation, run the other way' },
+      { id: 'cells', why: 'mitochondria are where most of it happens' },
+      { id: 'body-systems', why: 'lungs and blood exist to deliver the oxygen' }
+    ]
+  },
+
+  'cell-division': {
+    formulas: [
+      { f: '2n \u2192 2n + 2n', what: 'mitosis: a cell with a full set, 2n, gives two cells each with a full set. In humans 2n is 46.' },
+      { f: '2n \u2192 n + n + n + n', what: 'meiosis: one cell with a full set gives four cells with half a set, n. In humans n is 23.' },
+      { f: 'n + n \u2192 2n', what: 'fertilisation: two half sets join to make a full set again, which is why meiosis has to halve first.' }
+    ],
+    mistakes: [
+      { wrong: 'Meiosis makes two cells.', right: 'Meiosis divides twice but copies the DNA only once, so one cell gives four. Mitosis is the one that gives two.' },
+      { wrong: 'The cell splits and then copies its DNA.', right: 'The copying happens first, during interphase. Splitting before copying would leave one of the two cells with no instructions at all.' },
+      { wrong: 'Identical twins come from meiosis.', right: 'Identical twins come from one fertilised egg splitting by mitosis, which is why they are identical. Meiosis is what made the egg and the sperm, and it guarantees difference.' }
+    ],
+    deeper: [
+      { t: 'The stages have names', b: 'Prophase, metaphase, anaphase, telophase. Chromosomes condense, line up on the middle, get pulled apart, then new nuclei form. Metaphase is the one you see in photographs, because that is when the chromosomes are lined up and easiest to count.' },
+      { t: 'Crossing over', b: 'In the first division of meiosis, chromosome pairs lie alongside each other and swap matching pieces. A chromosome you pass on is therefore a mixture of the one from your mother and the one from your father, not a copy of either.' },
+      { t: 'Stem cells', b: 'A stem cell divides by mitosis but its daughters can become any of several cell types. That is what makes them useful medically and what makes them different from an ordinary dividing cell, which can only produce more of itself.' }
+    ],
+    links: [
+      { id: 'genetics', why: 'meiosis is where the shuffling in inheritance happens' },
+      { id: 'cells', why: 'the chromosomes being shared out live in the nucleus' },
+      { id: 'evolution', why: 'variation from meiosis is what selection acts on' }
+    ]
+  },
+
+  'enzymes': {
+    formulas: [
+      { f: 'enzyme + substrate \u2192 enzyme-substrate complex \u2192 enzyme + products', what: 'the enzyme appears on both sides, which is the whole point: it is not used up, so it goes round again.' },
+      { f: 'rate = amount of product \u00f7 time', what: 'how an enzyme experiment is measured. Gas collected per minute, or the time taken for a colour to change.' }
+    ],
+    mistakes: [
+      { wrong: 'Enzymes are killed by heat.', right: 'An enzyme was never alive. Heat denatures it: the folds shake apart and the active site loses its shape. Say denatured, not killed.' },
+      { wrong: 'A denatured enzyme recovers when it cools.', right: 'The change is permanent. This is why a boiled egg never goes runny again and why biological washing powder must be used on a cool wash.' },
+      { wrong: 'More enzyme always means a faster reaction.', right: 'Only until the substrate runs short. Once every substrate molecule is already being worked on, adding more enzyme changes nothing, and the graph flattens.' }
+    ],
+    deeper: [
+      { t: 'Induced fit', b: 'Lock and key is the picture taught first, and it is slightly wrong. The active site is flexible and changes shape a little as the substrate arrives, closing around it. This explains why some enzymes accept a small family of similar molecules rather than exactly one.' },
+      { t: 'What the enzyme is really doing', b: 'Every reaction needs a push to get started, called the activation energy. An enzyme does not supply energy; it holds the molecules in the right position so that much less of a push is needed. The reaction would happen anyway, just far too slowly to be any use.' },
+      { t: 'Reading the temperature graph', b: 'The rising part and the falling part have different causes. Going up, warmth makes molecules collide more often. Coming down, the enzyme is being destroyed. That is why the curve is not symmetrical and why the fall is so much steeper than the rise.' }
+    ],
+    links: [
+      { id: 'body-systems', why: 'digestion is enzymes doing their job' },
+      { id: 'acids-bases', why: 'each enzyme has a pH it works best at' },
+      { id: 'chemical-change', why: 'an enzyme is a catalyst, which is a chemistry idea' }
+    ]
+  },
+
+  'classification': {
+    formulas: [
+      { f: 'Genus species', what: 'the binomial name. Genus takes a capital letter, species does not, and both are written in italics or underlined. Homo sapiens, Panthera leo.' },
+      { f: 'kingdom \u2192 phylum \u2192 class \u2192 order \u2192 family \u2192 genus \u2192 species', what: 'the levels, widest to narrowest. Each step holds fewer things that are more alike.' }
+    ],
+    mistakes: [
+      { wrong: 'A whale is a fish because it lives in the sea and is shaped like one.', right: 'A whale breathes air, is warm-blooded and feeds its young on milk, so it is a mammal. Classification follows ancestry, not appearance.' },
+      { wrong: 'Mushrooms are plants.', right: 'Fungi are their own kingdom. They have no chlorophyll and make no food of their own, feeding instead on material that is already there.' },
+      { wrong: 'A species is just a kind of animal.', right: 'A species is defined by breeding: members can produce young that are themselves fertile. A mule is not fertile, so horses and donkeys remain two species.' }
+    ],
+    deeper: [
+      { t: 'Three domains above the kingdoms', b: 'Comparing genetic material showed that the organisms once lumped together as simple single cells are actually two groups as different from each other as either is from us. A level above kingdom was added: Bacteria, Archaea and Eukarya.' },
+      { t: 'Convergent evolution', b: 'A dolphin, a shark and an extinct ichthyosaur all share a streamlined body with fins, because the sea sets the same problem to anything that swims fast. Similar solutions from unrelated ancestors is called convergence, and it is exactly the trap that classification by appearance falls into.' },
+      { t: 'Why species counts keep changing', b: 'When DNA shows that what was called one species is really three that never interbreed, the count rises without anything new being found. Much of the growth in named species is this kind of splitting, not discovery.' }
+    ],
+    links: [
+      { id: 'evolution', why: 'the groups are a family tree, so they follow descent' },
+      { id: 'ecosystems', why: 'you cannot count biodiversity without naming things first' },
+      { id: 'microbes-disease', why: 'bacteria, fungi and viruses sit in very different places' }
+    ]
+  },
+
+  'plant-transport': {
+    formulas: [
+      { f: 'rate of transpiration = distance moved \u00f7 time', what: 'how a potometer measures it. A bubble travels along a tube as the plant draws water up, and you time how far it goes.' },
+      { f: 'water potential: high \u2192 low', what: 'water always moves from where there is more of it to where there is less. That one rule drives entry at the root and loss at the leaf.' }
+    ],
+    mistakes: [
+      { wrong: 'The roots pump water up the plant.', right: 'There is no pump. Evaporation from the leaves pulls the column up, and water sticks to itself well enough to be pulled as one thread. Root pressure exists but is far too weak to reach the top of a tree.' },
+      { wrong: 'Xylem and phloem both carry water up.', right: 'Xylem carries water and minerals upwards only. Phloem carries dissolved sugar, and it goes wherever the sugar is needed, which is often downwards.' },
+      { wrong: 'Transpiration is a waste of water the plant would avoid if it could.', right: 'It is the unavoidable cost of opening stomata to let carbon dioxide in, and the plant uses the pull to lift water and minerals. A plant that sealed itself would not starve of water, it would starve of carbon dioxide.' }
+    ],
+    deeper: [
+      { t: 'Why the column does not snap', b: 'Water molecules attract each other strongly, which is called cohesion, and they also cling to the xylem walls, which is adhesion. Together these hold a thread of water under tension across a hundred metres. Let an air bubble in and the thread breaks, which is why cut flowers are trimmed under water.' },
+      { t: 'The compromise a plant cannot escape', b: 'Open stomata means carbon dioxide in and water out. Shut means neither. A plant in a drought shuts them and accepts that photosynthesis stops, because dying of thirst is faster than dying of hunger. Desert plants open theirs at night instead.' },
+      { t: 'Measuring with a potometer', b: 'A leafy shoot is sealed into a tube of water with an air bubble in it. As the shoot transpires it draws water up and the bubble moves. Change one condition at a time, wind or humidity or light, and time the bubble over the same distance.' }
+    ],
+    links: [
+      { id: 'photosynthesis', why: 'stomata open for carbon dioxide, and water leaves through them' },
+      { id: 'cells', why: 'turgid cells are what hold a plant up' },
+      { id: 'water-cycle', why: 'transpiration is one of the ways water gets back into the air' }
+    ]
+  },
+
+  'nervous-system': {
+    formulas: [
+      { f: 'stimulus \u2192 receptor \u2192 sensory neurone \u2192 relay \u2192 motor neurone \u2192 effector \u2192 response', what: 'the full path. A reflex uses exactly this, with the relay neurone in the spinal cord and no detour to the brain.' },
+      { f: 'speed = distance \u00f7 time', what: 'how nerve conduction speed is measured, and why a myelinated fibre at 100 m/s beats an unmyelinated one at about 1 m/s.' }
+    ],
+    mistakes: [
+      { wrong: 'Nerve cells touch each other.', right: 'They do not. There is a gap at every junction, and a chemical has to carry the signal across it. That gap is the synapse.' },
+      { wrong: 'A reflex is just a very fast decision.', right: 'There is no decision. The signal never reaches the conscious part of the brain before the muscle has acted, which is why you cannot choose to stop blinking when something comes at your eye.' },
+      { wrong: 'The signal travels along a nerve as electricity, like a wire.', right: 'It is electrical, but it is not a current flowing. It is a wave of charge moving across the membrane, regenerated the whole way along, which is why it does not fade over a metre.' }
+    ],
+    deeper: [
+      { t: 'Why the gap is there at all', b: 'A gap looks like a design fault until you notice what it allows. Signals can only cross one way, many cells can feed into one, and the strength of the connection can be turned up or down. Learning is largely changes at synapses.' },
+      { t: 'Saltatory conduction', b: 'Myelin insulates the fibre except at regular gaps. The signal regenerates only at those gaps and effectively jumps between them, which is both much faster and much cheaper in energy than regenerating it continuously.' },
+      { t: 'Two systems, one body', b: 'Nerves and hormones both carry messages. Nerves are electrical, fast, aimed at one target and short-lived. Hormones are chemical, slow, carried everywhere in the blood and long-lasting. Pulling your hand from a flame is nerves; puberty is hormones.' }
+    ],
+    links: [
+      { id: 'body-systems', why: 'the nervous system is one of the systems that run you' },
+      { id: 'light-optics', why: 'the eye is the receptor that feeds it' },
+      { id: 'waves', why: 'the ear turns a sound wave into a nerve signal' }
+    ]
   }
+
 };
