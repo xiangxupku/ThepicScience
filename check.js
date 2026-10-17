@@ -436,6 +436,74 @@ console.log('seconds per question you can afford, with one wrong in five:', pace
 console.log('problems:', wBad.length ? wBad.slice(0, 6).join('; ') : 'none');
 if (wBad.length) process.exitCode = 1;
 
+// ── the three eggs ──
+const PT = window.PETS;
+let eBad = [];
+if (PT.eggs.length !== 3) eBad.push('expected three eggs, found ' + PT.eggs.length);
+
+PT.eggs.forEach(e => {
+  ['id', 'name', 'price', 'blurb', 'tone', 'odds'].forEach(k => {
+    if (!e[k]) eBad.push(e.id + ': missing ' + k);
+  });
+  const sum = PT.rarities.reduce((n, r) => n + (e.odds[r.id] || 0), 0);
+  if (sum !== 100) eBad.push(e.id + ': odds add to ' + sum + ', not 100');
+  PT.rarities.forEach(r => {
+    const v = e.odds[r.id];
+    if (v === undefined) eBad.push(e.id + ': no entry for ' + r.id);
+    else if (v < 0 || v > 100) eBad.push(e.id + ': silly chance for ' + r.id);
+  });
+});
+
+// a dearer egg has to actually be better, or it is a trap
+const sorted = PT.eggs.slice().sort((a, b) => a.price - b.price);
+for (let i = 1; i < sorted.length; i++) {
+  if (PT.eggAverage(sorted[i].id) <= PT.eggAverage(sorted[i - 1].id)) {
+    eBad.push(sorted[i].id + ' costs more than ' + sorted[i - 1].id + ' but rolls no better');
+  }
+}
+
+// the printed chances have to be the real ones
+const seen = {};
+PT.eggs.forEach(e => {
+  const got = {}, N = 150000;
+  for (let i = 0; i < N; i++) {
+    const r = PT.hatch({}, e.id);
+    got[r.got.id] = (got[r.got.id] || 0) + 1;
+  }
+  PT.rarities.forEach(r => {
+    const want = e.odds[r.id] || 0;
+    const actual = (got[r.id] || 0) / N * 100;
+    if (Math.abs(actual - want) > 0.8) {
+      eBad.push(e.id + '/' + r.id + ': printed ' + want + '%, rolled ' + actual.toFixed(2) + '%');
+    }
+  });
+  seen[e.id] = PT.rarities.map(r => ((got[r.id] || 0) / N * 100).toFixed(1)).join('/');
+});
+
+// every egg must still reach all fifty, and never repeat one
+PT.eggs.forEach(e => {
+  const owned = {};
+  let n = 0, dupes = 0;
+  for (let i = 0; i < PT.list.length + 10; i++) {
+    const r = PT.hatch(owned, e.id);
+    if (!r) break;
+    if (owned[r.pet.id]) dupes++;
+    owned[r.pet.id] = 1;
+    n++;
+  }
+  if (n !== PT.list.length) eBad.push(e.id + ': only reached ' + n + ' of ' + PT.list.length + ' pets');
+  if (dupes) eBad.push(e.id + ': handed out ' + dupes + ' duplicates');
+  if (PT.hatch(owned, e.id) !== null) eBad.push(e.id + ': still hatching with everything owned');
+});
+
+console.log('\n-- eggs --');
+PT.eggs.forEach(e => console.log('  ' + e.id.padEnd(10), String(e.price).padStart(3) + ' sparks',
+  '| average rarity ' + PT.eggAverage(e.id).toFixed(2),
+  '| rolled ' + seen[e.id]));
+console.log('full set costs:', PT.eggs.map(e => e.id + ' ' + (e.price * PT.list.length)).join(', '));
+console.log('problems:', eBad.length ? eBad.slice(0, 6).join('; ') : 'none');
+if (eBad.length) process.exitCode = 1;
+
 // ── parties: team sizes, seating and the one-in-three robots ──
 eval(fsp.readFileSync(__dirname + '/assets/party.js', 'utf8'));
 const PY = window.PARTY;

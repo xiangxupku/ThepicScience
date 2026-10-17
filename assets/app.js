@@ -2327,19 +2327,10 @@
 
     var owned = window.PETS.list.filter(function (p) { return S.owned[p.id]; }).length;
     var total = window.PETS.list.length;
-    $('egg-count').textContent = owned + ' of ' + total + ' pets found';
-    $('egg-btn').disabled = S.sparks < window.PETS.eggPrice || owned >= total;
-    $('egg-btn').textContent = owned >= total
-      ? 'You have found every pet'
-      : 'Hatch an egg — ' + window.PETS.eggPrice + ' ⚡';
-
-    $('egg-odds').innerHTML = window.PETS.rarities.map(function (r) {
-      var have = window.PETS.list.filter(function (p) { return p.rarity === r.id && S.owned[p.id]; }).length;
-      var all = window.PETS.list.filter(function (p) { return p.rarity === r.id; }).length;
-      return '<li><span class="odds-dot is-' + r.id + '"></span>' +
-        '<b>' + esc(r.name) + '</b><span class="odds-pct">' + r.chance + '%</span>' +
-        '<span class="odds-have">' + have + '/' + all + '</span></li>';
-    }).join('');
+    $('egg-count').textContent = owned >= total
+      ? 'You have found every one of the ' + total + ' pets.'
+      : owned + ' of ' + total + ' pets found. ' + (total - owned) + ' still out there.';
+    renderEggs(owned >= total);
 
     $('pet-grid').innerHTML = window.PETS.list.map(function (p) {
       var level = S.owned[p.id] || 0;
@@ -2377,23 +2368,61 @@
     ].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
   }
 
-  function choosePet(id) {
-    if (!S.owned[id]) return;
-    S.pet = id;
-    saveSparks();
-    renderShop();
-    toast(window.PETS.byId(id).name + ' is helping you now');
+  /* ── the three eggs ─────────────────────────
+     Same fifty pets behind all of them; the price buys better odds, and every set of odds
+     is on the card before you spend. pets.js owns the numbers. */
+
+  function eggArt(e) {
+    return '<svg viewBox="0 0 100 120" class="egg-svg" aria-hidden="true"><g class="egg-wiggle">' +
+      '<ellipse cx="50" cy="72" rx="34" ry="42" fill="' + e.tone[0] + '"/>' +
+      '<ellipse cx="50" cy="72" rx="34" ry="42" fill="none" stroke="' + e.tone[1] + '" stroke-width="3"/>' +
+      '<path d="M28 64 q 10 -8 20 0 q 10 8 22 -2" fill="none" stroke="' + e.tone[1] + '" stroke-width="3"/>' +
+      '<circle cx="40" cy="88" r="5" fill="' + e.tone[2] + '"/><circle cx="60" cy="96" r="4" fill="' + e.tone[2] + '"/>' +
+      (e.id === 'starlight'
+        ? '<g class="egg-sparkle" fill="#fff6dc"><circle cx="30" cy="40" r="2.6"/>' +
+          '<circle cx="70" cy="34" r="2"/><circle cx="50" cy="26" r="3"/></g>'
+        : '') +
+      (e.id === 'golden'
+        ? '<path d="M50 24 l2.4 6 6.4 .6 -5 4.2 1.6 6.2 -5.4 -3.5 -5.4 3.5 1.6 -6.2 -5 -4.2 6.4 -.6 z" fill="#ffd45e"/>'
+        : '') +
+      '</g></svg>';
   }
 
-  /* ── eggs ─────────────────────────────────────────────
-     The odds are printed on the machine before you spend anything, and the roll can only
-     ever give you a pet you do not already have. */
-  $('egg-btn').addEventListener('click', function () {
-    if (S.sparks < window.PETS.eggPrice) { toast('You need ' + window.PETS.eggPrice + ' sparks'); return; }
-    var result = window.PETS.hatch(S.owned);
+  function renderEggs(allFound) {
+    $('egg-row').innerHTML = window.PETS.eggs.map(function (e) {
+      var afford = S.sparks >= e.price;
+      var odds = window.PETS.rarities.map(function (r) {
+        var pct = e.odds[r.id] || 0;
+        return '<li' + (pct ? '' : ' class="is-never"') + '>' +
+          '<span class="odds-dot is-' + r.id + '"></span>' +
+          '<b>' + esc(r.name) + '</b>' +
+          '<span class="odds-pct">' + (pct ? pct + '%' : 'never') + '</span></li>';
+      }).join('');
+
+      return '<div class="egg-card is-' + e.id + '">' +
+        '<div class="egg-visual">' + eggArt(e) + '</div>' +
+        '<p class="egg-name">' + esc(e.name) + '</p>' +
+        '<p class="egg-blurb">' + esc(e.blurb) + '</p>' +
+        '<ul class="egg-odds">' + odds + '</ul>' +
+        '<button type="button" class="btn ' + (afford && !allFound ? 'btn-primary' : 'btn-quiet') +
+        '" data-egg="' + e.id + '"' + (afford && !allFound ? '' : ' disabled') + '>' +
+        (allFound ? 'All found' : 'Hatch — ' + e.price + ' ' + BOLT_CHAR) + '</button>' +
+        (afford || allFound ? '' : '<p class="egg-short">' + (e.price - S.sparks) + ' more needed</p>') +
+        '</div>';
+    }).join('');
+
+    $('egg-row').querySelectorAll('[data-egg]').forEach(function (b) {
+      b.addEventListener('click', function () { hatchEgg(b.dataset.egg); });
+    });
+  }
+
+  function hatchEgg(eggId) {
+    var e = window.PETS.egg(eggId);
+    if (S.sparks < e.price) { toast('You need ' + e.price + ' sparks for that one'); return; }
+    var result = window.PETS.hatch(S.owned, e.id);
     if (!result) { toast('You already have every pet'); return; }
 
-    S.sparks -= window.PETS.eggPrice;
+    S.sparks -= e.price;
     S.owned[result.pet.id] = 1;
     saveSparks();
 
@@ -2404,15 +2433,24 @@
     box.innerHTML = '<div class="egg-pop">' + window.PETS.draw(result.pet.id, 1) + '</div>' +
       '<div><p class="egg-rarity">' + esc(r.name) + '</p>' +
       '<p class="egg-name">' + esc(result.pet.name) + '</p>' +
-      '<p class="hint">' + (result.pet.type === 'attack' ? '⚔ An attacker' : '🛡 A defender') +
+      '<p class="hint">From the ' + esc(e.name.toLowerCase()) + '. ' +
+      (result.pet.type === 'attack' ? '\u2694 An attacker' : '\u{1F6E1} A defender') +
       (r.bonus ? ' with a +' + r.bonus + ' level head start' : '') + '.</p>' +
       '<button type="button" class="btn btn-primary" id="egg-use">Make ' + esc(result.pet.name) + ' my helper</button></div>';
     box.querySelector('#egg-use').addEventListener('click', function () { choosePet(result.pet.id); });
 
     paintSparks(true);
     toast(r.name + '! You got ' + result.pet.name);
-    say('The egg hatched a ' + r.name + ' pet: ' + result.pet.name + '.');
-  });
+    say('The ' + e.name.toLowerCase() + ' hatched a ' + r.name + ' pet: ' + result.pet.name + '.');
+  }
+
+  function choosePet(id) {
+    if (!S.owned[id]) return;
+    S.pet = id;
+    saveSparks();
+    renderShop();
+    toast(window.PETS.byId(id).name + ' is helping you now');
+  }
 
   $('level-btn').addEventListener('click', function () {
     var cur = activePet();

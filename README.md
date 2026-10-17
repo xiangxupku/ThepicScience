@@ -126,11 +126,25 @@ the photo, the text reading and the narration all happen inside the browser.
    lives in `localStorage` on that one device. **There is no money anywhere in this app. You
    cannot buy sparks, and nothing asks for a card.** Sparks hatch eggs and level up pets.
 
-   An egg costs **10 sparks** and hatches one of **50 pets**, drawn as SVG like everything
-   else. The odds are printed on the machine before you spend anything: Common 50%, Rare 25%,
-   Gold 14%, Legendary 7%, Mythic 3%, Impossible 1% — and a roll can only ever give you a pet
-   you do not already have, so 50 eggs collects the set and a duplicate is impossible. Rarer
-   pets hatch with a level head start (up to +6).
+   There are **three eggs**, all hatching from the same **50 pets**, drawn as SVG like
+   everything else. The price buys better odds, and every set of odds is printed on the card
+   before you spend a single spark:
+
+   | Egg | Price | Common | Rare | Gold | Legendary | Mythic | Impossible |
+   | --- | --- | --- | --- | --- | --- | --- | --- |
+   | Plain | 10 ⚡ | 50% | 25% | 14% | 7% | 3% | 1% |
+   | Golden | 25 ⚡ | 18% | 30% | 26% | 16% | 7% | 3% |
+   | Starlight | 55 ⚡ | never | 12% | 28% | 30% | 20% | 10% |
+
+   A roll can only ever give you a pet you do not already have, so a duplicate is impossible
+   and the set takes exactly 50 eggs whichever ones you buy. **The dearer eggs bring the rare
+   ones forward, they do not add any** — that is written on the shop too, because a child
+   saving up for the big egg deserves to know what it actually does. Rarer pets hatch with a
+   level head start (up to +6).
+
+   `check.js` rolls 150,000 of each egg and fails the build if any printed chance is more
+   than 0.8 points out, if a dearer egg does not roll better than a cheaper one, or if any
+   egg cannot reach all fifty pets without repeating one.
 
    Every pet is an **attacker (⚔)** or a **defender (🛡)** — 29 and 21 of them. Levelling
    goes to **20**, costing 6 sparks for the first level and 32% more each time, 3,645 sparks

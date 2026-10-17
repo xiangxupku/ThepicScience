@@ -28,8 +28,57 @@
     return Math.round(6 * Math.pow(1.32, fromLevel - 1));
   }
 
-  var EGG_PRICE = 10;
+  var EGG_PRICE = 10;          /* the plain egg, kept as the name older saves used */
   var DUPLICATE_REFUND = 5;
+
+  /* ── three eggs ──────────────────────────────
+     Same fifty pets behind all three. What changes is which rarity you are likely to roll,
+     and every set of odds is printed on the machine before you spend anything.
+
+     Worth being straight about what the expensive ones actually buy. A roll can never give
+     you a pet you already own, so you end up with all fifty whichever eggs you buy — the
+     dearer eggs bring the rare ones forward, they do not add any. That is written on the
+     shop too, because a child saving up for the big egg deserves to know what it does. */
+
+  var EGGS = [
+    {
+      id: 'plain',
+      name: 'Plain egg',
+      price: 10,
+      blurb: 'Mostly commons. The cheapest way to fill the shelf.',
+      tone: ['#f3ead6', '#d9c9a8', '#e4d6b8'],
+      odds: { common: 50, rare: 25, gold: 14, legendary: 7, mythic: 3, impossible: 1 }
+    },
+    {
+      id: 'golden',
+      name: 'Golden egg',
+      price: 25,
+      blurb: 'Commons are rare now. Gold and legendary get likely.',
+      tone: ['#ffe9a8', '#e8b63c', '#fff3cd'],
+      odds: { common: 18, rare: 30, gold: 26, legendary: 16, mythic: 7, impossible: 3 }
+    },
+    {
+      id: 'starlight',
+      name: 'Starlight egg',
+      price: 55,
+      blurb: 'No commons at all. One in ten is impossible.',
+      tone: ['#d9c6ff', '#8f6fd0', '#f0e6ff'],
+      odds: { common: 0, rare: 12, gold: 28, legendary: 30, mythic: 20, impossible: 10 }
+    }
+  ];
+
+  function egg(id) {
+    return EGGS.filter(function (e) { return e.id === id; })[0] || EGGS[0];
+  }
+
+  /* the average rarity an egg rolls, 1 for common up to 6 for impossible */
+  function eggAverage(id) {
+    var e = egg(id), total = 0;
+    for (var i = 0; i < RARITY.length; i++) {
+      total += (i + 1) * ((e.odds[RARITY[i].id] || 0) / 100);
+    }
+    return Math.round(total * 100) / 100;
+  }
 
   /* Getting past a monster is paid by that world's chest, not from here — see worlds.js. */
   var EARN = {
@@ -275,21 +324,38 @@
      the egg. A duplicate is impossible by construction, but if every pet is owned the egg
      refunds instead. */
 
-  function hatch(owned, roll) {
+  function hatch(owned, eggId, roll) {
+    var e = egg(eggId);
     var r = typeof roll === 'number' ? roll : Math.random() * 100;
-    var acc = 0, tier = RARITY[0];
+    var acc = 0, tier = null;
     for (var i = 0; i < RARITY.length; i++) {
-      acc += RARITY[i].chance;
+      var chance = e.odds[RARITY[i].id] || 0;
+      if (!chance) continue;
+      acc += chance;
       if (r < acc) { tier = RARITY[i]; break; }
     }
-    /* walk down from the rolled tier until we find something new */
+    /* rounding, or a roll of exactly 100, can fall off the end: take the last real tier */
+    if (!tier) {
+      for (var j = RARITY.length - 1; j >= 0; j--) {
+        if (e.odds[RARITY[j].id]) { tier = RARITY[j]; break; }
+      }
+    }
+    /* Walk out from the rolled tier until we find something new, nearest first. Own every
+       common and a plain egg quietly starts paying rares, rather than wasting the spend. */
     var order = RARITY.map(function (x) { return x.id; });
     var start = order.indexOf(tier.id);
-    for (var step = 0; step < RARITY.length; step++) {
-      var id = order[(start - step + RARITY.length) % RARITY.length];
+    var tried = {};
+    for (var step = 0; step < RARITY.length * 2; step++) {
+      var at = step % 2 ? start + Math.ceil(step / 2) : start - step / 2;
+      if (at < 0 || at >= order.length || tried[at]) continue;
+      tried[at] = true;
+      var id = order[at];
       var pool = LIST.filter(function (p) { return p.rarity === id && !owned[p.id]; });
       if (pool.length) {
-        return { pet: pool[Math.floor(Math.random() * pool.length)], rolled: tier, got: rarity(id) };
+        return {
+          pet: pool[Math.floor(Math.random() * pool.length)],
+          rolled: tier, got: rarity(id), egg: e
+        };
       }
     }
     return null;      /* every pet owned */
@@ -348,6 +414,9 @@
     ladder: LADDER,
     maxLevel: MAX_LEVEL,
     eggPrice: EGG_PRICE,
+    eggs: EGGS,
+    egg: egg,
+    eggAverage: eggAverage,
     duplicateRefund: DUPLICATE_REFUND,
     starter: 'bubble',
 

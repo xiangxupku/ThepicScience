@@ -123,22 +123,11 @@
     <div id="shop-body" hidden>
       <p class="shop-note">Sparks are not money. There is no way to buy them with anything real, nothing in this app costs money, and the egg prints its exact chances below before you spend a single spark.</p>
 
-      <div class="egg-machine">
-        <div class="egg-visual" aria-hidden="true">
-          <svg viewBox="0 0 100 120"><g class="egg-wiggle">
-            <ellipse cx="50" cy="72" rx="34" ry="42" fill="#f3ead6"/>
-            <ellipse cx="50" cy="72" rx="34" ry="42" fill="none" stroke="#d9c9a8" stroke-width="3"/>
-            <path d="M28 64 q 10 -8 20 0 q 10 8 22 -2" fill="none" stroke="#d9c9a8" stroke-width="3"/>
-            <circle cx="40" cy="88" r="5" fill="#e4d6b8"/><circle cx="60" cy="96" r="4" fill="#e4d6b8"/>
-          </g></svg>
-        </div>
-        <div class="egg-text">
-          <p class="pet-name">Mystery egg</p>
-          <p class="hint" id="egg-count"></p>
-          <button type="button" class="btn btn-primary btn-big" id="egg-btn"></button>
-        </div>
-        <ul class="egg-odds" id="egg-odds"></ul>
-      </div>
+      <p class="hint egg-count" id="egg-count"></p>
+      <div class="egg-row" id="egg-row"></div>
+      <p class="shop-note egg-truth">An egg can never give you a pet you already have, so you
+        end up with all fifty whichever ones you buy. A dearer egg brings the rare ones
+        forward, it does not add any. Every set of chances is printed above before you spend.</p>
 
       <div class="egg-result" id="egg-result" hidden></div>
 
