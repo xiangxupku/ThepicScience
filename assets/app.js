@@ -54,6 +54,8 @@
     gradeNum: null,      // the actual school year, 3 to 12, if they signed in
     sparks: 0,           // earned, never bought
     lifetime: 0,         // every spark ever earned, for the profile
+    spent: 0,            // every spark ever spent, which is a different number
+    mastered: null,      // topic id -> { question text: true } for the ones you got right
     tally: null,         // { escapes, duels, bestLevel } — what the earned titles are judged on
     chaseLevel: 1,       // which rung of the monster ladder you are on
     partyMode: '2v2',    // 1v1 | 2v2 | 3v3 | 4v4
@@ -2228,6 +2230,8 @@
     };
     S.chaseLevel = Math.max(1, S.tally.bestLevel);
     S.bestTimes = (p && p.bestTimes) || {};
+    S.spent = (p && parseInt(p.spent, 10)) || 0;
+    S.mastered = (p && p.mastered) || {};
     /* the free starters are always yours, even if the save file predates them */
     window.PROFILE.freeKeys().forEach(function (k) { S.profile.items[k] = true; });
     window.PROFILE.slots.forEach(function (sl) {
@@ -2243,7 +2247,7 @@
       window.localStorage.setItem(PROFILE_KEY, JSON.stringify({
         name: S.profile.name, worn: S.profile.worn,
         items: S.profile.items, lifetime: S.lifetime, tally: S.tally,
-        bestTimes: S.bestTimes
+        bestTimes: S.bestTimes, spent: S.spent, mastered: S.mastered
       }));
     } catch (e) {}
   }
@@ -2259,6 +2263,17 @@
         owned: S.owned, pet: S.pet, seenTopics: S.seenTopics
       }));
     } catch (e) {}
+  }
+
+  /* Every spark leaving your total goes through here, so “I have money.” counts all of
+     it — eggs, pet levels and cosmetics alike — and no new way to spend can forget to. */
+  function spend(amount, what) {
+    if (!amount || S.sparks < amount) return false;
+    S.sparks -= amount;
+    S.spent += amount;
+    saveSparks();
+    saveProfile();
+    return true;
   }
 
   function earn(amount, reason) {
@@ -2422,7 +2437,7 @@
     var result = window.PETS.hatch(S.owned, e.id);
     if (!result) { toast('You already have every pet'); return; }
 
-    S.sparks -= e.price;
+    spend(e.price, 'an egg');
     S.owned[result.pet.id] = 1;
     saveSparks();
 
@@ -2457,7 +2472,7 @@
     if (cur.level >= window.PETS.maxLevel) return;
     var cost = window.PETS.levelCost(cur.level);
     if (S.sparks < cost) { toast('Not enough sparks yet'); return; }
-    S.sparks -= cost;
+    spend(cost, 'a pet level');
     S.owned[cur.def.id] = cur.level + 1;
     saveSparks();
     paintSparks(true);
@@ -2504,9 +2519,24 @@
       var it = window.PROFILE.byKey(k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':') + 1));
       return it && it.cost > 0;
     }).length;
+    var mine = topicsForMe();
+    var dressOwned = Object.keys(S.profile.items).filter(function (k) {
+      var slot = k.slice(0, k.indexOf(':'));
+      var it = window.PROFILE.byKey(slot, k.slice(k.indexOf(':') + 1));
+      return it && it.cost > 0 && window.PROFILE.dressSlots.indexOf(slot) > -1;
+    }).length;
+
     return {
-      topics: Object.keys(S.seenTopics).length,
-      topicTotal: window.TOPICS.length,
+      topics: Object.keys(S.seenTopics).filter(function (id) {
+        return mine.some(function (t) { return t.id === id; });
+      }).length,
+      topicTotal: mine.length,
+      spent: S.spent,
+      dressed: dressOwned >= window.PROFILE.dressTotal(),
+      dressOwned: dressOwned,
+      dressTotal: window.PROFILE.dressTotal(),
+      mastered: mine.filter(topicMastered).length,
+      masterTotal: mine.length,
       pets: petLevels.filter(function (l) { return l > 0; }).length,
       petTotal: window.PETS.list.length,
       petMax: Math.max.apply(null, petLevels.concat([0])),
@@ -2560,6 +2590,64 @@
     ];
   }
 
+  /* ── the achievement wall ──────────────────
+     Beside the avatar, so the first thing you see on your own profile is what you have
+     done. Locked ones stay on the wall rather than hiding, because a goal you cannot see
+     is not a goal — each says what it needs and, where it is a count, how far along. */
+
+  function medal(earned) {
+    return '<svg viewBox="0 0 24 24" class="medal" aria-hidden="true">' +
+      '<path d="M7 2 L12 9 L17 2" fill="none" stroke="' + (earned ? '#d9644f' : 'currentColor') +
+      '" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<circle cx="12" cy="15.5" r="6.5" fill="' + (earned ? '#ffd45e' : 'none') +
+      '" stroke="' + (earned ? '#9a7320' : 'currentColor') + '" stroke-width="2"/>' +
+      (earned ? '<path d="M9.3 15.6 l1.9 1.9 3.6 -3.8" fill="none" stroke="#9a7320" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' : '') +
+      '</svg>';
+  }
+
+  /* where a counting achievement has got to, for the ones that have a number */
+  function achieveProgress(id, st) {
+    var p = {
+      scholar: [Math.min(st.topics, 5), 5],
+      collector: [Math.min(st.pets, 10), 10],
+      survivor: [Math.min(st.escapes, 3), 3],
+      duellist: [Math.min(st.duels, 5), 5],
+      baron: [Math.min(st.lifetime, 1000), 1000],
+      trainer: [st.petMax, window.PETS.maxLevel],
+      keeper: [st.pets, st.petTotal],
+      stylist: [st.dressOwned, st.dressTotal],
+      wardrobe: [st.looks, st.lookTotal],
+      master: [st.topics, st.topicTotal],
+      rich: [Math.min(st.spent, 100000), 100000],
+      grandmaster: [st.mastered, st.masterTotal]
+    }[id];
+    return p || null;
+  }
+
+  function renderWall() {
+    var st = achieveStats();
+    var list = window.PROFILE.achievements;
+    var mine = list.filter(function (a) { return owns('title', a.id); }).length;
+    $('wall-count').textContent = mine + ' of ' + list.length;
+
+    $('profile-wall').innerHTML = list.map(function (a) {
+      var got = owns('title', a.id);
+      var worn = S.profile.worn.title === a.id;
+      var prog = got ? null : achieveProgress(a.id, st);
+      var bar = prog && prog[1]
+        ? '<span class="wall-bar"><i style="width:' +
+          Math.min(100, Math.round(prog[0] / prog[1] * 100)) + '%"></i></span>' +
+          '<span class="wall-num">' + prog[0].toLocaleString() + ' / ' + prog[1].toLocaleString() + '</span>'
+        : '';
+      return '<li class="wall-item' + (got ? ' is-got' : '') + (worn ? ' is-worn' : '') +
+        '" title="' + esc(a.need) + '">' +
+        medal(got) +
+        '<span class="wall-text"><b>' + esc(a.name) + '</b>' +
+        '<span class="wall-need">' + esc(got ? (worn ? 'worn as your title' : 'earned') : a.need) + '</span>' +
+        bar + '</span></li>';
+    }).join('');
+  }
+
   function renderProfile() {
     if (!S.profile) return;
     grantEarnedTitles(true);
@@ -2567,6 +2655,7 @@
     if ($('profile').hidden) return;
 
     $('profile-avatar').innerHTML = window.PROFILE.draw(S.profile.worn);
+    renderWall();
     if ($('profile-name').value !== S.profile.name) $('profile-name').value = S.profile.name;
     $('profile-title').textContent = window.PROFILE.titleText(S.profile.worn.title);
 
@@ -2655,7 +2744,7 @@
     var it = window.PROFILE.byKey(slot, id);
     if (!it || owns(slot, id)) return;
     if (S.sparks < it.cost) { toast('You need ' + it.cost + ' sparks for that'); return; }
-    S.sparks -= it.cost;
+    spend(it.cost, 'a look');
     S.profile.items[window.PROFILE.key(slot, id)] = true;
     S.profile.worn[slot] = id;
     saveSparks();
@@ -3574,6 +3663,38 @@
     $('missed-list').innerHTML = '';
   }
 
+  /* “I am the master” wants every question in a unit answered right, so we remember which
+     of a topic's ten have been. Only the library questions count: the generated practice
+     ones are built fresh each time and there is no fixed set of them to finish. */
+  function noteMastery(q) {
+    if (!S.board || !S.board.topic || q.source !== 'library') return;
+    var id = S.board.topic.id;
+    if (!S.mastered[id]) S.mastered[id] = {};
+    if (S.mastered[id][q.q]) return;
+    S.mastered[id][q.q] = true;
+    saveProfile();
+  }
+
+  /* a topic is finished when all ten of its questions have been answered right */
+  function topicMastered(topic) {
+    var got = S.mastered[topic.id];
+    if (!got) return false;
+    for (var i = 0; i < topic.quiz.length; i++) {
+      if (!got[topic.quiz[i].q]) return false;
+    }
+    return true;
+  }
+
+  /* the topics that count: the ones your grade covers, or all of them if you skipped it */
+  function topicsForMe() {
+    if (!S.gradeNum) return window.TOPICS;
+    var mine = window.TOPICS.filter(function (t) {
+      var r = gradeRange(t);
+      return S.gradeNum >= r.lo && S.gradeNum <= r.hi;
+    });
+    return mine.length ? mine : window.TOPICS;
+  }
+
   $('quiz-check').addEventListener('click', function () {
     var qs = S.questions, score = 0, answered = 0, missed = [];
     qs.forEach(function (q, qi) {
@@ -3588,8 +3709,10 @@
       var why = $('quiz-form').querySelector('[data-why="' + qi + '"]');
       why.hidden = false;
       why.textContent = q.why;
-      if (picked && Number(picked.value) === q.c) score++;
-      else if (picked) missed.push(q);
+      if (picked && Number(picked.value) === q.c) {
+        score++;
+        noteMastery(q);
+      } else if (picked) missed.push(q);
     });
 
     if (answered) {

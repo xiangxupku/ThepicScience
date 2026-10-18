@@ -194,7 +194,12 @@ the photo, the text reading and the narration all happen inside the browser.
    else. No account, no email, nothing sent anywhere. The duel picks it up automatically as
    player one.
 
-10. **🏅 Titles you cannot buy.** Ten of them, and no amount of sparks will get you one.
+   Beside the avatar is the **achievement wall**: all thirteen titles, the ones you have in
+   gold and the ones you have not still on the wall with what they need and a bar showing how
+   far along you are. A goal you cannot see is not a goal.
+
+10. **🏅 Titles you cannot buy.** Thirteen of them, and no amount of sparks will get
+    you one.
     Each waits until you have actually done the thing, then arrives with a message:
 
     | Title | How you get it |
@@ -205,10 +210,21 @@ the photo, the text reading and the narration all happen inside the browser.
     | Duellist | Win 5 duels |
     | Spark Baron | Earn 1,000 sparks in total |
     | Pet Trainer | Raise any pet to level 20 |
-    | Pet Master | Find all 50 pets |
-    | Walking Wardrobe | Unlock every look in the locker |
-    | **Master** | Learn every topic in the library |
+    | **Got 'em all!** | Find all 50 pets |
+    | **Look at me!** | Own every skin, hat and background |
+    | Walking Wardrobe | Unlock every single look, frames and badges too |
+    | Master | Learn every topic your grade covers |
+    | **I have money.** | Spend 100,000 sparks |
+    | **I am the master** | Every question right in every topic your grade covers |
     | **The Legend** | Earn every other title |
+
+    Two of those are judged **at your level**, not against the whole library: a grade 3
+    student needs the four topics grade 3 covers, a grade 8 student needs all 27. A topic
+    counts as finished once every one of its ten questions has been answered correctly at
+    some point, which the app remembers per question rather than per attempt.
+
+    Because The Legend needs every other title, it now needs 100,000 sparks spent too. That
+    is a long haul on purpose — it is the last thing left to do.
 
     They sit in the same Title slot as the bought ones, marked *earned* and priced *cannot be
     bought*, so the name under your avatar says what you did rather than what you spent.

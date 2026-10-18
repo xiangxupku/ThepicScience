@@ -332,11 +332,15 @@ const maxed = {
   topics: T.length, topicTotal: T.length,
   pets: window.PETS.list.length, petTotal: window.PETS.list.length,
   petMax: window.PETS.maxLevel, escapes: 99, duels: 99, lifetime: 999999,
-  looks: PF.buyable(), lookTotal: PF.buyable()
+  looks: PF.buyable(), lookTotal: PF.buyable(),
+  spent: 100000, dressed: true, dressOwned: PF.dressTotal(), dressTotal: PF.dressTotal(),
+  mastered: T.length, masterTotal: T.length
 };
 const nothing = {
   topics: 0, topicTotal: T.length, pets: 1, petTotal: window.PETS.list.length,
-  petMax: 1, escapes: 0, duels: 0, lifetime: 0, looks: 0, lookTotal: PF.buyable()
+  petMax: 1, escapes: 0, duels: 0, lifetime: 0, looks: 0, lookTotal: PF.buyable(),
+  spent: 0, dressed: false, dressOwned: 0, dressTotal: PF.dressTotal(),
+  mastered: 0, masterTotal: T.length
 };
 const allGot = PF.earnedTitles(maxed), noneGot = PF.earnedTitles(nothing);
 PF.achievements.forEach(a => {
@@ -355,7 +359,10 @@ PF.achievements.filter(a => a.id !== 'legend').forEach(a => {
   else if (a.id === 'duellist') one.duels = 0;
   else if (a.id === 'baron') one.lifetime = 0;
   else if (a.id === 'trainer') one.petMax = 1;
-  else if (a.id === 'stylist') one.looks = 0;
+  else if (a.id === 'stylist') { one.dressed = false; one.dressOwned = 0; }
+  else if (a.id === 'wardrobe') one.looks = 0;
+  else if (a.id === 'rich') one.spent = 0;
+  else if (a.id === 'grandmaster') one.mastered = 0;
   if (PF.earnedTitles(one).legend) pBad.push('the legend still fires without ' + a.id);
 });
 

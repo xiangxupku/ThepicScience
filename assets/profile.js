@@ -399,12 +399,18 @@
       test: function (st) { return st.lifetime >= 1000; } },
     { id: 'trainer', name: 'Pet Trainer', need: 'Raise any pet to level ' + MAX_PET_LEVEL,
       test: function (st) { return st.petMax >= MAX_PET_LEVEL; } },
-    { id: 'keeper', name: 'Pet Master', need: 'Find all 50 pets',
+    { id: 'keeper', name: "Got 'em all!", need: 'Find all 50 pets',
       test: function (st) { return st.pets >= st.petTotal; } },
-    { id: 'stylist', name: 'Walking Wardrobe', need: 'Unlock every look in the locker',
+    { id: 'stylist', name: 'Look at me!', need: 'Own every skin, hat and background',
+      test: function (st) { return st.dressed; } },
+    { id: 'wardrobe', name: 'Walking Wardrobe', need: 'Unlock every single look, frames and badges too',
       test: function (st) { return st.looks >= st.lookTotal; } },
-    { id: 'master', name: 'Master', need: 'Learn every topic in the library',
+    { id: 'master', name: 'Master', need: 'Learn every topic your grade covers',
       test: function (st) { return st.topics >= st.topicTotal; } },
+    { id: 'rich', name: 'I have money.', need: 'Spend 100,000 sparks',
+      test: function (st) { return st.spent >= 100000; } },
+    { id: 'grandmaster', name: 'I am the master', need: 'Every question right in every topic your grade covers',
+      test: function (st) { return st.mastered > 0 && st.mastered >= st.masterTotal; } },
     { id: 'legend', name: 'The Legend', need: 'Earn every other title',
       test: function (st) { return st.others; } }
   ];
@@ -432,6 +438,10 @@
       earned: true, need: a.need, blurb: a.need
     });
   });
+
+  /* “Look at me!” is about the three slots people actually see at a glance. Frames,
+     badges and titles are their own achievement, because collecting those is a longer job. */
+  var DRESS_SLOTS = ['skin', 'hat', 'banner'];
 
   var SLOTS = [
     { id: 'skin', name: 'Who you are', note: 'The character in the circle.' },
@@ -510,6 +520,14 @@
 
     achievements: EARNED,
     earnedTitles: earnedTitles,
-    petMaxLevel: petMaxLevel
+    petMaxLevel: petMaxLevel,
+    dressSlots: DRESS_SLOTS,
+
+    /* how many buyable items live in the slots “Look at me!” counts */
+    dressTotal: function () {
+      return LIST.filter(function (it) {
+        return it.cost > 0 && DRESS_SLOTS.indexOf(it.slot) > -1;
+      }).length;
+    }
   };
 })();
