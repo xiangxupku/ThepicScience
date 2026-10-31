@@ -546,5 +546,321 @@ window.PROJECTS = {
     fair: 'Same ruler, same hand, same grip, same partner, same drop height. The only thing you changed was the distraction.',
     stretch: 'Try your other hand, or try again after running up and down the stairs. Predict which will be slower before you test it.'
   }
+,
+
+  'simple-machines': {
+    title: 'The ramp that makes a book easier to lift',
+    question: 'Does a longer ramp really need less force?',
+    days: 'Takes 30 minutes',
+    needs: ['A heavy book', 'A smooth board or stiff cardboard about a metre long',
+      'A pile of books to prop it on', 'A spring scale, or a luggage scale, or elastic bands and a ruler',
+      'String', 'A tape measure'],
+    steps: [
+      'Tie string round the book so you can pull it without it slipping.',
+      'Lift the book straight up with the scale and write down the force.',
+      'Prop the board to make a short steep ramp. Measure its length and height.',
+      'Pull the book up the ramp slowly and steadily, and read the scale while it is moving.',
+      'Make the ramp longer and shallower without changing the height, and pull again.',
+      'Do three ramp lengths in all, and write the force next to each length.'
+    ],
+    look: 'The longer and shallower the ramp, the smaller the force \u2014 but you pull for further.',
+    why: 'A ramp trades force for distance. The work done is about the same each time, so spreading it over a longer slope means less force at any moment. That trade is what every simple machine does.',
+    fair: 'Same book, same board, same height at the top. The only thing you changed was the ramp length.',
+    stretch: 'Multiply force by distance for each ramp. The answers should be close \u2014 and the gap is friction.'
+  },
+
+  'sound': {
+    title: 'Tuning a bottle like an instrument',
+    question: 'Does more water in a bottle make a higher or a lower note?',
+    days: 'Takes 25 minutes',
+    needs: ['Five identical glass bottles or glasses', 'Water', 'A jug',
+      'A pencil to tap with', 'A phone with a free tuner app, if you have one'],
+    steps: [
+      'Line the bottles up and fill them to five clearly different levels.',
+      'Measure the height of water in each one and write it down.',
+      'Tap each bottle gently near the top with the pencil and listen.',
+      'Put them in order from lowest note to highest.',
+      'Now blow across the tops instead of tapping, and order them again.'
+    ],
+    look: 'Tapping: more water gives a lower note. Blowing: more water gives a higher note. They go opposite ways.',
+    why: 'Tapping makes the glass and water vibrate, and more water is harder to shake, so it vibrates slower \u2014 a lower frequency. Blowing makes the air column vibrate, and more water leaves a shorter column, which vibrates faster.',
+    fair: 'Same bottles, same pencil, same tap. The only thing you changed was the water level.',
+    stretch: 'Tune five bottles to the first five notes of a song and play it.'
+  },
+
+  'heat-transfer': {
+    title: 'Which cup keeps a drink warm longest?',
+    question: 'Does the material of a cup change how fast a drink cools?',
+    days: 'Takes 40 minutes',
+    needs: ['Three cups of about the same size: one metal, one ceramic, one plastic or foam',
+      'A thermometer', 'Warm water from the tap, not boiling', 'A clock', 'An adult to pour'],
+    steps: [
+      'Ask an adult to fill all three cups with the same amount of warm tap water.',
+      'Take the temperature of each straight away and write it down.',
+      'Leave all three in the same place, out of draughts and sunlight.',
+      'Measure each cup every five minutes for half an hour.',
+      'Draw all three lines on one graph of temperature against time.'
+    ],
+    look: 'The foam or plastic cup should hold its heat longest. The metal one should cool fastest.',
+    why: 'Metal is a good thermal conductor, so heat moves out through the walls quickly. Foam traps air, and trapped air is a poor conductor, which is what an insulator really is.',
+    fair: 'Same amount of water, same starting temperature, same place, same times. Only the cup changed.',
+    stretch: 'Put a lid on one cup. How much of the heat was leaving through the top as convection?'
+  },
+
+  'density-buoyancy': {
+    title: 'The can that floats and the can that does not',
+    question: 'Why does one fizzy drink float and another sink?',
+    days: 'Takes 20 minutes',
+    needs: ['An unopened can of ordinary fizzy drink', 'An unopened can of the diet version',
+      'A washing-up bowl or sink of water', 'Kitchen scales', 'A tape measure'],
+    steps: [
+      'Weigh both cans. They should be close, but write down the exact numbers.',
+      'Measure the height and the width across the top of each can \u2014 they are the same size.',
+      'Lower both gently into the water and let go.',
+      'Record which floats and which sinks.',
+      'Read the sugar content on each label and write it next to your result.'
+    ],
+    look: 'The diet can usually floats and the sugary one usually sinks, even though they look identical.',
+    why: 'Both cans take up the same volume, so whichever has more mass has the higher density. A can of ordinary drink holds about forty grams of dissolved sugar; the diet one holds a few grams of sweetener. That difference is enough to cross the density of water.',
+    fair: 'Same size can, same water, same way of lowering them in. Only the contents differ.',
+    stretch: 'Work out the density of each can: mass divided by volume. Which side of 1 g/cm\u00b3 does each land on?'
+  },
+
+  'solutions': {
+    title: 'Making sugar dissolve in a hurry',
+    question: 'Which speeds up dissolving most: heat, stirring, or grinding?',
+    days: 'Takes 30 minutes',
+    needs: ['Sugar cubes, or granulated sugar', 'Four clear glasses', 'Cold water',
+      'Warm water from the tap', 'A spoon', 'A stopwatch or phone timer', 'A pestle or the back of a spoon'],
+    steps: [
+      'Put the same amount of cold water in three glasses and warm water in the fourth.',
+      'Glass 1: drop in one sugar cube and do nothing. Time how long it takes to vanish.',
+      'Glass 2: one cube, stirring steadily. Time it.',
+      'Glass 3: crush a cube to powder first, then add it without stirring. Time it.',
+      'Glass 4: warm water, one whole cube, no stirring. Time it.',
+      'Put the four times in order, fastest first.'
+    ],
+    look: 'All three changes speed it up. Warm water and crushing usually beat stirring.',
+    why: 'Dissolving happens where water touches sugar. Crushing creates far more surface, warmth makes the water molecules move faster and hit harder, and stirring carries dissolved sugar away so fresh water can reach the crystal.',
+    fair: 'Same amount of sugar and the same amount of water every time. One change per glass.',
+    stretch: 'Combine all three at once. Is the time shorter than the best single change?'
+  },
+
+  'materials-properties': {
+    title: 'Which towel actually absorbs the most?',
+    question: 'Which material soaks up the most water for its size?',
+    days: 'Takes 30 minutes',
+    needs: ['Squares of four materials, all the same size: kitchen paper, a cotton cloth, a synthetic cloth, newspaper',
+      'A measuring jug', 'Water', 'Kitchen scales', 'A bowl'],
+    steps: [
+      'Cut or fold each material to exactly the same size, say ten centimetres square.',
+      'Weigh each dry square and write the weight down.',
+      'Hold one square flat in a bowl of water for exactly ten seconds.',
+      'Lift it out, hold it for ten seconds to let it drip, then weigh it again.',
+      'Repeat for each material, using the same ten seconds every time.',
+      'Work out water absorbed = wet weight minus dry weight.'
+    ],
+    look: 'Kitchen paper and cotton usually win. Newspaper falls apart, which is a result too.',
+    why: 'Absorbency comes from tiny spaces between fibres pulling water in. Materials with more and finer spaces hold more, which is why a property test has to compare the same size of each.',
+    fair: 'Same size square, same dunk time, same drip time, same scales. Only the material changed.',
+    stretch: 'Work out grams of water per gram of dry material. Does the winner change?'
+  },
+
+  'weather-climate': {
+    title: 'A week of weather in your own garden',
+    question: 'How much does the weather change in one place in a week?',
+    days: 'Takes 7 days, about 10 minutes a day',
+    needs: ['A clear straight-sided jar for a rain gauge', 'A ruler', 'A thermometer',
+      'A strip of ribbon tied to a stick', 'Paper for a chart'],
+    steps: [
+      'Stand the jar somewhere open, away from walls and trees, and mark the water level each morning.',
+      'At the same time each day, read the temperature in the shade.',
+      'Note which way the ribbon blows, and whether it hangs, flutters or streams out.',
+      'Write down whether the sky is clear, part cloudy or overcast.',
+      'After seven days, draw a chart with a row for each measurement.',
+      'Empty the jar after each reading so every day is counted once.'
+    ],
+    look: 'Temperature and cloud usually move together, and rain often follows a change of wind direction.',
+    why: 'Weather is what the atmosphere is doing right now, and it changes day to day. Climate is the pattern you only see after years of readings like these. One week shows you the first; it cannot show you the second.',
+    fair: 'Same place, same time of day, same instruments. The only thing changing is the day.',
+    stretch: 'Compare your week with the forecast for each day. How often was the forecast right?'
+  },
+
+  'rock-cycle': {
+    title: 'Reading three rocks without being told',
+    question: 'Can you sort rocks into the three types just by looking?',
+    days: 'Takes 45 minutes',
+    needs: ['Six or more different rocks from a garden, beach or path',
+      'A magnifying glass', 'Water in a bowl', 'An old toothbrush', 'Paper and pencil'],
+    steps: [
+      'Scrub each rock clean and let it dry.',
+      'Look at each one through the magnifying glass and draw what you see.',
+      'For each rock write: can you see separate crystals, layers, or neither?',
+      'Sort them: crystals all through suggests igneous, visible layers or grains suggests sedimentary, bands or a shiny squashed look suggests metamorphic.',
+      'Wet each rock. Some patterns only show up wet.',
+      'Write down which type you think each is, and the one clue that decided it.'
+    ],
+    look: 'Most garden rocks sort into two or three clear groups once you look closely.',
+    why: 'Texture records how a rock formed. Slow cooling underground grows big crystals, settling grains make layers, and heat and pressure squash crystals into bands. You are reading the conditions, not the chemistry.',
+    fair: 'Same cleaning, same magnifier, same light for every rock, so only the rock differs.',
+    stretch: 'Drip a little vinegar on each. Fizzing means limestone \u2014 which tells you it was once a sea floor.'
+  },
+
+  'erosion-weathering': {
+    title: 'A river in a baking tray',
+    question: 'Does a steeper slope erode more soil?',
+    days: 'Takes 40 minutes',
+    needs: ['A baking tray or seed tray', 'Sand or dry soil', 'A jug of water',
+      'Books to prop the tray on', 'A bowl to catch the runoff', 'A ruler'],
+    steps: [
+      'Fill the tray with damp sand and smooth it flat.',
+      'Prop one end on a single book and set the bowl to catch what runs off.',
+      'Pour one jug of water slowly at the top, always from the same height.',
+      'Let the bowl settle, then measure the depth of sand collected in it.',
+      'Empty and rebuild the tray, prop it on three books, and repeat with the same jug.',
+      'Do a third run with five books.'
+    ],
+    look: 'The steeper the slope, the more sand ends up in the bowl, and the deeper the channel cut.',
+    why: 'Faster water carries more and bigger particles. Steepening the slope speeds the water up, so erosion rises sharply. When the water reaches the bowl and slows, it drops its load \u2014 that is deposition, and your bowl is a delta.',
+    fair: 'Same sand, same amount of water, poured the same way from the same height. Only the slope changed.',
+    stretch: 'Plant grass seed or lay moss on one tray and run it again. How much does a root network hold back?'
+  },
+
+  'moon-phases': {
+    title: 'A month of looking up',
+    question: 'Can you predict what the Moon will look like next week?',
+    days: 'Takes 4 weeks, two minutes a night',
+    needs: ['A clear view of the sky', 'A notebook', 'A pencil',
+      'A torch with red paper over it, so your eyes stay adjusted'],
+    steps: [
+      'Each clear night, find the Moon and draw its shape in a circle in your notebook.',
+      'Write the date and the time next to every drawing.',
+      'Note roughly where it is: low in the east, high overhead, low in the west.',
+      'After two weeks, use your drawings to predict the next seven nights.',
+      'Keep drawing, and mark each prediction right or wrong.'
+    ],
+    look: 'A repeating cycle of about 29 days, and the lit edge always faces the Sun.',
+    why: 'The Moon makes no light of its own. You are watching the angle between the Sun, the Moon and you change as the Moon goes round, so you see different fractions of the lit half.',
+    fair: 'Same observer, same notebook, same rough time each night.',
+    stretch: 'Hold a ball in sunlight and walk round it. Find the position that gives each phase you drew.'
+  },
+
+  'seasons': {
+    title: 'Why a tilted beam is a weaker beam',
+    question: 'Does the angle of light change how much lands on the ground?',
+    days: 'Takes 25 minutes',
+    needs: ['A torch', 'Squared paper', 'A dark room', 'Books to prop the torch', 'A pencil'],
+    steps: [
+      'Tape the squared paper flat on a table in a dark room.',
+      'Hold the torch straight down, 30 cm above the paper, and draw round the bright patch.',
+      'Count the squares inside your outline.',
+      'Keeping the same height and the same torch, tilt it to about 45 degrees and draw round the patch again.',
+      'Count those squares too.',
+      'Tilt it further, to a low angle, and do it a third time.'
+    ],
+    look: 'The same torchlight spreads over more and more squares as the angle gets lower.',
+    why: 'The torch puts out the same energy every time. Spread across more squares, each square gets less. That is exactly why winter is colder: the same sunlight arrives at a low angle and spreads over more ground.',
+    fair: 'Same torch, same batteries, same height, same room. Only the angle changed.',
+    stretch: 'Work out the energy per square as a fraction of the straight-down case. Compare it to midsummer and midwinter sun angles where you live.'
+  },
+
+  'stars-galaxies': {
+    title: 'Counting stars through a paper tube',
+    question: 'Does light pollution really hide the stars?',
+    days: 'Takes 2 nights, 20 minutes each',
+    needs: ['A cardboard tube from kitchen roll', 'A notebook', 'A clear night',
+      'Two places: one with street lights nearby, one darker'],
+    steps: [
+      'Wait twenty minutes outside in the dark so your eyes adjust. Do not look at a phone.',
+      'Hold the tube to your eye and point it at a patch of sky well away from any light.',
+      'Count every star you can see through the tube and write the number down.',
+      'Do this for five different patches of sky and add them up.',
+      'On another night, repeat the whole thing from a darker place, same tube, same five directions.'
+    ],
+    look: 'The darker site usually shows several times as many stars through the same tube.',
+    why: 'The stars have not changed. Scattered street light brightens the whole sky, so the faintest stars no longer stand out against it. The tube keeps the patch of sky the same size each time, which is what makes the two counts comparable.',
+    fair: 'Same tube, same five directions, same time your eyes had to adjust. Only the location changed.',
+    stretch: 'Count the same patch at 9pm and again at midnight after some lights go off.'
+  },
+
+  'life-cycles': {
+    title: 'Watching a bean become a plant',
+    question: 'Which conditions does a seed actually need to germinate?',
+    days: 'Takes 7 days, 5 minutes a day',
+    needs: ['Dried beans', 'Four glass jars', 'Kitchen paper', 'Water',
+      'A dark cupboard', 'A fridge', 'A ruler'],
+    steps: [
+      'Line each jar with damp kitchen paper and tuck two beans between the paper and the glass.',
+      'Jar 1: damp paper, on a warm windowsill. This is the one everything else is compared to.',
+      'Jar 2: dry paper, warm windowsill.',
+      'Jar 3: damp paper, in a dark cupboard, same room temperature.',
+      'Jar 4: damp paper, in the fridge.',
+      'Check every day, keep the damp ones damp, and measure any root or shoot.'
+    ],
+    look: 'The warm damp jars sprout \u2014 in the light and in the dark. The dry one and the cold one do not.',
+    why: 'Germination needs water and warmth, and light is not on the list, because a seed starts underground. The dark jar proves it: those beans sprout just as well, they just come up pale.',
+    fair: 'Same beans, same jars, same paper. One condition changed per jar.',
+    stretch: 'Once sprouted, move the dark jar into the light. How long before the pale shoots turn green?'
+  },
+
+  'digestion': {
+    title: 'Why chewing is not optional',
+    question: 'Does breaking food up really speed digestion?',
+    days: 'Takes 30 minutes',
+    needs: ['Two indigestion tablets or two sugar cubes', 'Two clear glasses', 'Warm water',
+      'A stopwatch', 'A spoon to crush with'],
+    steps: [
+      'Put the same amount of warm water in both glasses.',
+      'Drop one whole tablet into the first glass and start the timer.',
+      'Crush the second tablet to powder, add it to the other glass, and time that too.',
+      'Do not stir either one.',
+      'Record how long each takes to disappear completely.',
+      'Repeat the whole thing twice more and take an average.'
+    ],
+    look: 'The crushed one disappears several times faster than the whole one.',
+    why: 'Breaking something up creates far more surface for the water to work on, and the same is true in your gut. Chewing is the mechanical half of digestion; the enzymes are the chemical half, and they can only work on surfaces they can reach.',
+    fair: 'Same tablet, same water, same temperature, no stirring in either. Only the size of the pieces changed.',
+    stretch: 'Add a third glass with a crushed tablet in cold water. Which matters more, the crushing or the warmth?'
+  },
+
+  'adaptations': {
+    title: 'Beaks made of kitchen tools',
+    question: 'Does beak shape decide what a bird can eat?',
+    days: 'Takes 30 minutes',
+    needs: ['Tweezers, a spoon, chopsticks and a clothes peg, as four beaks',
+      'Rice, dried beans, water in a bowl and string cut into short pieces, as four foods',
+      'A cup for each person', 'A timer'],
+    steps: [
+      'Lay the four foods out in separate dishes.',
+      'Pick one tool and one food. You have twenty seconds to move as much into your cup as you can.',
+      'Count what you got and write it in a grid: tools down the side, foods across the top.',
+      'Work through every tool with every food \u2014 sixteen goes in all.',
+      'Circle the best tool for each food.'
+    ],
+    look: 'Each tool wins at something and is hopeless at something else. No tool wins everything.',
+    why: 'A beak is a tool shaped by what a bird eats. Tweezers are brilliant at rice and useless at water; a spoon is the other way round. That trade-off is why finches on different islands ended up with different beaks, and why a specialist is in trouble when its food runs out.',
+    fair: 'Same twenty seconds, same amount of each food, same cup, one hand only.',
+    stretch: 'Remove one food entirely and play again. Which tool would go extinct?'
+  },
+
+  'scientific-method': {
+    title: 'Does the paper aeroplane rule actually hold?',
+    question: 'Do heavier paper aeroplanes really fly further?',
+    days: 'Takes 45 minutes',
+    needs: ['Paper of three different weights: tissue, printer paper, thin card',
+      'A tape measure', 'A long corridor or garden', 'Masking tape for a throwing line', 'Paper to record on'],
+    steps: [
+      'Write down your hypothesis before you throw anything, as a sentence you could prove wrong.',
+      'Fold three identical aeroplanes, one from each paper, using exactly the same folds.',
+      'Mark a throwing line and always stand behind it.',
+      'Throw each plane five times, as close to the same way as you can, and measure every flight.',
+      'Work out the average for each paper and ignore nothing \u2014 write down the bad throws too.',
+      'Draw a bar chart, then write whether your hypothesis survived.'
+    ],
+    look: 'Printer paper usually beats both. The surprise is how much the five throws of one plane vary.',
+    why: 'This is the whole method in one afternoon: a hypothesis you could disprove, one variable changed, everything else controlled, repeats because a single throw proves nothing, and an honest conclusion even if it is not the one you wanted.',
+    fair: 'Same design, same thrower, same line, same five throws each. Only the paper changed.',
+    stretch: 'Have someone else throw your three planes. Did the thrower matter more than the paper?'
+  }
 
 };

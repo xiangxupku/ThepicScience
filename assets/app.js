@@ -729,8 +729,13 @@
     return '<p class="ocr-peek">Words we read: <code>' + esc(clean.slice(0, 160)) + (clean.length > 160 ? '…' : '') + '</code></p>';
   }
 
-  /* ── matching the words on the board to a topic ────── */
+  /* ── matching the words on the board to a topic ──────
+     match.js does the work now: it snaps likely misspellings onto the library's own
+     vocabulary and expands the phrasings a board actually uses ("how plants make food")
+     into the keywords we index on. The original pass is kept below as a fallback so the
+     page still works if that file ever fails to load. */
   function matchTopics(raw) {
+    if (window.MATCH) return window.MATCH.matchTopics(raw);
     var text = ' ' + raw.toLowerCase().replace(/[^a-z0-9₂₄₆\s]/g, ' ').replace(/\s+/g, ' ') + ' ';
     var out = [];
     window.TOPICS.forEach(function (topic) {

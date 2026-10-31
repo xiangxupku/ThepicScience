@@ -617,5 +617,360 @@ window.DETAIL = {
       { id: 'waves', why: 'the ear turns a sound wave into a nerve signal' }
     ]
   }
+,
+
+  'simple-machines': {
+    formulas: [
+      { f: 'mechanical advantage = load \u00f7 effort', what: 'how many times the machine multiplies your force. Lift 300 N with 60 N of effort and the advantage is 5. It has no units \u2014 it is one force divided by another.' },
+      { f: 'work = force \u00d7 distance', what: 'work in joules, force in newtons, distance in metres moved along the direction of the force. A machine cannot change the work, only how it is split.' },
+      { f: 'efficiency = useful work out \u00f7 work in \u00d7 100%', what: 'always under 100%, because friction turns some of the input into heat.' }
+    ],
+    mistakes: [
+      { wrong: 'A machine gives you extra energy.', right: 'It gives you extra force, and charges you distance for it. Work in equals work out, minus whatever friction takes.' },
+      { wrong: 'A pulley always reduces the force you need.', right: 'A single fixed pulley only changes the direction. You need a moving pulley, or several, before the force drops.' },
+      { wrong: 'A screw is not a simple machine.', right: 'It is an inclined plane wrapped round a cylinder. Each turn moves it forward by the distance between threads.' }
+    ],
+    deeper: [
+      { t: 'The three classes of lever', b: 'First class has the fulcrum in the middle, like a seesaw. Second class has the load in the middle, like a wheelbarrow. Third class has the effort in the middle, like tweezers or your own forearm \u2014 which loses force but gains speed and range.' },
+      { t: 'Why your arm is a bad lever on purpose', b: 'Your bicep attaches very close to your elbow, so it pulls with a mechanical advantage well below one. You pay several times the force you lift. What you buy is speed: a small muscle movement swings your hand a long way, fast.' },
+      { t: 'Gears as levers that keep going', b: 'A gear ratio is mechanical advantage that does not run out at the end of a stroke. Twelve teeth driving thirty-six gives three times the turning force at a third of the speed, which is exactly the trade a lever makes.' }
+    ],
+    links: [
+      { id: 'forces-motion', why: 'a machine is a way of rearranging forces' },
+      { id: 'energy', why: 'efficiency is an energy question' },
+      { id: 'body-systems', why: 'your bones and muscles are levers' }
+    ]
+  },
+
+  'sound': {
+    formulas: [
+      { f: 'speed = distance \u00f7 time', what: 'speed in metres per second, distance in metres, time in seconds. Count the seconds between lightning and thunder and multiply by 330 to get the distance in metres.' },
+      { f: 'v = f \u00d7 \u03bb', what: 'speed equals frequency times wavelength. Frequency in hertz, wavelength in metres. In the same material the speed is fixed, so a higher frequency must mean a shorter wave.' }
+    ],
+    mistakes: [
+      { wrong: 'Loud and high mean the same thing.', right: 'Loudness is amplitude, how big the vibration is. Pitch is frequency, how often it vibrates. A deep note can be deafening and a high note can be a whisper.' },
+      { wrong: 'Sound travels fastest through air because air is thin.', right: 'The opposite. Sound needs particles to pass the vibration on, and the closer they are packed the faster it goes. Steel beats water beats air.' },
+      { wrong: 'You hear an echo because the sound gets louder.', right: 'An echo is the same sound arriving later, having bounced off something. If the surface is close enough you cannot tell the two apart.' }
+    ],
+    deeper: [
+      { t: 'Compressions and rarefactions', b: 'A sound wave is not a wiggle, it is a squeeze. The source pushes particles together into a compression, then pulls back leaving a rarefaction. That alternating pressure travels outwards while each particle only jiggles on the spot \u2014 which is what makes it a longitudinal wave.' },
+      { t: 'Why two instruments differ on the same note', b: 'A string never vibrates only at its main frequency; it also vibrates in halves, thirds and so on, adding quieter higher notes called harmonics. The mix is different for every instrument, and that mix is timbre.' },
+      { t: 'How loud is too loud', b: 'The decibel scale is logarithmic: every 10 dB is ten times the energy. 85 dB over hours damages the hair cells in your inner ear, and those cells do not grow back. That is why the damage is permanent.' }
+    ],
+    links: [
+      { id: 'waves', why: 'sound is one kind of wave' },
+      { id: 'nervous-system', why: 'the ear turns a wave into a nerve signal' },
+      { id: 'states-of-matter', why: 'how closely packed the particles are decides the speed' }
+    ]
+  },
+
+  'heat-transfer': {
+    formulas: [
+      { f: 'conduction \u00b7 convection \u00b7 radiation', what: 'the three routes. Conduction through touching particles, convection by a moving fluid carrying its heat with it, radiation as infrared waves needing nothing at all.' },
+      { f: 'energy = mass \u00d7 heat capacity \u00d7 temperature change', what: 'why a bath holds more energy than a spark while being far cooler. Heat capacity is how much energy one kilogram needs to warm by one degree, and water\'s is unusually high.' }
+    ],
+    mistakes: [
+      { wrong: 'Cold travels into warm things.', right: 'There is no such thing as cold moving. Heat flows from hotter to colder, and the cold object is simply what is left when energy leaves.' },
+      { wrong: 'Metal is colder than wood in the same room.', right: 'They are the same temperature. Metal conducts heat out of your hand far faster, and the sensation you call cold is that heat leaving you.' },
+      { wrong: 'A vacuum flask stops all heat loss.', right: 'The vacuum stops conduction and convection, which both need particles. Radiation crosses a vacuum perfectly well, which is why the inside is silvered to reflect it.' }
+    ],
+    deeper: [
+      { t: 'Why convection currents loop', b: 'Warming a fluid makes it expand, so the same mass takes more space and the density drops. Less dense fluid floats upwards, cooler fluid sinks to take its place, and the loop keeps going as long as the heat does. It is buoyancy, driven by temperature.' },
+      { t: 'Emitters and absorbers are the same surfaces', b: 'A matt black surface is the best absorber of radiation and also the best emitter. A shiny silver one is poor at both. That is why a radiator is painted and a vacuum flask is mirrored \u2014 the same physics, used two opposite ways.' },
+      { t: 'Why coastal places have milder weather', b: 'Water\'s heat capacity is about four times that of soil, so the sea warms and cools far more slowly than land. Living next to that much thermal inertia smooths out the extremes in both directions.' }
+    ],
+    links: [
+      { id: 'energy', why: 'heat is energy on the move' },
+      { id: 'states-of-matter', why: 'conduction depends on how particles are arranged' },
+      { id: 'weather-climate', why: 'convection drives wind and cloud' }
+    ]
+  },
+
+  'density-buoyancy': {
+    formulas: [
+      { f: '\u03c1 = m \u00f7 V', what: 'density equals mass divided by volume. Mass in grams, volume in cubic centimetres, density in g/cm\u00b3. Water is 1 g/cm\u00b3, which is the number everything floats or sinks against.' },
+      { f: 'upthrust = weight of fluid displaced', what: 'Archimedes\' principle. Push aside two newtons of water and the water pushes back with two newtons, whatever the object is made of.' }
+    ],
+    mistakes: [
+      { wrong: 'Heavy things sink and light things float.', right: 'A log is heavier than a coin and floats. What matters is density \u2014 mass compared with the space it takes \u2014 not mass on its own.' },
+      { wrong: 'A steel ship floats because it is hollow.', right: 'Nearly right, but say why: the hull plus the air it encloses has an average density below water. Fill it and that average rises above 1, which is what sinking a ship means.' },
+      { wrong: 'Things weigh less in water because water pushes down less.', right: 'Water pushes up. Upthrust acts against weight, so the reading on a scale falls while the actual weight is unchanged.' }
+    ],
+    deeper: [
+      { t: 'Floating is a balance, not a property', b: 'An object floats at the depth where the weight of water it pushes aside exactly equals its own weight. That is why a loaded ship sits lower: more weight needs more displaced water, so it sinks until it finds the new balance.' },
+      { t: 'Why ice floating matters', b: 'Almost every substance is denser as a solid. Water is not: it expands by about nine per cent as it freezes, so ice floats. If it did not, lakes would freeze from the bottom up and very little could survive a winter in them.' },
+      { t: 'Measuring an awkward shape', b: 'You cannot measure a stone with a ruler, so you use displacement: lower it into a full measuring cylinder and read how much the water rises. That rise is the volume, exactly. Weigh it, divide, and you have the density of something with no straight edges at all.' }
+    ],
+    links: [
+      { id: 'states-of-matter', why: 'density is about how tightly particles are packed' },
+      { id: 'forces-motion', why: 'upthrust and weight are forces in balance' },
+      { id: 'plate-tectonics', why: 'continents float on the mantle for the same reason' }
+    ]
+  },
+
+  'solutions': {
+    formulas: [
+      { f: 'solute + solvent = solution', what: 'the solute dissolves, the solvent does the dissolving, and the result is the solution. In salty water the salt is the solute and the water is the solvent.' },
+      { f: 'concentration = mass of solute \u00f7 volume of solution', what: 'usually grams per cubic decimetre. Doubling the solute or halving the water both double the concentration.' },
+      { f: 'mass of solution = mass of solute + mass of solvent', what: 'dissolving conserves mass. 50 g of water plus 5 g of sugar weighs 55 g, even though the sugar has vanished from sight.' }
+    ],
+    mistakes: [
+      { wrong: 'Dissolved sugar has disappeared.', right: 'It has spread out between the water particles, too small to see. Weigh the glass before and after and the mass is identical.' },
+      { wrong: 'Dissolving and melting are the same.', right: 'Melting needs only heat and one substance. Dissolving needs a second substance to dissolve into, and can happen stone cold.' },
+      { wrong: 'You can filter salt out of salty water.', right: 'Dissolved particles pass straight through filter paper. You need evaporation to keep the salt, or distillation to keep the water.' }
+    ],
+    deeper: [
+      { t: 'What saturated really means', b: 'At a given temperature a fixed amount of solvent can only hold so much solute. Once it is holding that much it is saturated, and anything more sits at the bottom. Warm it and the limit rises; cool it again and the excess comes back out as crystals.' },
+      { t: 'Growing a crystal properly', b: 'Make a saturated solution while hot, filter it, then let it cool slowly undisturbed. Slow cooling gives a few large crystals, fast cooling gives many small ones. Hanging a seed crystal on a thread gives the solid somewhere to build on.' },
+      { t: 'Distillation, and why the order matters', b: 'Heat salty water and the water boils off at 100 \u00b0C while the salt, which boils far higher, stays behind. Cool the vapour and you have pure water. It separates by boiling point, which is why it also works on mixtures of two liquids.' }
+    ],
+    links: [
+      { id: 'mixtures', why: 'a solution is one kind of mixture' },
+      { id: 'states-of-matter', why: 'dissolving is about particles moving between each other' },
+      { id: 'chemical-change', why: 'dissolving is a physical change, not a chemical one' }
+    ]
+  },
+
+  'materials-properties': {
+    formulas: [
+      { f: 'density = mass \u00f7 volume', what: 'one of the properties you measure when choosing a material. Light and strong is the combination aircraft are built on.' },
+      { f: 'fair test: change one, measure one, keep the rest the same', what: 'the rule that turns an opinion about a material into evidence.' }
+    ],
+    mistakes: [
+      { wrong: 'Transparent and translucent mean the same thing.', right: 'Transparent lets you see through clearly. Translucent lets light through but scatters it, so you see a glow and no detail \u2014 bathroom glass, or greaseproof paper.' },
+      { wrong: 'All metals are magnetic.', right: 'Only iron, nickel, cobalt and alloys containing them. Aluminium, copper and gold are metals and not magnetic at all, which is how coin machines sort them.' },
+      { wrong: 'Strong and hard are the same property.', right: 'Hard means difficult to scratch or dent. Strong means it takes a lot of force to break. Glass is hard and weak; rope is soft and strong.' }
+    ],
+    deeper: [
+      { t: 'Why alloys beat pure metals', b: 'Pure metal atoms sit in neat layers that slide over each other easily, which is why pure iron is soft. Mixing in atoms of a different size disrupts the layers so they cannot slide, and the result is harder. Steel is iron with under two per cent carbon, and it changes everything.' },
+      { t: 'Composites: picking two weaknesses that cancel', b: 'Concrete is strong when squeezed and weak when pulled. Steel is the reverse and is expensive. Reinforced concrete puts thin steel rods where the pulling happens and cheap concrete everywhere else, so each material only does what it is good at.' },
+      { t: 'Choosing a material is always a trade-off', b: 'There is no best material, only the best one for a job and a budget. A saucepan wants high conductivity in the base and low conductivity in the handle, so it is built from two different materials on purpose.' }
+    ],
+    links: [
+      { id: 'states-of-matter', why: 'properties come from how particles are arranged' },
+      { id: 'magnetism', why: 'magnetic is a property only a few materials have' },
+      { id: 'scientific-method', why: 'comparing materials means running a fair test' }
+    ]
+  },
+
+  'weather-climate': {
+    formulas: [
+      { f: 'weather = now \u00b7 climate = the average over about 30 years', what: 'the distinction every exam asks about. One cold summer says nothing about climate; thirty of them say a great deal.' },
+      { f: 'air pressure, measured in millibars', what: 'low pressure means rising air, cloud and rain. High pressure means sinking air and clearer skies. A falling barometer is the classic sign of weather on its way.' }
+    ],
+    mistakes: [
+      { wrong: 'A cold winter disproves climate change.', right: 'Weather is one roll of the dice; climate is the loading of the dice. Warming makes extremes of both kinds more likely, and is measured over decades, not days.' },
+      { wrong: 'The greenhouse effect is a bad thing.', right: 'Without it Earth would average about \u221218 \u00b0C and be uninhabitable. The problem is the extra we have added, not the effect itself.' },
+      { wrong: 'Wind blows from cold places to hot places.', right: 'Wind blows from high pressure to low pressure. Warm air rising leaves low pressure behind it, so the flow is towards the heat, but pressure is what actually drives it.' }
+    ],
+    deeper: [
+      { t: 'Why clouds form at a particular height', b: 'Rising air expands as the pressure drops, and expanding cools it. At the height where it cools to its dew point the vapour condenses onto dust, and that is where the cloud base sits \u2014 which is why the flat bottoms of cumulus clouds line up.' },
+      { t: 'Fronts, and why they bring a change', b: 'A front is the boundary where two air masses meet. Warm air riding over cold gives a long slow band of rain; cold air shoving under warm gives a short violent burst. The order of cloud types overhead tells you which is coming.' },
+      { t: 'Climate zones and the angle of the Sun', b: 'The tropics are hot because sunlight arrives near vertical all year. The poles are cold because the same beam spreads over far more ground. Everything between is a blend, which is why climate zones run in bands.' }
+    ],
+    links: [
+      { id: 'water-cycle', why: 'evaporation and condensation are the engine of weather' },
+      { id: 'heat-transfer', why: 'convection is what makes wind and cloud' },
+      { id: 'seasons', why: 'the tilt sets the pattern the weather happens inside' }
+    ]
+  },
+
+  'rock-cycle': {
+    formulas: [
+      { f: 'igneous \u2192 sedimentary \u2192 metamorphic \u2192 melt \u2192 igneous', what: 'the cycle, though any step can jump to any other. Weathering, burial, heat and pressure, melting, cooling.' },
+      { f: 'law of superposition', what: 'in undisturbed layers, the oldest is at the bottom. It sounds obvious and it is the foundation of reading geological time.' }
+    ],
+    mistakes: [
+      { wrong: 'Rocks and minerals are the same thing.', right: 'A mineral is one pure substance with its own crystal structure. A rock is a mixture of minerals. Granite is a rock made of quartz, feldspar and mica.' },
+      { wrong: 'All rocks contain fossils.', right: 'Only sedimentary rocks, and only sometimes. Igneous rock has been molten and metamorphic rock has been cooked and squashed \u2014 nothing recognisable survives either.' },
+      { wrong: 'Big crystals mean the rock is old.', right: 'Big crystals mean it cooled slowly, deep underground. A fast-cooled lava flow of the same age and chemistry has crystals too small to see.' }
+    ],
+    deeper: [
+      { t: 'Reading the cooling rate in the crystals', b: 'Crystal size records time. Magma trapped kilometres down takes thousands of years to cool and grows crystals you can see across a room. The same melt erupting onto the surface chills in days, giving basalt, or in seconds in water, giving volcanic glass with no crystals at all.' },
+      { t: 'Metamorphic banding', b: 'Heat and pressure never melt the rock \u2014 that would make it igneous. They recrystallise the minerals in place, and pressure from one direction lines the new crystals up at right angles to the squeeze. Those stripes are a fossil record of the direction the force came from.' },
+      { t: 'How long the cycle takes', b: 'A grain of sand in a beach today may have been part of a mountain a hundred million years ago and will be part of a sedimentary rock long after. The cycle has no beginning and no end, and the same atoms have been round it many times.' }
+    ],
+    links: [
+      { id: 'plate-tectonics', why: 'plate movement supplies the heat and pressure' },
+      { id: 'erosion-weathering', why: 'wearing rock down is one whole arm of the cycle' },
+      { id: 'evolution', why: 'fossils in sedimentary layers are the record of life' }
+    ]
+  },
+
+  'erosion-weathering': {
+    formulas: [
+      { f: 'weathering = breaking in place \u00b7 erosion = carrying away', what: 'the distinction most marks are lost on. Freeze-thaw cracking a rock is weathering; the river taking the pieces is erosion.' },
+      { f: 'faster water carries bigger particles', what: 'roughly, doubling the speed lets a river carry particles many times heavier. Slow it down and it drops the biggest first.' }
+    ],
+    mistakes: [
+      { wrong: 'Weathering and erosion are two words for the same thing.', right: 'Weathering breaks rock where it stands. Erosion is the transport. A cliff can weather for centuries with nothing eroded until the sea arrives.' },
+      { wrong: 'Water erodes rock by dissolving all of it.', right: 'Mostly it is mechanical: the water throws sand and pebbles at the rock. Dissolving is a separate process and only works on certain rocks, chiefly limestone.' },
+      { wrong: 'Ice splits rock because ice is heavy.', right: 'Water expands by about nine per cent as it freezes. Trapped in a crack it has nowhere to go, so it pushes the crack wider every single night it freezes.' }
+    ],
+    deeper: [
+      { t: 'Why glaciers carve U-shapes and rivers carve V-shapes', b: 'A river cuts a narrow channel at its lowest point and the sides slump into a V. A glacier fills the whole valley and grinds the floor and both walls at once, leaving a U with a flat bottom. The cross-section alone tells you which did the work.' },
+      { t: 'Attrition and why beach pebbles are round', b: 'Transport is not gentle. Particles knock against each other and against the bed constantly, chipping off corners. The further a pebble has travelled, the rounder and smaller it is \u2014 which is why you can estimate how far material has come.' },
+      { t: 'Soil takes centuries and leaves in a season', b: 'A centimetre of topsoil can take a hundred years to form from weathered rock and dead plants, and a single storm can strip it from a bare field. That mismatch is why soil conservation \u2014 roots, hedges, terraces \u2014 matters so much.' }
+    ],
+    links: [
+      { id: 'rock-cycle', why: 'erosion feeds the sedimentary half of the cycle' },
+      { id: 'water-cycle', why: 'moving water does most of the work' },
+      { id: 'plate-tectonics', why: 'mountains rise while erosion wears them down' }
+    ]
+  },
+
+  'moon-phases': {
+    formulas: [
+      { f: 'lunar month \u2248 29.5 days', what: 'one full cycle of phases. The Moon\'s orbit takes 27.3 days, but Earth has moved round the Sun meanwhile, so it takes two extra days to line up again.' },
+      { f: 'phase = how much of the lit half you can see', what: 'half the Moon is always sunlit. The phase is the fraction of that lit half pointing your way.' }
+    ],
+    mistakes: [
+      { wrong: 'Phases are Earth\'s shadow on the Moon.', right: 'That is an eclipse, and it is rare. Phases are about which part of the permanently lit half you are looking at from here.' },
+      { wrong: 'The Moon does not rotate, because we see one face.', right: 'It rotates exactly once per orbit, which is why the same side faces us. That is tidal locking, and a Moon that did not rotate would show us every side.' },
+      { wrong: 'There is a dark side of the Moon.', right: 'There is a far side, which gets just as much sunlight. At new moon, the far side is the one in full daylight.' }
+    ],
+    deeper: [
+      { t: 'Why eclipses are rare', b: 'The Moon\'s orbit is tilted about five degrees to Earth\'s orbit round the Sun. Most months the shadow passes above or below, and only when the crossing points line up with new or full moon do you get an eclipse.' },
+      { t: 'Two tides a day, not one', b: 'The Moon pulls the near ocean towards it, making one bulge. It also pulls the solid Earth away from the far ocean, leaving a second bulge on the opposite side. Earth rotates through both in a day, which is why high tide comes roughly twice.' },
+      { t: 'Where the Moon came from', b: 'Moon rock is chemically very like Earth\'s mantle and short of iron and water. The best explanation is a collision early in Earth\'s history with a Mars-sized body, throwing out debris that gathered into the Moon.' }
+    ],
+    links: [
+      { id: 'solar-system', why: 'the Moon is one body in a system of orbits' },
+      { id: 'seasons', why: 'both come down to geometry and tilt' },
+      { id: 'light-optics', why: 'moonlight is reflected sunlight' }
+    ]
+  },
+
+  'seasons': {
+    formulas: [
+      { f: 'axial tilt = 23.5\u00b0', what: 'the angle between Earth\'s spin axis and the line square to its orbit. It stays pointing the same way all year, which is the whole reason seasons exist.' },
+      { f: 'energy per square metre falls as the angle falls', what: 'the same beam of sunlight spread over a larger patch of ground delivers less to each part of it.' }
+    ],
+    mistakes: [
+      { wrong: 'Summer happens when Earth is closer to the Sun.', right: 'Earth is actually closest in early January, during the northern winter. The distance barely changes; the tilt is what matters.' },
+      { wrong: 'It is summer everywhere at once.', right: 'The hemispheres are always opposite. July is midsummer in Europe and midwinter in Australia, from the same tilt.' },
+      { wrong: 'The tilt changes through the year to make seasons.', right: 'The tilt is fixed. What changes is where Earth is in its orbit, so the same fixed tilt leans towards the Sun in one half of the year and away in the other.' }
+    ],
+    deeper: [
+      { t: 'Two effects, not one', b: 'A hemisphere tilted sunward gets sunlight at a steeper angle, so it is concentrated, and it also gets more hours of it. Both push the same way, which is why the difference between summer and winter is so large.' },
+      { t: 'Seasonal lag', b: 'The longest day is in June but the hottest weeks are in July and August. Ground and sea keep gaining energy for as long as more arrives each day than leaves, so the peak temperature trails the peak sunlight by weeks.' },
+      { t: 'Midnight sun and polar night', b: 'Inside the Arctic and Antarctic circles the tilt is enough that the Sun never sets in midsummer and never rises in midwinter. The further towards the pole, the longer each lasts \u2014 months at a time at the pole itself.' }
+    ],
+    links: [
+      { id: 'solar-system', why: 'seasons come out of Earth\'s orbit and tilt' },
+      { id: 'weather-climate', why: 'the seasons set the pattern weather happens inside' },
+      { id: 'photosynthesis', why: 'day length drives when plants grow' }
+    ]
+  },
+
+  'stars-galaxies': {
+    formulas: [
+      { f: '1 light year \u2248 9.5 trillion km', what: 'a distance, not a time: how far light travels in a year. Looking at a star 100 light years away is looking 100 years into the past.' },
+      { f: 'hydrogen \u2192 helium + energy', what: 'nuclear fusion in a star\'s core. Four hydrogen nuclei become one helium nucleus, and the small amount of mass left over becomes the energy that makes it shine.' }
+    ],
+    mistakes: [
+      { wrong: 'A light year is a long time.', right: 'It is a distance. The confusion is understandable and it costs marks every year.' },
+      { wrong: 'Red stars are the hottest, because red means hot.', right: 'The opposite. Blue-white stars are hottest, red ones coolest \u2014 the same order as a gas flame, where the blue part is the hot part.' },
+      { wrong: 'The stars in a constellation are near each other.', right: 'They only look close from here. They can be wildly different distances away and have nothing to do with one another.' }
+    ],
+    deeper: [
+      { t: 'Where the elements came from', b: 'Fusion in ordinary stars builds elements up to iron. Everything heavier \u2014 gold, uranium \u2014 needs the extreme conditions of a supernova or colliding neutron stars. The calcium in your bones was made inside a star that died before the Sun existed.' },
+      { t: 'What a galaxy actually is', b: 'A hundred billion or so stars held together by gravity, with gas, dust and dark matter, orbiting a common centre. Ours is a barred spiral about 100,000 light years across, and the Sun takes roughly 230 million years to go round once.' },
+      { t: 'Evidence for the Big Bang', b: 'Distant galaxies are moving away, and the further off they are the faster they go, which points back to everything having been together. The clincher is the cosmic microwave background: a faint glow from every direction, the cooled-down heat of the early universe.' }
+    ],
+    links: [
+      { id: 'solar-system', why: 'our star and its planets sit inside a galaxy' },
+      { id: 'atoms', why: 'stars are where most elements were built' },
+      { id: 'light-optics', why: 'everything we know about stars arrives as light' }
+    ]
+  },
+
+  'life-cycles': {
+    formulas: [
+      { f: 'egg \u2192 larva \u2192 pupa \u2192 adult', what: 'complete metamorphosis, as in butterflies, beetles and flies. The young looks nothing like the adult and usually eats something different.' },
+      { f: 'egg \u2192 nymph \u2192 adult', what: 'incomplete metamorphosis, as in grasshoppers and dragonflies. The nymph is a small wingless version that moults its way to adulthood.' }
+    ],
+    mistakes: [
+      { wrong: 'A caterpillar grows wings inside the chrysalis.', right: 'Far more than that. Most of the caterpillar is broken down and rebuilt. What emerges is assembled from the pieces, not simply a caterpillar with wings added.' },
+      { wrong: 'Seeds need light to germinate.', right: 'Most need only water, warmth and oxygen \u2014 they start underground in the dark. Light matters afterwards, once the shoot is up and photosynthesis begins.' },
+      { wrong: 'All insects go through a pupa stage.', right: 'Only those with complete metamorphosis. A grasshopper hatches as a miniature adult and simply gets bigger.' }
+    ],
+    deeper: [
+      { t: 'Why metamorphosis is worth the cost', b: 'A caterpillar eats leaves and a butterfly drinks nectar, so parent and offspring never compete for food. Splitting the life cycle into a growing stage and a breeding stage lets each be specialised for one job, and the pupa is the price of the rebuild.' },
+      { t: 'Many young or few', b: 'A frog lays thousands of eggs and abandons them; an albatross raises one chick for months. Both work. The first bets on numbers, the second on care, and which wins depends on how dangerous the early stages are.' },
+      { t: 'Dormancy as a way of waiting', b: 'A seed can pause for years until conditions are right, and some need frost or fire before they will start at all. That is not failure to germinate \u2014 it is a timer, set so the seedling appears in the season it can survive.' }
+    ],
+    links: [
+      { id: 'cell-division', why: 'growth and rebuilding are mitosis' },
+      { id: 'adaptations', why: 'a life cycle is itself an adaptation' },
+      { id: 'photosynthesis', why: 'a seedling has to start feeding itself' }
+    ]
+  },
+
+  'digestion': {
+    formulas: [
+      { f: 'big insoluble molecules \u2192 small soluble ones', what: 'the whole point of digestion. Starch to sugars, protein to amino acids, fat to fatty acids and glycerol \u2014 small enough to cross into the blood.' },
+      { f: 'surface area \u00d7 time = how much you absorb', what: 'why the small intestine is metres long and lined with millions of villi, each covered in microvilli.' }
+    ],
+    mistakes: [
+      { wrong: 'Food is absorbed in the stomach.', right: 'Almost nothing is. The stomach is a mixer and an acid bath; nearly all absorption happens further along, in the small intestine.' },
+      { wrong: 'Bile digests fat.', right: 'Bile is not an enzyme and breaks nothing down. It emulsifies fat into tiny droplets, giving lipase far more surface to work on. It also neutralises stomach acid.' },
+      { wrong: 'Fibre is useless because you cannot digest it.', right: 'That is exactly what makes it useful. It gives the gut muscles something to grip, so peristalsis keeps everything moving.' }
+    ],
+    deeper: [
+      { t: 'Peristalsis, not gravity', b: 'Food does not fall down your oesophagus. Rings of muscle contract behind it in a travelling wave and squeeze it along, which is why you can swallow upside down and why astronauts can eat in orbit.' },
+      { t: 'The acid problem', b: 'Stomach acid sits around pH 2, strong enough to denature protein and kill most swallowed microbes. The stomach survives it by producing a thick mucus layer and replacing its lining cells every few days.' },
+      { t: 'Deficiency diseases', b: 'Some nutrients the body cannot make at all. Without vitamin C you cannot build collagen properly and get scurvy; without enough iron you cannot carry oxygen and get anaemia. A balanced diet is not a slogan, it is a list of things that have to come in from outside.' }
+    ],
+    links: [
+      { id: 'enzymes', why: 'digestion is enzymes doing their job' },
+      { id: 'body-systems', why: 'the gut is one system handing off to the blood' },
+      { id: 'respiration', why: 'the glucose absorbed is what respiration burns' }
+    ]
+  },
+
+  'adaptations': {
+    formulas: [
+      { f: 'variation \u2192 selection \u2192 inheritance \u2192 change', what: 'the four steps. Individuals differ, some survive better, survivors pass their features on, and the population shifts over generations.' },
+      { f: 'surface area to volume ratio', what: 'why Arctic animals are rounder with short ears and desert animals are lean with large ones. Less surface for your volume means less heat lost.' }
+    ],
+    mistakes: [
+      { wrong: 'Animals adapt during their lifetime because they need to.', right: 'An individual does not adapt. The population changes, because individuals that already happened to suit the conditions left more offspring.' },
+      { wrong: 'Natural selection makes things perfect.', right: 'It makes them good enough to out-reproduce the alternatives available. Plenty of adaptations are clumsy compromises carried over from ancestors.' },
+      { wrong: 'A cactus has spines to stop animals eating it.', right: 'That helps, but the main reason is water. Spines are leaves with almost no surface area, so almost nothing evaporates.' }
+    ],
+    deeper: [
+      { t: 'Structural, behavioural, functional', b: 'Three kinds. Structural is the body \u2014 blubber, beak shape. Behavioural is what it does \u2014 migrating, hibernating. Functional is the chemistry inside \u2014 producing antifreeze proteins, or concentrating urine to save water.' },
+      { t: 'Convergent evolution', b: 'Dolphins, sharks and the extinct ichthyosaurs all arrived at the same streamlined body with fins, from three unrelated ancestors. The environment sets the problem, and there are only so many good answers.' },
+      { t: 'Specialist or generalist', b: 'A specialist is superb at one narrow way of living and helpless when it changes; a generalist is mediocre at many and survives almost anything. Pandas and rats are the textbook pair, and it explains which species are most at risk when habitats shift.' }
+    ],
+    links: [
+      { id: 'evolution', why: 'adaptations are what natural selection produces' },
+      { id: 'ecosystems', why: 'an adaptation is a fit to a particular place' },
+      { id: 'genetics', why: 'variation has to be heritable to count' }
+    ]
+  },
+
+  'scientific-method': {
+    formulas: [
+      { f: 'independent \u00b7 dependent \u00b7 control', what: 'the one you change, the one you measure, and all the ones you hold still. Name all three before you start and the experiment designs itself.' },
+      { f: 'mean = total \u00f7 number of readings', what: 'why you repeat. One reading can be a fluke; an average of five is evidence, and the spread tells you how much to trust it.' }
+    ],
+    mistakes: [
+      { wrong: 'A hypothesis is a guess.', right: 'It is a prediction you could prove wrong. "Plants grow better in light" can be tested; "plants like light" cannot.' },
+      { wrong: 'Throw away results that do not fit.', right: 'Investigate them. An anomaly is sometimes a mistake and sometimes the discovery. Deleting it quietly is the one thing that is not science.' },
+      { wrong: 'If the results disprove your hypothesis, the experiment failed.', right: 'A disproved hypothesis is a real result and often more useful than a confirmed one. The experiment only fails if it was not a fair test.' }
+    ],
+    deeper: [
+      { t: 'Accuracy and precision are different', b: 'Accurate means close to the true value. Precise means your repeats agree with each other. A badly zeroed scale gives precise readings that are all wrong by the same amount \u2014 which is why you check an instrument against something known.' },
+      { t: 'Why a control group exists', b: 'Without something to compare against you cannot tell your effect from what would have happened anyway. Giving half the plants fertiliser and half none is what lets you say the fertiliser did it, rather than the weather.' },
+      { t: 'Peer review, and why it is not optional', b: 'Before a result is accepted, other scientists check the method and try to repeat it. Most mistakes are honest, and a single unrepeated result is a lead rather than a fact. Science is set up on the assumption that everyone, including you, can be wrong.' }
+    ],
+    links: [
+      { id: 'materials-properties', why: 'comparing materials is a fair test' },
+      { id: 'enzymes', why: 'enzyme experiments are built on controlled variables' },
+      { id: 'evolution', why: 'a theory is what survives repeated testing' }
+    ]
+  }
 
 };
