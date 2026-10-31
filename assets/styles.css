@@ -855,6 +855,20 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 @keyframes spark-pop { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
 .spark-icon { font-size: .9em; }
 
+/* ── the five-word try, next to the voice picker ── */
+
+.own-voice {
+  margin-top: .9rem; padding: .8rem .9rem; border-radius: var(--r-sm);
+  border: 1px dashed var(--line); background: var(--surface-2);
+}
+.try-line {
+  margin: .5rem 0; font-size: 1.05rem; font-weight: 700; letter-spacing: .01em;
+  color: var(--accent);
+}
+.try-row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.try-verdict { margin-top: .45rem; min-height: 1.1em; }
+.try-verdict.is-good { color: #3f6b58; font-weight: 600; }
+
 /* ── recording your own narration ── */
 
 .voicebox { border-left: 4px solid #d9644f; margin-top: 1.2rem; }

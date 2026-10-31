@@ -350,6 +350,20 @@
           <button type="button" class="btn" id="voice-sample">Hear a sample</button>
         </div>
         <p class="hint" id="voice-note">Voices come from your own device, so they keep working offline.</p>
+
+        <div class="own-voice" id="own-voice" hidden>
+          <p class="sub-lbl">Or use your own voice</p>
+          <p class="hint">Say five words and hear yourself back. If you like it, you can read
+            the whole video out loud once and it will play you instead of a robot.</p>
+          <p class="try-line" id="try-line"></p>
+          <div class="try-row">
+            <button type="button" class="btn" id="try-rec">Hold and say it</button>
+            <span class="read-level" aria-hidden="true"><i></i></span>
+            <button type="button" class="btn" id="try-hear" hidden>Hear me</button>
+            <button type="button" class="btn btn-quiet" id="try-again" hidden>Try again</button>
+          </div>
+          <p class="hint try-verdict" id="try-verdict" role="status"></p>
+        </div>
       </fieldset>
 
       <div class="make-row">

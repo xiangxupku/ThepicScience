@@ -1745,6 +1745,94 @@
     });
   }
 
+  /* ── the five-word try ──────────────────────
+     Sat with the other voices, because that is where you are already deciding who reads to
+     you. Five words is enough to hear whether your own is worth using, and short enough
+     that nobody minds doing it twice. It is a try, not a setting: nothing is kept. */
+
+  var TRY_LINES = [
+    'Science is easier when explained',
+    'Every cell releases its energy',
+    'Light bends going through water',
+    'Enzymes have one exact shape',
+    'Water climbs inside a stem'
+  ];
+  var tryBlob = null;
+
+  function newTryLine() {
+    var line = TRY_LINES[Math.floor(Math.random() * TRY_LINES.length)];
+    $('try-line').textContent = '\u201c' + line + '\u201d';
+    return line;
+  }
+
+  function paintOwnVoice() {
+    var box = $('own-voice');
+    if (!box) return;
+    var ok = window.MYVOICE && window.MYVOICE.supported();
+    box.hidden = !ok;
+    if (ok && !$('try-line').textContent) newTryLine();
+  }
+
+  if ($('try-rec')) {
+    var tryBtn = $('try-rec');
+    var tryLevel = $('own-voice').querySelector('.read-level i');
+
+    var tryStart = function (e) {
+      e.preventDefault();
+      if (window.MYVOICE.recording()) return;
+      stopSpeech();
+      window.MYVOICE.start(function (v) { tryLevel.style.width = Math.round(v * 100) + '%'; })
+        .then(function () {
+          tryBtn.classList.add('is-live');
+          tryBtn.textContent = 'Listening\u2026';
+          $('try-verdict').textContent = '';
+          $('try-verdict').classList.remove('is-good');
+        })
+        .catch(function () {
+          $('try-verdict').textContent = 'No microphone, or permission was declined.';
+        });
+    };
+
+    var tryEnd = function (e) {
+      e.preventDefault();
+      if (!window.MYVOICE.recording()) return;
+      window.MYVOICE.stop().then(function (blob) {
+        tryBtn.classList.remove('is-live');
+        tryBtn.textContent = 'Hold and say it';
+        tryLevel.style.width = '0';
+        if (!blob || blob.size < 1200) {
+          $('try-verdict').textContent = 'Too short \u2014 hold the button while you say it.';
+          return;
+        }
+        tryBlob = blob;
+        $('try-hear').hidden = false;
+        $('try-again').hidden = false;
+        $('try-verdict').textContent = 'That is you. Press Hear me.';
+        $('try-verdict').classList.add('is-good');
+        window.MYVOICE.play(blob, { text: $('try-line').textContent });
+      });
+    };
+
+    tryBtn.addEventListener('mousedown', tryStart);
+    tryBtn.addEventListener('touchstart', tryStart, { passive: false });
+    ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(function (ev) {
+      tryBtn.addEventListener(ev, tryEnd);
+    });
+
+    $('try-hear').addEventListener('click', function () {
+      if (tryBlob) window.MYVOICE.play(tryBlob, { text: $('try-line').textContent });
+    });
+
+    $('try-again').addEventListener('click', function () {
+      tryBlob = null;
+      $('try-hear').hidden = true;
+      $('try-again').hidden = true;
+      $('try-verdict').textContent = '';
+      $('try-verdict').classList.remove('is-good');
+      newTryLine();
+    });
+  }
+
   $('voicebox-close').addEventListener('click', function () {
     $('voicebox').hidden = true;
   });
@@ -4353,6 +4441,7 @@
   updateGradeNote();
   updateMakeButton();
   renderFindOnline();
+  paintOwnVoice();
 
   /* an invitation link, followed once the page is ready for it */
   var invited = pendingJoinCode();
