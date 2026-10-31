@@ -2864,6 +2864,14 @@
     }).join('');
   }
 
+  /* Everyone duels on the host's topic. The guest may well have photographed a different
+     board, and the questions have to come from one place or the two screens disagree. */
+  function partyTopic() {
+    var id = S.party && S.party.topicId;
+    var t = id && window.TOPICS.filter(function (x) { return x.id === id; })[0];
+    return t || (S.board && S.board.topic) || window.TOPICS[0];
+  }
+
   /* party members carry a pet id; duel.js wants the pet itself */
   function teamsForDuel(p) {
     return window.PARTY.sides(p).map(function (t) {
@@ -2988,9 +2996,12 @@
     $('party-start').hidden = true;
     $('party-lobby').hidden = false;
     $('party-code-out').textContent = S.party.code;
+    var topic = partyTopic();
     $('party-where').textContent = S.party.online
-      ? (amHost() ? 'Online. Read the code out and they join from their own device.'
-                  : 'Online. Waiting for the host to start.')
+      ? (amHost()
+        ? 'Online. Read the code out and they join from their own device.'
+        : 'Online. Waiting for the host to start. Questions come from ' +
+          (topic ? topic.title.toLowerCase() : 'the host\'s topic') + '.')
       : 'On this device. Add the people sitting with you, or let robots take the rest.';
     renderLobby();
   }
@@ -3254,8 +3265,8 @@
 
     window.DUEL.start({
       el: { hp: $('duel-hp'), stage: $('duel-stage') },
-      topic: S.board.topic,
-      questions: chaseQuestions(S.board.topic),
+      topic: partyTopic(),
+      questions: chaseQuestions(partyTopic()),
       teams: teams,
       maxHp: window.PARTY.teamHp(p.mode),
       remote: !!p.online,
@@ -3383,15 +3394,19 @@
   }
 
   function askGuest(st) {
-    /* the host sends only the stem over the wire, so the guest asks for the options it
-       already has in its own copy of the library */
-    var pool = chaseQuestions(S.board.topic);
-    var q = pool.filter(function (x) { return x.q === st.question; })[0];
+    /* The host sends the question in full, so there is nothing to look up and nothing to
+       disagree about. Older hosts sent only the stem; fall back to the library for those. */
+    var q = st.ask;
     if (!q) {
-      $('duel-stage').innerHTML = '<div class="duel-wait"><p class="duel-step">Your turn\u2026</p></div>';
+      var pool = chaseQuestions(partyTopic());
+      q = pool.filter(function (x) { return x.q === st.question; })[0];
+    }
+    if (!q) {
+      $('duel-stage').innerHTML = '<div class="duel-wait"><p class="duel-step">Your turn\u2026</p>' +
+        '<p class="duel-sub">Waiting for the question to come through.</p></div>';
       return;
     }
-    var key = st.round + ':' + st.question;
+    var key = st.round + ':' + q.q;
     if ($('duel-stage').dataset.asked === key) return;
     $('duel-stage').dataset.asked = key;
     $('duel-stage').innerHTML =

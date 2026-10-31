@@ -360,8 +360,17 @@
       attacker: D.phase === 'over' ? null : attacker().id,
       defender: D.phase === 'over' ? null : defender().id,
       question: D.current ? D.current.q : null,
-      /* only the stems travel. The other device has the same library, so it looks the
-         options up itself rather than us sending four copies of everything. */
+
+      /* The question travels in full — stem and options — rather than the guest looking
+         it up. It used to look it up in its own copy of the library, which only worked if
+         both players had picked the same topic, the same grade and photographed the same
+         board. They almost never had, and the guest was left on a turn it could not take.
+
+         `c` is deliberately not in here. The host marks the answer, so the key never
+         reaches the other device and cannot be read out of it. */
+      ask: D.phase === 'answer' && D.current
+        ? { q: D.current.q, a: D.current.a.slice() }
+        : null,
       choices: D.phase === 'choose' && D.choices
         ? D.choices.map(function (q) { return { q: q.q, diff: q.diff }; })
         : null,

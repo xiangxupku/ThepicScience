@@ -37,22 +37,26 @@
     });
   }
 
-  /* Is online play switched on here at all? Asked once, answer remembered. */
+  /* Is online play switched on here at all?
+
+     A yes is remembered. A no is not: the first request to a serverless endpoint can be
+     slow enough to look like a failure, and remembering that left the Online button greyed
+     out for the rest of the visit with no way back but a reload. Now a failed probe is
+     thrown away and the next look asks again. */
   function available() {
     if (probe) return probe;
-    probe = fetch(API, { method: 'GET' })
-      .then(function (r) { return r.ok ? r.json() : { ok: false }; })
+    var attempt = fetch(API, { method: 'GET' })
+      .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
-        return {
-          online: !!(j && j.ok && j.online),
-          durable: !!(j && j.durable),
-          why: j && j.ok ? '' : 'This copy is running without the party server.'
-        };
+        if (!j || !j.ok) throw new Error('no party server');
+        return { online: true, durable: !!j.durable, why: '' };
       })
       .catch(function () {
-        return { online: false, durable: false, why: 'No party server on this address.' };
+        if (probe === attempt) probe = null;    /* ask again next time */
+        return { online: false, durable: false, why: 'Could not reach the party server.' };
       });
-    return probe;
+    probe = attempt;
+    return attempt;
   }
 
   /* ── a running connection ─────────────────────────────
