@@ -59,6 +59,7 @@
     tally: null,         // { escapes, duels, bestLevel } — what the earned titles are judged on
     chaseLevel: 1,       // which rung of the monster ladder you are on
     partyMode: '2v2',    // 1v1 | 2v2 | 3v3 | 4v4
+    pendingJoin: '',     // a code from an invitation link, joined once the screen is ready
     party: null,         // the lobby you are in
     watcher: null,       // the polling handle for an online party
     netReady: null,      // what the party server said when we asked
@@ -2946,6 +2947,16 @@
     renderModeRow();
     setWhere(PARTY_WHERE);
     checkOnline();
+
+    if (S.pendingJoin) {
+      var code = S.pendingJoin;
+      S.pendingJoin = '';
+      PARTY_WHERE = 'online';
+      setWhere('online');
+      $('party-code').value = code;
+      partyMsg('Joining ' + code + '\u2026');
+      joinParty();
+    }
   }
 
   /* ── making and joining ── */
@@ -2996,6 +3007,12 @@
     $('party-start').hidden = true;
     $('party-lobby').hidden = false;
     $('party-code-out').textContent = S.party.code;
+    if (S.party.online && amHost()) {
+      $('party-link').hidden = false;
+      $('party-link').title = joinUrl(S.party.code);
+    } else {
+      $('party-link').hidden = true;
+    }
     var topic = partyTopic();
     $('party-where').textContent = S.party.online
       ? (amHost()
@@ -3215,7 +3232,7 @@
       revive: reviveParty,
       onBack: function () { netNote(''); },
       onParty: function (p) {
-        if (!S.party || window.DUEL.running()) return;
+        if (!S.party || !p || !p.members || window.DUEL.running()) return;
         if (seatArrivals(p.members)) { renderLobby(); pushParty(); }
       },
       onActions: function (actions) {
@@ -3235,6 +3252,9 @@
       code: S.party.code, id: myId(), host: false,
       onBack: function () { netNote(''); },
       onParty: function (p) {
+        /* If this throws, net.js has already moved lastRev on and every later poll is
+           skipped as unchanged — the lobby then freezes on whatever it last drew. */
+        if (!S.party) return;
         S.party.members = p.members;
         S.party.started = p.started;
         S.party.mode = p.mode;
@@ -3440,13 +3460,65 @@
     if (window.PARTY.swapSide(S.party, myId())) { renderLobby(); pushParty(); }
     else toast('No room on the other side');
   });
+  /* ── joining from a link ────────────────────
+     Reading four letters down the phone and then talking someone through five screens is
+     how an invitation dies. A link does all of it: it opens the app, walks the steps and
+     joins. The topic does not matter for whoever is joining, because the duel runs on the
+     host's, so any one will do to get them through. */
+
+  function joinUrl(code) {
+    return location.origin + location.pathname + '?join=' + encodeURIComponent(code);
+  }
+
+  function pendingJoinCode() {
+    var m = /[?&]join=([^&]+)/.exec(location.search || '');
+    return m ? window.PARTY.cleanCode(decodeURIComponent(m[1])) : '';
+  }
+
+  function followJoinLink(code) {
+    /* clear it from the address bar so a refresh does not try to rejoin a finished game */
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, '', location.origin + location.pathname);
+    }
+    unlock(2);
+    chooseTopic(window.TOPICS[0].id);      /* a placeholder; the host's topic is what plays */
+    unlock(3);
+    var fmt = document.querySelector('input[name="format"][value="duel"]');
+    if (fmt) {
+      fmt.checked = true;
+      fmt.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    /* showDuel() clears any party as it sets the screen up, and it runs when the lesson
+       finishes building. Waiting on a timer raced that and the join was wiped a moment
+       after it succeeded, which left the lobby frozen on stale seats. So the code is left
+       here and showDuel picks it up once it is done. */
+    S.pendingJoin = code;
+    $('make-btn').click();
+  }
+
+  $('party-link').addEventListener('click', function () {
+    if (!S.party) return;
+    var url = joinUrl(S.party.code);
+    if (navigator.share) {
+      navigator.share({ title: 'Science duel', text: 'Join my duel', url: url })
+        .catch(function () { copyText(url, 'Copied the link'); });
+      return;
+    }
+    copyText(url, 'Copied the link');
+  });
+
+  function copyText(text, said) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast(said); },
+        function () { toast(text); }
+      );
+    } else toast(text);
+  }
+
   $('party-copy').addEventListener('click', function () {
     if (!S.party) return;
-    var code = S.party.code;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(code).then(function () { toast('Copied ' + code); },
-        function () { toast('Your code is ' + code); });
-    } else toast('Your code is ' + code);
+    copyText(S.party.code, 'Copied ' + S.party.code);
   });
   $('party-leave').addEventListener('click', function () {
     if (S.party && S.party.online) window.NET.leave(S.party.code, myId()).catch(function () {});
@@ -4070,4 +4142,10 @@
   updateGradeNote();
   updateMakeButton();
   renderFindOnline();
+
+  /* an invitation link, followed once the page is ready for it */
+  var invited = pendingJoinCode();
+  if (invited && invited.length === 4) {
+    setTimeout(function () { followJoinLink(invited); }, 150);
+  }
 })();
