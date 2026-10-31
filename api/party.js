@@ -12,10 +12,20 @@
    Storage, in order of preference:
      1. Upstash Redis over REST, if KV_REST_API_URL and KV_REST_API_TOKEN are set. This is
         the one to use in production — add it from the Vercel dashboard and it works.
-     2. A plain Map in this process, if they are not. Good enough for `vercel dev` and for
-        two phones in the same minute, but a serverless function can be moved to a fresh
-        instance at any time, which drops every party. The client is told which one is in
-        use so it can warn people.
+     2. A plain Map in this process, if they are not.
+
+   The Map is the interesting case, because it is what most deploys will actually run on.
+   A serverless instance is thrown away when it goes idle — measured at well under a
+   minute — and every party in its Map goes with it. That used to end the game.
+
+   It no longer does, because the host's phone is the real source of truth: it runs the
+   rules and holds the whole party. So there is a `revive` operation. When the host finds
+   its party missing it simply writes the whole thing back, and the guests' next poll finds
+   it again. The store is a postbox, not a filing cabinet, and losing a postbox is
+   survivable as long as somebody still has the letter.
+
+   vercel.json pins these functions to one region so that two players cannot land on
+   instance pools that can never see each other.
 
    Nothing stored here is personal: a display name the player typed, a pet id, and which
    button they pressed. */
@@ -158,6 +168,25 @@ export default async function handler(req, res) {
       bump(doc);
       await write(code, doc);
       return res.status(200).json({ ok: true, party: doc.party, rev: doc.rev });
+    }
+
+    if (op === 'revive') {
+      /* The host writing its party back over whatever is, or is not, there. Only the host
+         in the submitted party may do it, so a guest cannot take a room over. */
+      const p = body.party;
+      if (!p || !p.members || p.host !== body.host) {
+        return res.status(400).json({ ok: false, why: 'A revive needs the host\'s own party.' });
+      }
+      const had = await read(code);
+      if (had && had.party.host !== body.host) {
+        return res.status(403).json({ ok: false, why: 'Someone else is hosting that code.' });
+      }
+      const doc = had || fresh(p);
+      doc.party = p;
+      if (body.state) doc.state = body.state;
+      bump(doc);
+      await write(code, doc);
+      return res.status(200).json({ ok: true, revived: !had, rev: doc.rev, durable: HAS_REDIS });
     }
 
     if (op === 'party') {

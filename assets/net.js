@@ -10,7 +10,12 @@
    same-device play. Nothing breaks, the online button is just switched off with a reason.
 
    Polling rather than sockets, on purpose: a serverless function cannot hold a socket open,
-   and a question-and-answer game is slow enough that asking every second is plenty. */
+   and a question-and-answer game is slow enough that asking every second is plenty.
+
+   The store can forget a party at any moment — see api/party.js — so nothing here treats
+   that as fatal. The host writes its party straight back and carries on. A guest keeps
+   asking quietly, and only says something is wrong after several seconds of silence, by
+   which time the host has almost always put it back. */
 
 (function () {
   'use strict';
@@ -54,21 +59,33 @@
      watch() keeps asking the server what changed and calls back only when something has.
      Both the host and the guests use it; the host additionally drains the action inbox. */
 
+  function gone(message) {
+    return /no party with that code/i.test(message || '');
+  }
+
   function watch(opts) {
     var stopped = false;
     var timer = null;
     var lastRev = -1;
+    var quiet = 0;          /* polls in a row that found nothing */
+
+    function healthy() {
+      if (quiet && opts.onBack) opts.onBack();
+      quiet = 0;
+    }
 
     function tick() {
       if (stopped) return;
       var job = opts.host
         ? post({ op: 'drain', code: opts.code, host: opts.id })
             .then(function (j) {
+              healthy();
               if (j.actions && j.actions.length && opts.onActions) opts.onActions(j.actions);
               if (j.rev !== lastRev) { lastRev = j.rev; if (opts.onParty) opts.onParty(j.party); }
             })
         : post({ op: 'get', code: opts.code })
             .then(function (j) {
+              healthy();
               if (j.rev === lastRev) return;
               lastRev = j.rev;
               if (opts.onParty) opts.onParty(j.party);
@@ -76,7 +93,19 @@
             });
 
       job.catch(function (e) {
-        if (opts.onError) opts.onError(e.message || 'Lost the party.');
+        var msg = e.message || 'Lost the party.';
+        quiet++;
+        if (gone(msg)) {
+          /* The store has been recycled. The host puts the party straight back; a guest
+             waits for that to happen rather than announcing a problem. */
+          if (opts.host && opts.revive) {
+            lastRev = -1;
+            return opts.revive();
+          }
+          if (quiet >= 6 && opts.onError) opts.onError('Cannot find that party any more.');
+          return;
+        }
+        if (quiet >= 3 && opts.onError) opts.onError(msg);
       }).then(function () {
         if (!stopped) timer = setTimeout(tick, POLL_MS);
       });
@@ -85,7 +114,8 @@
     tick();
     return {
       stop: function () { stopped = true; clearTimeout(timer); },
-      stopped: function () { return stopped; }
+      stopped: function () { return stopped; },
+      missing: function () { return quiet; }
     };
   }
 
@@ -105,6 +135,10 @@
     },
     putParty: function (code, host, party) {
       return post({ op: 'party', code: code, host: host, party: party });
+    },
+    /* write the whole party back over whatever is there, or is not */
+    revive: function (code, host, party, state) {
+      return post({ op: 'revive', code: code, host: host, party: party, state: state });
     },
     putState: function (code, host, state, party) {
       return post({ op: 'state', code: code, host: host, state: state, party: party });

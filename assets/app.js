@@ -3164,10 +3164,45 @@
     return changed;
   }
 
+  /* ── staying alive through a forgetful store ──────
+     Without a durable store attached, a serverless instance is recycled whenever it goes
+     quiet — measured at under a minute — and the party goes with it. Since the host's own
+     device holds the whole party and runs the rules, the fix is simply to write it back.
+     Guests see a short pause and nothing else. */
+
+  function reviveParty() {
+    if (!S.party || !S.party.online || !amHost()) return Promise.resolve();
+    var state = window.DUEL.running() ? window.DUEL.state() : null;
+    return window.NET.revive(S.party.code, myId(), S.party, state)
+      .then(function (j) {
+        if (j.revived) {
+          netNote('Put the party back \u2014 the code still works.');
+          if (window.DUEL.running()) pushState();
+        }
+      })
+      .catch(function () { /* the next poll tries again */ });
+  }
+
+  function pushState() {
+    if (!S.party || !S.party.online || !amHost() || !window.DUEL.running()) return;
+    window.NET.putState(S.party.code, myId(), window.DUEL.state(), S.party).catch(function () {});
+  }
+
+  /* a quiet line in the lobby, so a hiccup is visible without being alarming */
+  function netNote(text, bad) {
+    var el = $('party-net-state');
+    if (!el) return;
+    el.textContent = text || '';
+    el.classList.toggle('is-bad', !!bad);
+    el.hidden = !text;
+  }
+
   function hostWatch() {
     stopParty();
     S.watcher = window.NET.watch({
       code: S.party.code, id: myId(), host: true,
+      revive: reviveParty,
+      onBack: function () { netNote(''); },
       onParty: function (p) {
         if (!S.party || window.DUEL.running()) return;
         if (seatArrivals(p.members)) { renderLobby(); pushParty(); }
@@ -3179,7 +3214,7 @@
           }
         });
       },
-      onError: function (m) { partyMsg(m, true); }
+      onError: function (m) { netNote(m, true); }
     });
   }
 
@@ -3187,6 +3222,7 @@
     stopParty();
     S.watcher = window.NET.watch({
       code: S.party.code, id: myId(), host: false,
+      onBack: function () { netNote(''); },
       onParty: function (p) {
         S.party.members = p.members;
         S.party.started = p.started;
@@ -3195,7 +3231,9 @@
         else if (!p.started) renderLobby();
       },
       onState: function (state) { paintGuest(state); },
-      onError: function (m) { partyMsg(m, true); }
+      onError: function (m) {
+        netNote(m + ' Ask the host to keep their screen open.', true);
+      }
     });
   }
 

@@ -327,13 +327,29 @@ Both look for the same environment variables, and both fall back without them:
 | `KV_REST_API_URL` | Upstash for Redis, added from the Vercel dashboard |
 | `KV_REST_API_TOKEN` | the same |
 
-With them set, parties and scores are stored properly. Without them, each endpoint keeps a
-plain `Map` inside the running function instead. That is fine for `vercel dev` and often fine
-for two phones in the same minute, but a serverless function can be moved to a fresh instance
-at any moment, which drops everything. The app is told which one is in use:
+With them set, parties and scores are stored properly.
+
+Without them, each endpoint keeps a plain `Map` inside the running function. Measured against
+the live deploy, that Map survives for as long as somebody keeps talking to it — 50 polls over
+100 seconds lost nothing — but an instance left idle is recycled in **under 45 seconds**, and
+every party in it goes too. That used to end the game, which is why a phone locking its screen
+mid-lobby broke online play.
+
+Two things now make it survivable:
+
+- `vercel.json` pins the functions to **one region**, so two players cannot land on instance
+  pools that could never see each other.
+- The host's device is the real source of truth — it runs the rules and holds the whole
+  party — so when its next poll finds the party missing it simply **writes the whole thing
+  back** (`op: revive`). Guests poll on quietly and pick it up again. Tested by deleting a
+  live party mid-duel at round 6 with hearts at 4–3: four seconds later it was back at round 7
+  with the same hearts, the same two players, and neither side having lost its place.
+
+So the Map works for real games now. A durable store is still better, and the app is told
+which one is in use:
 
 - the **Online** button says "works best if everyone joins within a few minutes" rather than
-  claiming it is reliable, and
+  claiming it is reliable, and the lobby shows a line when the party had to be put back, and
 - the **shared leaderboard is hidden entirely** until the store is durable, because a board
   that forgets itself every few minutes is worse than no board. Your own best times are kept
   in `localStorage` and always work.

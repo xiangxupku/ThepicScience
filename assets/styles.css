@@ -938,6 +938,8 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
   letter-spacing: .2em; text-transform: uppercase;
 }
 #party-msg.is-bad { color: #d9644f; }
+.net-state { font-weight: 600; }
+.net-state.is-bad { color: #d9644f; }
 
 .party-code-row {
   display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
