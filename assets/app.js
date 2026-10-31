@@ -1067,6 +1067,7 @@
   function stopSpeech() {
     clearTimeout(speakTimer);
     if (synth) { try { synth.cancel(); } catch (e) {} }
+    if (window.MYVOICE) window.MYVOICE.stopPlaying();
   }
 
   /* Chrome drops an utterance queued in the same tick as a cancel, which is what made the
@@ -1213,6 +1214,7 @@
     $('doc-view').hidden = true;
     $('chase-view').hidden = true;
     $('duel-view').hidden = true;
+    $('voicebox').hidden = true;
     if (window.CHASE) window.CHASE.stop();
     if (window.DUEL) window.DUEL.stop();
     $('deeper').hidden = true;
@@ -1361,6 +1363,7 @@
     $('layer-b').className = 'layer';
     $('step4-sub').textContent = 'A ' + fmtTime(S.board.total) + ' video about ' + S.board.topic.title.toLowerCase() + '. Press play, or hit the space bar.';
     V.i = 0; V.t = 0; V.playing = false; V.spoken = -1;
+    V.clips = V.clips || {};
     $('presenter').hidden = !$('pres-toggle').checked;
     talking(false);
     if (!synth) $('speech-warn').hidden = false;
@@ -1369,6 +1372,12 @@
     renderChips();
     updateBar();
     $('play-btn').textContent = '▶ Play';
+
+    /* whatever you have already read, ready before the first scene needs it */
+    loadClips().then(function () {
+      paintVoiceState();
+      renderVoiceBox();
+    });
   }
 
   function renderChips() {
@@ -1556,11 +1565,209 @@
   }
 
   function speakScene() {
-    if (!synth) { talking(true); return; }
     if (V.spoken === V.i) return;
+    var it = S.board.items[V.i];
+
+    /* your own recording wins over the robot, when you have made one for this line */
+    if (useMyVoice() && V.clips && V.clips[voiceKey(it)]) {
+      V.spoken = V.i;
+      talking(true);
+      stopSpeech();
+      window.MYVOICE.play(V.clips[voiceKey(it)], {
+        text: it.narration,
+        rate: S.rate,
+        onWord: highlightWord,
+        onEnd: function () { talking(false); }
+      });
+      return;
+    }
+
+    if (!synth) { talking(true); return; }
     V.spoken = V.i;
     talking(true);
-    speakSoon(S.board.items[V.i].narration, function () { talking(false); }, highlightWord);
+    speakSoon(it.narration, function () { talking(false); }, highlightWord);
+  }
+
+  /* ── narrating it yourself ───────────────────
+     The app cannot make a machine sound like you — that needs a model it does not have and
+     could not honestly fake. What it can do is play you. Read each line once and the video
+     uses the recording from then on, falling back to the robot for anything unread. */
+
+  function voiceKey(item) {
+    return window.MYVOICE.keyFor(S.board && S.board.topic ? S.board.topic.id : '', item.narration);
+  }
+
+  function useMyVoice() {
+    return !!($('myvoice-toggle') && $('myvoice-toggle').checked);
+  }
+
+  /* pull every clip for the current storyboard into memory, so playback never waits on a
+     database read in the middle of a scene change */
+  function loadClips() {
+    if (!window.MYVOICE || !window.MYVOICE.supported() || !S.board) return Promise.resolve({});
+    var items = S.board.items;
+    return Promise.all(items.map(function (it) {
+      var k = voiceKey(it);
+      return window.MYVOICE.get(k).then(function (b) { return b ? [k, b] : null; });
+    })).then(function (pairs) {
+      var map = {};
+      pairs.forEach(function (p) { if (p) map[p[0]] = p[1]; });
+      V.clips = map;
+      return map;
+    }).catch(function () { V.clips = {}; return {}; });
+  }
+
+  function voiceCounts() {
+    var items = (S.board && S.board.items) || [];
+    var have = items.filter(function (it) { return V.clips && V.clips[voiceKey(it)]; }).length;
+    return { have: have, of: items.length };
+  }
+
+  function paintVoiceState() {
+    var ok = window.MYVOICE && window.MYVOICE.supported();
+    var wrap = $('myvoice-toggle-wrap');
+    if (!wrap) return;
+    wrap.hidden = !ok;
+    if (!ok) return;
+    var c = voiceCounts();
+    $('myvoice-toggle').disabled = !c.have;
+    wrap.title = c.have
+      ? c.have + ' of ' + c.of + ' lines recorded in your voice'
+      : 'Record some lines first, below the video';
+  }
+
+  function renderVoiceBox() {
+    if (!window.MYVOICE || !window.MYVOICE.supported()) { $('voicebox').hidden = true; return; }
+    if (!S.board || S.board.format !== 'video') { $('voicebox').hidden = true; return; }
+    $('voicebox').hidden = false;
+
+    var c = voiceCounts();
+    $('voicebox-sub').textContent = c.have
+      ? c.have + ' of ' + c.of + ' lines are in your voice. The rest play as the robot.'
+      : 'Read these ' + c.of + ' lines and the video plays you instead of the robot voice.';
+
+    $('voice-list').innerHTML = S.board.items.map(function (it, i) {
+      var k = voiceKey(it);
+      var done = !!(V.clips && V.clips[k]);
+      var where = it.kind === 'title' ? 'Title' : it.kind === 'end' ? 'Last slide'
+        : it.kind === 'example' ? 'Where you see this' : 'Page ' + (i + 1);
+      var text = it.narration || '';
+      return '<li class="read-row' + (done ? ' is-done' : '') + '" data-row="' + i + '">' +
+        '<div class="read-what">' +
+        '<p class="read-where">' + esc(where) + (done ? ' <span class="read-tick">\u2713 recorded</span>' : '') + '</p>' +
+        '<p class="read-text">' + esc(text.length > 190 ? text.slice(0, 190) + '\u2026' : text) + '</p>' +
+        '</div>' +
+        '<div class="read-acts">' +
+        '<span class="read-level" aria-hidden="true"><i></i></span>' +
+        '<button type="button" class="btn rec-btn" data-rec="' + i + '">' +
+        (done ? 'Record again' : 'Hold to read') + '</button>' +
+        (done ? '<button type="button" class="btn" data-hear="' + i + '">Hear it</button>' +
+                '<button type="button" class="btn btn-quiet" data-drop="' + i + '">Delete</button>' : '') +
+        '</div></li>';
+    }).join('');
+
+    $('voice-list').querySelectorAll('[data-rec]').forEach(function (b) {
+      var i = Number(b.dataset.rec);
+      var row = b.closest('.read-row');
+      var level = row.querySelector('.read-level i');
+      var go = function (e) { e.preventDefault(); beginRec(i, b, row, level); };
+      var end = function (e) { e.preventDefault(); endRec(i, b, row, level); };
+      b.addEventListener('mousedown', go);
+      b.addEventListener('touchstart', go, { passive: false });
+      ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(function (ev) {
+        b.addEventListener(ev, end);
+      });
+    });
+    $('voice-list').querySelectorAll('[data-hear]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var it = S.board.items[Number(b.dataset.hear)];
+        var clip = V.clips[voiceKey(it)];
+        if (clip) window.MYVOICE.play(clip, { text: it.narration });
+      });
+    });
+    $('voice-list').querySelectorAll('[data-drop]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var it = S.board.items[Number(b.dataset.drop)];
+        var k = voiceKey(it);
+        window.MYVOICE.del(k).then(function () {
+          delete V.clips[k];
+          renderVoiceBox();
+          paintVoiceState();
+          toast('Deleted that one');
+        });
+      });
+    });
+
+    window.MYVOICE.usage().then(function (bytes) {
+      $('voice-usage').textContent = bytes
+        ? 'Using about ' + (bytes / 1048576).toFixed(1) + ' MB on this device.'
+        : '';
+    }).catch(function () {});
+  }
+
+  function beginRec(i, btn, row, level) {
+    if (window.MYVOICE.recording()) return;
+    stopSpeech();
+    window.MYVOICE.stopPlaying();
+    window.MYVOICE.start(function (v) { level.style.width = Math.round(v * 100) + '%'; })
+      .then(function () {
+        btn.classList.add('is-live');
+        btn.textContent = 'Reading\u2026';
+        row.classList.add('is-live');
+      })
+      .catch(function () {
+        toast('No microphone, or permission was declined');
+      });
+  }
+
+  function endRec(i, btn, row, level) {
+    if (!window.MYVOICE.recording()) return;
+    window.MYVOICE.stop().then(function (blob) {
+      btn.classList.remove('is-live');
+      row.classList.remove('is-live');
+      level.style.width = '0';
+      if (!blob || blob.size < 1200) {       /* a tap rather than a reading */
+        btn.textContent = 'Hold to read';
+        toast('Too short \u2014 hold the button while you read');
+        return;
+      }
+      var it = S.board.items[i];
+      var k = voiceKey(it);
+      window.MYVOICE.put(k, blob).then(function () {
+        V.clips[k] = blob;
+        renderVoiceBox();
+        paintVoiceState();
+        if ($('myvoice-toggle') && !$('myvoice-toggle').checked) {
+          $('myvoice-toggle').checked = true;
+        }
+        toast('Got it \u2014 that line is yours now');
+      });
+    });
+  }
+
+  $('voicebox-close').addEventListener('click', function () {
+    $('voicebox').hidden = true;
+  });
+
+  $('voice-clear').addEventListener('click', function () {
+    if (!V.clips || !Object.keys(V.clips).length) { toast('Nothing recorded yet'); return; }
+    window.MYVOICE.clear().then(function () {
+      V.clips = {};
+      renderVoiceBox();
+      paintVoiceState();
+      if ($('myvoice-toggle')) $('myvoice-toggle').checked = false;
+      toast('All your recordings are gone');
+    });
+  });
+
+  if ($('myvoice-toggle')) {
+    $('myvoice-toggle').addEventListener('change', function () {
+      stopSpeech();
+      window.MYVOICE.stopPlaying();
+      V.spoken = -1;
+      toast(this.checked ? 'Playing in your voice' : 'Back to the robot voice');
+      if (V.playing) speakScene();
+    });
   }
 
   function now() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
@@ -1585,7 +1792,9 @@
     V.last = now();
     $('play-btn').textContent = '❚❚ Pause';
     $('play-btn').setAttribute('aria-label', 'Pause the video');
-    if (synth && synth.paused && synth.speaking) synth.resume(); else speakScene();
+    if (window.MYVOICE && window.MYVOICE.isPlaying()) window.MYVOICE.resumePlaying();
+    else if (synth && synth.paused && synth.speaking) synth.resume();
+    else speakScene();
     clearInterval(V.timer);
     V.timer = setInterval(tick, 100);
     say('Playing.');
@@ -1593,6 +1802,7 @@
 
   function pause() {
     V.playing = false;
+    if (window.MYVOICE) window.MYVOICE.pausePlaying();
     talking(false);
     clearInterval(V.timer);
     $('play-btn').textContent = '▶ Play';
@@ -4109,6 +4319,7 @@
     $('doc-view').hidden = true;
     $('chase-view').hidden = true;
     $('duel-view').hidden = true;
+    $('voicebox').hidden = true;
     if (window.CHASE) window.CHASE.stop();
     if (window.DUEL) window.DUEL.stop();
     $('deeper').hidden = true;

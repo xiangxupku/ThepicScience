@@ -855,6 +855,36 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 @keyframes spark-pop { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
 .spark-icon { font-size: .9em; }
 
+/* ── recording your own narration ── */
+
+.voicebox { border-left: 4px solid #d9644f; margin-top: 1.2rem; }
+.read-list { list-style: none; margin: 1rem 0; padding: 0; display: grid; gap: .5rem; counter-reset: vline; }
+.read-row {
+  display: grid; gap: .5rem; padding: .7rem .8rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--surface-2);
+  grid-template-columns: 1fr auto;
+  align-items: start;
+}
+.read-row.is-done { border-color: #6fae95; background: color-mix(in srgb, #6fae95 12%, transparent); }
+.read-row.is-live { border-color: #d9644f; background: color-mix(in srgb, #d9644f 12%, transparent); }
+.read-what { min-width: 0; }
+.read-where { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.read-text { font-size: .88rem; margin-top: .15rem; }
+.read-acts { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.read-acts .btn { font-size: .78rem; padding: .32rem .65rem; }
+.rec-btn { min-width: 6.2rem; }
+.rec-btn.is-live { background: #d9644f; border-color: #d9644f; color: #fff; }
+.read-level {
+  width: 3.4rem; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden;
+}
+.read-level i { display: block; height: 100%; width: 0; background: #d9644f; transition: width 80ms linear; }
+.read-tick { color: #3f6b58; font-weight: 700; font-size: .78rem; }
+
+@media (max-width: 560px) {
+  .read-row { grid-template-columns: 1fr; }
+  .read-acts { justify-content: flex-start; }
+}
+
 /* ── three eggs ──
    One card each, side by side so the prices and the odds can be compared without tapping
    anything. The tier colours are fixed hex because they have to agree with the SVG. */

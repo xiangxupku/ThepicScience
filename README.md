@@ -54,6 +54,24 @@ the photo, the text reading and the narration all happen inside the browser.
    is CSS over the same SVG — nothing extra is downloaded, and `prefers-reduced-motion`
    still stops the lot.
 
+   **🎤 Or read it yourself.** Under the video is a list of every line it narrates.
+   Hold a button, read the line out loud, and from then on the video plays you instead of
+   the robot. Lines you have not read still play as the robot, so you can do one at a time.
+
+   This is not voice cloning. There is no model here that could take a sample of you and
+   then read any sentence in your voice, and there is no honest way to do that in a web page
+   with nothing behind it. It sounds like you because it **is** you.
+
+   Recordings live in IndexedDB on your own device. Nothing is uploaded — there is nowhere
+   to upload it to — the microphone is only open while the button is held, and one button
+   deletes the lot. A clip is filed against the words it reads rather than the page number,
+   so changing the video length or your grade keeps whatever you have already recorded.
+
+   A recording carries no word-boundary events, which is what the robot voice uses to light
+   the captions. So the words are spread across the clip's own length instead — an estimate
+   rather than a measurement, which reads well because a person narrating one sentence keeps
+   a fairly even pace.
+
    The narration is **rewritten before it is spoken**. A speech engine reads "6CO₂ + 6H₂O →
    C₆H₁₂O₆ + 6O₂" as noise; it now says "six carbon dioxide plus six water gives glucose plus
    six oxygen". Units, symbols, superscripts and dashes all get the same treatment, the
@@ -279,6 +297,7 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/worlds.js` | The three places and the three monsters, with their chests and tuning |
 | `assets/party.js` | Parties: team sizes, seating, codes, and the one-in-three robots |
 | `assets/net.js` | The wire between devices in an online party |
+| `assets/myvoice.js` | Recording your own narration: the microphone, the store, playback |
 | `api/party.js` | The one serverless file: a JSON document per party code, for 30 minutes |
 | `api/scores.js` | The speed-run leaderboard, fastest twenty per level |
 | `assets/pets.js` | The 50 pets: shapes, rarities, egg odds, levelling, and the hint ladder |

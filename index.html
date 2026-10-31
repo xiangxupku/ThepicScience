@@ -433,6 +433,7 @@
       <div class="book-extra">
         <label class="toggle"><input type="checkbox" id="cc-toggle" checked> Show captions</label>
         <label class="toggle"><input type="checkbox" id="pres-toggle" checked> Show the presenter</label>
+        <label class="toggle" id="myvoice-toggle-wrap" hidden><input type="checkbox" id="myvoice-toggle"> Use my own voice</label>
         <p class="hint" id="speech-warn" hidden>This browser has no voices available, so the video plays with captions only.</p>
       </div>
     </div>
@@ -532,6 +533,25 @@
           <button type="button" class="btn" id="chase-learn">Show me what I missed</button>
         </div>
       </div>
+
+      <section class="card voicebox" id="voicebox" aria-labelledby="voicebox-h" hidden>
+        <div class="shop-head">
+          <div>
+            <p class="eyebrow">Your voice</p>
+            <h3 id="voicebox-h">Read it yourself</h3>
+            <p class="step-sub" id="voicebox-sub"></p>
+          </div>
+          <button type="button" class="btn btn-quiet" id="voicebox-close">Close</button>
+        </div>
+        <p class="shop-note">Hold the button and read the line out loud. Your recordings stay
+          on this device and are never uploaded — there is nowhere to upload them to. The
+          microphone is only on while you are holding the button.</p>
+        <ol class="read-list" id="voice-list"></ol>
+        <div class="export-row">
+          <button type="button" class="btn btn-quiet" id="voice-clear">Delete all my recordings</button>
+          <p class="hint" id="voice-usage"></p>
+        </div>
+      </section>
 
       <section class="board" id="chase-board" aria-labelledby="board-h">
         <div class="board-head">
@@ -641,6 +661,7 @@
 <script src="assets/profile.js"></script>
 <script src="assets/worlds.js"></script>
 <script src="assets/chase.js"></script>
+<script src="assets/myvoice.js"></script>
 <script src="assets/duel.js"></script>
 <script src="assets/app.js"></script>
 </body>
