@@ -855,6 +855,35 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 @keyframes spark-pop { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
 .spark-icon { font-size: .9em; }
 
+/* ── the presenter wearing your face ──
+   When your own recording is playing, the person on screen is you, and the tile moves with
+   the actual loudness of the clip rather than on a word timer. */
+
+.pres-me {
+  position: absolute; inset: 0; display: block; border-radius: inherit; overflow: hidden;
+  transform: scale(var(--say, 1));
+  transition: transform 70ms ease-out;
+}
+.pres-me .pf-svg { width: 100%; height: 100%; display: block; }
+.presenter.is-me > svg { display: none; }
+
+/* ── how much of the video is your voice ── */
+
+.voicebox { margin-top: .9rem; }
+.vb-head { margin-bottom: .5rem; }
+.vb-meter { margin: .5rem 0 .8rem; }
+.vb-bar {
+  height: 10px; border-radius: 999px; background: var(--line); overflow: hidden;
+}
+.vb-bar i {
+  display: block; height: 100%; width: 0; border-radius: 999px;
+  background: linear-gradient(90deg, #6fae95, #49c9f0);
+  transition: width 260ms ease-out;
+}
+.vb-meter.is-full .vb-bar i { background: linear-gradient(90deg, #ffd45e, #e0a93c); }
+.vb-count { margin-top: .3rem; font-size: .8rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.vb-meter.is-full .vb-count { color: #8a6616; font-weight: 700; }
+
 /* ── the five-word try, next to the voice picker ── */
 
 .own-voice {

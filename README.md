@@ -54,9 +54,19 @@ the photo, the text reading and the narration all happen inside the browser.
    is CSS over the same SVG — nothing extra is downloaded, and `prefers-reduced-motion`
    still stops the lot.
 
-   **🎤 Or read it yourself.** Under the video is a list of every line it narrates.
+   **🎤 Or read it yourself.** Sitting with the other voices in step 3, because that is
+   where you choose who reads to you, is the list of every line the video narrates.
    Hold a button, read the line out loud, and from then on the video plays you instead of
    the robot. Lines you have not read still play as the robot, so you can do one at a time.
+   A bar across the top says how much of the video is confirmed in your voice — “3 of 7
+   lines · 43% of this video is your voice” — and turns gold when it is all you. Change the
+   video length and the list changes with it, because the lines are a preview of the
+   storyboard those settings would build.
+
+   **The face matches the voice.** A stock scientist mouthing along to a recording of you
+   is the wrong person on screen, so when your clip plays the presenter tile wears your
+   own profile avatar, and it moves with the real loudness of the audio. The stock
+   presenter comes back for any line still read by the robot.
 
    This is not voice cloning. There is no model here that could take a sample of you and
    then read any sentence in your voice, and there is no honest way to do that in a web page

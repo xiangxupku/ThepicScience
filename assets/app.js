@@ -845,6 +845,7 @@
     updateGradeNote();
     updateMakeButton();
     renderFindOnline();
+    paintOwnVoice();
     say('Topic set to ' + t.title + '.');
   }
 
@@ -874,6 +875,7 @@
     updateGradeNote();
     updateMakeButton();
     renderFindOnline();
+    paintOwnVoice();   /* a different length means a different set of lines to read */
   });
 
   $('rate-select').addEventListener('change', function () { S.rateTouched = true; });
@@ -1523,6 +1525,7 @@
     var p = $('presenter');
     if (!p) return;
     p.classList.toggle('is-talking', !!on && !p.hidden);
+    wearMyFace(!!on && !!V.mine);
   }
 
   var browTimer = null;
@@ -1538,6 +1541,7 @@
 
   function highlightWord(charIndex) {
     wordBeat();
+    mouthBeat();
     if (!V.spans || !V.spans.length) return;
     var hit = -1;
     for (var i = 0; i < V.words.length; i++) {
@@ -1578,19 +1582,66 @@
       V.spoken = V.i;
       talking(true);
       stopSpeech();
+      V.mine = true;
+      talking(true);
       window.MYVOICE.play(V.clips[voiceKey(it)], {
         text: it.narration,
         rate: S.rate,
         onWord: highlightWord,
-        onEnd: function () { talking(false); }
+        onLevel: mouthLevel,
+        onEnd: function () { V.mine = false; talking(false); }
       });
       return;
     }
 
+    V.mine = false;
     if (!synth) { talking(true); return; }
     V.spoken = V.i;
     talking(true);
     speakSoon(it.narration, function () { talking(false); }, highlightWord);
+  }
+
+  /* ── the face has to match the voice ────────────
+     A stock scientist mouthing along to a recording of you is the wrong person on screen.
+     When your clip plays, the tile wears your profile avatar instead, and it moves with
+     the real loudness of the audio rather than guessing from the word count. */
+
+  function wearMyFace(on) {
+    var p = $('presenter'), me = $('pres-me');
+    if (!p || !me) return;
+    if (on && window.PROFILE && S.profile) {
+      if (p.classList.contains('is-me')) return;      /* already wearing it */
+      me.innerHTML = window.PROFILE.draw(S.profile.worn);
+      me.hidden = false;
+      p.classList.add('is-me');
+    } else {
+      if (!p.classList.contains('is-me')) return;
+      me.hidden = true;
+      me.innerHTML = '';
+      p.classList.remove('is-me');
+      me.style.setProperty('--say', 1);
+    }
+  }
+
+  /* The analyser is the better signal but it needs a running audio context, which some
+     browsers withhold until a real tap. So the word ticker drives the mouth as well: it
+     needs nothing, and it means your face always moves while your voice is playing. */
+  function mouthLevel(v) {
+    setMouth(1 + Math.min(0.09, v * 0.11));
+  }
+
+  var mouthDecay = null;
+  function mouthBeat() {
+    if (!V.mine) return;
+    setMouth(1.07);
+    clearTimeout(mouthDecay);
+    mouthDecay = setTimeout(function () { setMouth(1.015); }, 90);
+  }
+
+  function setMouth(scale) {
+    var me = $('pres-me');
+    if (!me || me.hidden) return;
+    me.style.setProperty('--say', scale.toFixed(3));
   }
 
   /* ── narrating it yourself ───────────────────
@@ -1599,7 +1650,8 @@
      uses the recording from then on, falling back to the robot for anything unread. */
 
   function voiceKey(item) {
-    return window.MYVOICE.keyFor(S.board && S.board.topic ? S.board.topic.id : '', item.narration);
+    var topic = (S.board && S.board.topic) || S.topic;
+    return window.MYVOICE.keyFor(topic ? topic.id : '', item.narration);
   }
 
   function useMyVoice() {
@@ -1609,8 +1661,9 @@
   /* pull every clip for the current storyboard into memory, so playback never waits on a
      database read in the middle of a scene change */
   function loadClips() {
-    if (!window.MYVOICE || !window.MYVOICE.supported() || !S.board) return Promise.resolve({});
-    var items = S.board.items;
+    if (!window.MYVOICE || !window.MYVOICE.supported()) return Promise.resolve({});
+    var items = voiceItems();
+    if (!items.length) { V.clips = V.clips || {}; return Promise.resolve(V.clips); }
     return Promise.all(items.map(function (it) {
       var k = voiceKey(it);
       return window.MYVOICE.get(k).then(function (b) { return b ? [k, b] : null; });
@@ -1623,7 +1676,7 @@
   }
 
   function voiceCounts() {
-    var items = (S.board && S.board.items) || [];
+    var items = voiceItems();
     var have = items.filter(function (it) { return V.clips && V.clips[voiceKey(it)]; }).length;
     return { have: have, of: items.length };
   }
@@ -1641,17 +1694,42 @@
       : 'Record some lines first, below the video';
   }
 
+  /* The recorder sits with the other voices now, which is before the video exists. So it
+     works from a preview of the storyboard the current settings would build — the same
+     pickScenes and the same narration, just not played yet. Change the length and the list
+     changes with it, and anything already recorded stays, because a clip is filed against
+     the words rather than the page number. */
+  function voiceItems() {
+    if (S.board && S.board.format === 'video' && S.board.items) return S.board.items;
+    if (!S.topic) return [];
+    var was = S.format;
+    S.format = 'video';
+    var preview = null;
+    try { preview = buildBoard(); } catch (e) { preview = null; }
+    S.format = was;
+    return preview ? preview.items : [];
+  }
+
   function renderVoiceBox() {
     if (!window.MYVOICE || !window.MYVOICE.supported()) { $('voicebox').hidden = true; return; }
-    if (!S.board || S.board.format !== 'video') { $('voicebox').hidden = true; return; }
+    var items = voiceItems();
+    if (!items.length) { $('voicebox').hidden = true; return; }
     $('voicebox').hidden = false;
 
     var c = voiceCounts();
     $('voicebox-sub').textContent = c.have
-      ? c.have + ' of ' + c.of + ' lines are in your voice. The rest play as the robot.'
-      : 'Read these ' + c.of + ' lines and the video plays you instead of the robot voice.';
+      ? 'The video plays you for these, and the robot for the rest.'
+      : 'Read these ' + c.of + ' lines and the video plays you instead of the robot.';
 
-    $('voice-list').innerHTML = S.board.items.map(function (it, i) {
+    /* the bar: how much of the video is confirmed in your voice */
+    var pct = c.of ? Math.round(c.have / c.of * 100) : 0;
+    $('vb-fill').style.width = pct + '%';
+    $('vb-meter').classList.toggle('is-full', c.have === c.of && c.of > 0);
+    $('vb-count').textContent = c.have === c.of && c.of
+      ? 'All ' + c.of + ' lines are your voice \u2014 the whole video is you.'
+      : c.have + ' of ' + c.of + ' lines \u00b7 ' + pct + '% of this video is your voice';
+
+    $('voice-list').innerHTML = items.map(function (it, i) {
       var k = voiceKey(it);
       var done = !!(V.clips && V.clips[k]);
       var where = it.kind === 'title' ? 'Title' : it.kind === 'end' ? 'Last slide'
@@ -1685,14 +1763,15 @@
     });
     $('voice-list').querySelectorAll('[data-hear]').forEach(function (b) {
       b.addEventListener('click', function () {
-        var it = S.board.items[Number(b.dataset.hear)];
-        var clip = V.clips[voiceKey(it)];
+        var it = voiceItems()[Number(b.dataset.hear)];
+        var clip = it && V.clips[voiceKey(it)];
         if (clip) window.MYVOICE.play(clip, { text: it.narration });
       });
     });
     $('voice-list').querySelectorAll('[data-drop]').forEach(function (b) {
       b.addEventListener('click', function () {
-        var it = S.board.items[Number(b.dataset.drop)];
+        var it = voiceItems()[Number(b.dataset.drop)];
+        if (!it) return;
         var k = voiceKey(it);
         window.MYVOICE.del(k).then(function () {
           delete V.clips[k];
@@ -1736,7 +1815,8 @@
         toast('Too short \u2014 hold the button while you read');
         return;
       }
-      var it = S.board.items[i];
+      var it = voiceItems()[i];
+      if (!it) return;
       var k = voiceKey(it);
       window.MYVOICE.put(k, blob).then(function () {
         V.clips[k] = blob;
@@ -1775,7 +1855,12 @@
     if (!box) return;
     var ok = window.MYVOICE && window.MYVOICE.supported();
     box.hidden = !ok;
-    if (ok && !$('try-line').textContent) newTryLine();
+    if (!ok) return;
+    if (!$('try-line').textContent) newTryLine();
+    loadClips().then(function () {
+      renderVoiceBox();
+      paintVoiceState();
+    });
   }
 
   if ($('try-rec')) {
@@ -1837,10 +1922,6 @@
       newTryLine();
     });
   }
-
-  $('voicebox-close').addEventListener('click', function () {
-    $('voicebox').hidden = true;
-  });
 
   $('voice-clear').addEventListener('click', function () {
     if (!V.clips || !Object.keys(V.clips).length) { toast('Nothing recorded yet'); return; }
@@ -1919,6 +2000,7 @@
   }
 
   $('play-btn').addEventListener('click', function () {
+    if (window.MYVOICE) window.MYVOICE.wake();   /* audio needs a tap before it may play */
     if (!V.playing && V.i === S.board.items.length - 1 && V.t >= S.board.items[V.i].dur) {
       V.i = 0; V.t = 0; V.spoken = -1; drawScene(); updateBar();
     }

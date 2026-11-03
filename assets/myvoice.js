@@ -167,6 +167,21 @@
 
   var current = null;
 
+  /* One context for the life of the page. A fresh one per clip starts suspended, and a
+     suspended context that an element has been routed into plays nothing at all. */
+  var ctxOne = null;
+  function sharedCtx() {
+    if (!window.AudioContext) return null;
+    if (!ctxOne) {
+      try { ctxOne = new AudioContext(); } catch (e) { return null; }
+    }
+    if (ctxOne.state === 'suspended') { try { ctxOne.resume(); } catch (e) {} }
+    return ctxOne;
+  }
+
+  /* called on a tap, so the context is already running by the time a clip needs it */
+  function wake() { sharedCtx(); }
+
   function play(blob, opts) {
     stopPlaying();
     opts = opts || {};
@@ -178,6 +193,40 @@
     var text = String(opts.text || '');
     var re = /\S+/g, m;
     while ((m = re.exec(text))) starts.push(m.index);
+
+    /* Watch the clip's own loudness, so the face on screen moves with what is actually
+       being said rather than on a timer that only knows the word count.
+
+       Routing an audio element through WebAudio takes over its output: if the context is
+       not running, the element goes silent. A meter is a nicety and playback is not, so
+       the element is only ever rerouted once the context is confirmed running, and any
+       failure leaves the plain element playing untouched. */
+    var meter = null;
+    if (opts.onLevel) {
+      try {
+        var ctx = sharedCtx();
+        if (ctx && ctx.state === 'running') {
+          var src = ctx.createMediaElementSource(audio);
+          var an = ctx.createAnalyser();
+          an.fftSize = 512;
+          src.connect(an);
+          an.connect(ctx.destination);
+          var buf = new Uint8Array(an.frequencyBinCount);
+          meter = setInterval(function () {
+            an.getByteTimeDomainData(buf);
+            var peak = 0;
+            for (var i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i] - 128));
+            opts.onLevel(Math.min(1, peak / 70));
+          }, 60);
+        }
+      } catch (e) { meter = null; }
+    }
+
+    function closeMeter() {
+      clearInterval(meter);
+      meter = null;
+      if (opts.onLevel) opts.onLevel(0);
+    }
 
     var ticker = null;
     function startTicking() {
@@ -193,18 +242,20 @@
     audio.onloadedmetadata = startTicking;
     audio.onended = function () {
       clearInterval(ticker);
+      closeMeter();
       URL.revokeObjectURL(url);
       current = null;
       if (opts.onEnd) opts.onEnd();
     };
     audio.onerror = function () {
       clearInterval(ticker);
+      closeMeter();
       URL.revokeObjectURL(url);
       current = null;
       if (opts.onEnd) opts.onEnd();
     };
 
-    current = { audio: audio, ticker: ticker, url: url };
+    current = { audio: audio, ticker: ticker, url: url, closeMeter: closeMeter };
     var p = audio.play();
     if (p && p.catch) p.catch(function () { if (opts.onEnd) opts.onEnd(); });
     /* metadata may already be in by the time the handler is attached */
@@ -214,6 +265,7 @@
 
   function stopPlaying() {
     if (!current) return;
+    if (current.closeMeter) current.closeMeter();
     clearInterval(current.ticker);
     try { current.audio.pause(); } catch (e) {}
     try { URL.revokeObjectURL(current.url); } catch (e) {}
@@ -238,6 +290,7 @@
     stop: stop,
     recording: recording,
 
+    wake: wake,
     play: play,
     stopPlaying: stopPlaying,
     pausePlaying: pausePlaying,

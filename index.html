@@ -363,6 +363,24 @@
             <button type="button" class="btn btn-quiet" id="try-again" hidden>Try again</button>
           </div>
           <p class="hint try-verdict" id="try-verdict" role="status"></p>
+
+          <div class="voicebox" id="voicebox" hidden>
+            <div class="vb-head">
+              <p class="sub-lbl">Your voice in this video</p>
+              <p class="hint" id="voicebox-sub"></p>
+            </div>
+
+            <div class="vb-meter" id="vb-meter">
+              <div class="vb-bar"><i id="vb-fill"></i></div>
+              <p class="vb-count" id="vb-count"></p>
+            </div>
+
+            <ol class="read-list" id="voice-list"></ol>
+            <div class="export-row">
+              <button type="button" class="btn btn-quiet" id="voice-clear">Delete all my recordings</button>
+              <p class="hint" id="voice-usage"></p>
+            </div>
+          </div>
         </div>
       </fieldset>
 
@@ -427,6 +445,7 @@
                 </g>
               </g>
             </svg>
+            <span class="pres-me" id="pres-me" hidden></span>
             <span class="pres-live" id="pres-live">talking</span>
           </div>
         </div>
@@ -547,25 +566,6 @@
           <button type="button" class="btn" id="chase-learn">Show me what I missed</button>
         </div>
       </div>
-
-      <section class="card voicebox" id="voicebox" aria-labelledby="voicebox-h" hidden>
-        <div class="shop-head">
-          <div>
-            <p class="eyebrow">Your voice</p>
-            <h3 id="voicebox-h">Read it yourself</h3>
-            <p class="step-sub" id="voicebox-sub"></p>
-          </div>
-          <button type="button" class="btn btn-quiet" id="voicebox-close">Close</button>
-        </div>
-        <p class="shop-note">Hold the button and read the line out loud. Your recordings stay
-          on this device and are never uploaded — there is nowhere to upload them to. The
-          microphone is only on while you are holding the button.</p>
-        <ol class="read-list" id="voice-list"></ol>
-        <div class="export-row">
-          <button type="button" class="btn btn-quiet" id="voice-clear">Delete all my recordings</button>
-          <p class="hint" id="voice-usage"></p>
-        </div>
-      </section>
 
       <section class="board" id="chase-board" aria-labelledby="board-h">
         <div class="board-head">
