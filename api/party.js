@@ -42,6 +42,11 @@ const HAS_REDIS = !!(URL_BASE && TOKEN);
 
 const memory = new Map();
 
+/* Identifies this running copy of the function. Two requests that come back with different
+   ids were served by different instances, and an in-memory party in one is invisible to the
+   other. Cheap to report and it is the only way to tell from outside. */
+const INSTANCE = Math.random().toString(36).slice(2, 10);
+
 async function redis(command) {
   const res = await fetch(URL_BASE, {
     method: 'POST',
@@ -117,7 +122,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     /* a plain GET is the client asking whether online play is switched on at all */
-    return res.status(200).json({ ok: true, online: true, durable: HAS_REDIS });
+    return res.status(200).json({ ok: true, online: true, durable: HAS_REDIS, instance: INSTANCE });
   }
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, why: 'POST only' });
@@ -135,7 +140,7 @@ export default async function handler(req, res) {
 
   try {
     if (op === 'ping') {
-      return res.status(200).json({ ok: true, online: true, durable: HAS_REDIS });
+      return res.status(200).json({ ok: true, online: true, durable: HAS_REDIS, instance: INSTANCE });
     }
 
     if (op === 'create') {
