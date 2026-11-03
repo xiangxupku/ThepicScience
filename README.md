@@ -198,9 +198,23 @@ the photo, the text reading and the narration all happen inside the browser.
    **Online** gives everyone a code to join from their own phone or laptop. It is
    *host-authoritative*: the host's device runs the rules and publishes what the screen should
    say, the guests render that and post back what they tapped. One copy of the rules means two
-   screens cannot drift apart. The whole thing rides on one small serverless endpoint that
-   stores a JSON document per code for half an hour — no accounts, no personal data, nothing
-   kept afterwards.
+   screens cannot drift apart.
+
+   It used to ride on `/api/party`, and that could not work. The endpoint keeps parties in
+   memory inside a serverless function, and 48 requests to the live deploy came back from
+   **10 different instances** — a party written into one is invisible from the other nine, so
+   two phones essentially never met. No amount of retrying or reviving fixes that; it needs
+   something genuinely shared.
+
+   So `assets/relay.js` connects every device to the same public MQTT broker instead, speaking
+   the protocol directly over a WebSocket rather than pulling in a library. One broker, shared
+   by everyone, nothing to split. `/api/party` is still there as a fallback.
+
+   The trade is worth stating plainly, and the app states it where you pick Online: in online
+   mode the game passes through someone else's broker. What crosses it is the name you typed,
+   a pet id, and which of three buttons you pressed — no photo, no lesson. The room name is a
+   hash of the code rather than the code itself, which is obscurity and not privacy. Playing
+   on one device still sends nothing anywhere.
 
    **On this device** needs no server at all: add the people sitting with you, pass it round,
    and a hand-over screen keeps the question hidden until it is their turn.
@@ -306,6 +320,7 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/chase.js` | The chase: the running, the questions, the ramp, the clock, the chest |
 | `assets/worlds.js` | The three places and the three monsters, with their chests and tuning |
 | `assets/party.js` | Parties: team sizes, seating, codes, and the one-in-three robots |
+| `assets/relay.js` | MQTT over a WebSocket: one shared broker every device can reach |
 | `assets/net.js` | The wire between devices in an online party |
 | `assets/myvoice.js` | Recording your own narration: the microphone, the store, playback |
 | `api/party.js` | The one serverless file: a JSON document per party code, for 30 minutes |

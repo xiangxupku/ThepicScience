@@ -45,6 +45,18 @@
      thrown away and the next look asks again. */
   function available() {
     if (probe) return probe;
+    if (window.RELAY) {
+      probe = window.RELAY.reachable(7000).then(function (ok) {
+        if (ok) return { online: true, durable: true, relay: true, why: '' };
+        probe = null;
+        return httpProbe();
+      });
+      return probe;
+    }
+    return httpProbe();
+  }
+
+  function httpProbe() {
     var attempt = fetch(API, { method: 'GET' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
@@ -68,6 +80,20 @@
   }
 
   function watch(opts) {
+    if (relayUsable()) {
+      /* messages arrive as they are published, so there is nothing to poll for */
+      hooks = {
+        onParty: opts.onParty, onState: opts.onState,
+        onActions: opts.onActions, onError: opts.onError, onBack: opts.onBack
+      };
+      amHost = !!opts.host;
+      return {
+        stop: function () { hooks = {}; },
+        stopped: function () { return false; },
+        missing: function () { return 0; }
+      };
+    }
+
     var stopped = false;
     var timer = null;
     var lastRev = -1;
@@ -123,34 +149,189 @@
     };
   }
 
+  /* ── the relay path ───────────────────────────
+     /api/party cannot carry an online duel. It keeps parties in memory inside a
+     serverless function, and 48 requests to the live deploy came back from 10 different
+     instances — a party written into one is invisible from the other nine. Two phones
+     essentially never meet.
+
+     relay.js connects every device to the same public broker instead, so there is nothing
+     to be split. These functions keep the shape the app already calls, so nothing above
+     this file had to change: the host still publishes what the screen should say, guests
+     still post back what they tapped, and duel.js is still the only copy of the rules. */
+
+  var R = null;            /* the open room */
+  var amHost = false;
+  var lastParty = null;
+  var seen = {};           /* members who have announced themselves, by id */
+  var hooks = {};          /* whatever watch() wants told */
+
+  function relayUsable() {
+    return !!(window.RELAY && R && R.live());
+  }
+
+  function dispatch(msg) {
+    if (!msg || !msg.t) return;
+
+    if (msg.t === 'hello' && amHost) {
+      /* a device asking to join. Remember it and hand the host the full list, which is
+         what seatArrivals expects — it puts newcomers on whichever side has room. */
+      if (msg.member && msg.member.id) seen[msg.member.id] = msg.member;
+      var members = (lastParty && lastParty.members ? lastParty.members.slice() : []);
+      Object.keys(seen).forEach(function (id) {
+        if (!members.some(function (m) { return m.id === id; })) members.push(seen[id]);
+      });
+      if (hooks.onParty) hooks.onParty({ members: members });
+      /* answer straight away so the guest is not left waiting on a poll */
+      if (lastParty) R.say({ t: 'party', party: lastParty });
+      return;
+    }
+
+    if (msg.t === 'act' && amHost) {
+      if (hooks.onActions) hooks.onActions([msg.action]);
+      return;
+    }
+
+    if (msg.t === 'party' && !amHost) {
+      lastParty = msg.party;
+      if (hooks.onParty) hooks.onParty(msg.party);
+      return;
+    }
+
+    if (msg.t === 'state' && !amHost) {
+      if (hooks.onState) hooks.onState(msg.state);
+      return;
+    }
+
+    if (msg.t === 'bye' && amHost) {
+      delete seen[msg.id];
+    }
+  }
+
+  function openRoom(code) {
+    if (R) { R.close(); R = null; }
+    seen = {};
+    R = window.RELAY.open({
+      code: code,
+      onMessage: dispatch,
+      onDrop: function () { if (hooks.onError) hooks.onError('Lost the connection. Trying again\u2026'); },
+      onReady: function () {
+        if (hooks.onBack) hooks.onBack();
+        /* re-announce after a reconnect so nobody is forgotten */
+        if (amHost && lastParty) R.say({ t: 'party', party: lastParty });
+        else if (!amHost && lastParty) R.say({ t: 'hello', member: lastParty.me });
+      }
+    });
+    return R;
+  }
+
+  function waitLive(ms) {
+    return new Promise(function (res) {
+      var tries = 0;
+      var t = setInterval(function () {
+        if (R && R.live()) { clearInterval(t); res(true); }
+        else if (++tries > ms / 150) { clearInterval(t); res(false); }
+      }, 150);
+    });
+  }
+
   window.NET = {
     api: API,
     pollMs: POLL_MS,
     available: available,
 
     create: function (code, party) {
-      return post({ op: 'create', code: code, party: party });
+      if (!window.RELAY) return post({ op: 'create', code: code, party: party });
+      amHost = true;
+      lastParty = party;
+      openRoom(code);
+      return waitLive(9000).then(function (ok) {
+        if (!ok) throw new Error('Could not reach the party relay.');
+        R.say({ t: 'party', party: party });
+        return { ok: true, party: party, relay: true };
+      });
     },
+
     join: function (code, member) {
-      return post({ op: 'join', code: code, member: member });
+      if (!window.RELAY) return post({ op: 'join', code: code, member: member });
+      amHost = false;
+      lastParty = { me: member, members: [] };
+      openRoom(code);
+      return waitLive(9000).then(function (ok) {
+        if (!ok) throw new Error('Could not reach the party relay.');
+        return new Promise(function (res, rej) {
+          var settled = false;
+          var saw = hooks.onParty;
+          /* the host answers a hello with the party; wait for one that includes us */
+          var give = setTimeout(function () {
+            if (settled) return;
+            settled = true;
+            hooks.onParty = saw;
+            rej(new Error('No party with that code.'));
+          }, 9000);
+
+          hooks.onParty = function (p) {
+            if (saw) saw(p);
+            if (settled || !p || !p.members) return;
+            if (!p.members.some(function (m) { return m.id === member.id; })) return;
+            settled = true;
+            clearTimeout(give);
+            hooks.onParty = saw;
+            lastParty = p;
+            res({ ok: true, party: p, relay: true });
+          };
+
+          var knock = setInterval(function () {
+            if (settled) { clearInterval(knock); return; }
+            R.say({ t: 'hello', member: member });
+          }, 900);
+          R.say({ t: 'hello', member: member });
+        });
+      });
     },
     get: function (code) {
       return post({ op: 'get', code: code });
     },
     putParty: function (code, host, party) {
+      if (relayUsable()) {
+        lastParty = party;
+        R.say({ t: 'party', party: party });
+        return Promise.resolve({ ok: true });
+      }
       return post({ op: 'party', code: code, host: host, party: party });
     },
-    /* write the whole party back over whatever is there, or is not */
+    /* write the whole party back over whatever is there, or is not. On the relay there is
+       nothing to lose in the first place, so this is just a re-announcement. */
     revive: function (code, host, party, state) {
+      if (relayUsable()) {
+        lastParty = party;
+        R.say({ t: 'party', party: party });
+        if (state) R.say({ t: 'state', state: state });
+        return Promise.resolve({ ok: true, revived: false });
+      }
       return post({ op: 'revive', code: code, host: host, party: party, state: state });
     },
     putState: function (code, host, state, party) {
+      if (relayUsable()) {
+        if (party) lastParty = party;
+        R.say({ t: 'state', state: state });
+        return Promise.resolve({ ok: true });
+      }
       return post({ op: 'state', code: code, host: host, state: state, party: party });
     },
     act: function (code, from, action) {
+      if (relayUsable()) {
+        R.say({ t: 'act', from: from, action: action });
+        return Promise.resolve({ ok: true });
+      }
       return post({ op: 'act', code: code, from: from, action: action });
     },
     leave: function (code, id) {
+      if (relayUsable()) {
+        R.say({ t: 'bye', id: id });
+        R.close(); R = null; lastParty = null; seen = {}; hooks = {};
+        return Promise.resolve({ ok: true });
+      }
       return post({ op: 'leave', code: code, id: id });
     },
 

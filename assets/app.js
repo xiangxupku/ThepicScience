@@ -3306,14 +3306,15 @@
 
   function checkOnline() {
     if (!window.NET) { $('where-online').disabled = true; $('online-note').textContent = 'Not available.'; return; }
+    $('online-note').textContent = 'Looking for a connection…';
     window.NET.available().then(function (r) {
-      S.netReady = r;
+      S.netReady = r.online ? r : null;    /* never remember a failure */
       $('where-online').disabled = !r.online;
       $('online-note').textContent = r.online
-        ? (r.durable
-          ? 'Share a code. Other phones and laptops join it.'
+        ? (r.relay
+          ? 'Share a code. Any phone or laptop can join it.'
           : 'Share a code. Works best if everyone joins within a few minutes.')
-        : 'Needs the party server, which this copy does not have.';
+        : 'Could not reach a connection just now. Tap Online to try again.';
       if (!r.online && PARTY_WHERE === 'online') setWhere('local');
     });
   }

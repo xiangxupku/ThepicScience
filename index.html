@@ -481,7 +481,7 @@
           <p class="lbl">Where are the other players?</p>
           <div class="mode-row" id="where-row" role="radiogroup" aria-label="Where everyone is">
             <button type="button" class="mode-btn" data-where="local" role="radio" aria-checked="true">
-              <b>On this device</b><span>Pass it round. Robots fill any empty seat.</span>
+              <b>On this device</b><span>Pass it round. Nothing leaves this device.</span>
             </button>
             <button type="button" class="mode-btn" data-where="online" role="radio" aria-checked="false" id="where-online">
               <b>Online</b><span id="online-note">Checking…</span>
@@ -498,6 +498,10 @@
             </div>
           </div>
           <p class="hint" id="party-msg" role="status"></p>
+          <p class="hint">Online play passes your moves through a public message relay so
+            the two devices can find each other. What crosses it is the name you typed, your
+            pet, and which answer you tapped — no photo, no lesson, nothing else. Playing on
+            one device sends nothing anywhere.</p>
         </div>
 
         <div class="party-lobby" id="party-lobby" hidden>
@@ -673,6 +677,7 @@
 <script src="assets/detail.js"></script>
 <script src="assets/pets.js"></script>
 <script src="assets/party.js"></script>
+<script src="assets/relay.js"></script>
 <script src="assets/net.js"></script>
 <script src="assets/profile.js"></script>
 <script src="assets/worlds.js"></script>
