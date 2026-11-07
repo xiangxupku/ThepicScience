@@ -2360,8 +2360,9 @@
   }
 
   function chaseQuestions(topic) {
-    var pool = topic.quiz.map(function (q) {
-      return { q: q.q, a: q.a, c: q.c, why: q.why, teach: teachIndexFor(q, topic), source: 'library' };
+    var pool = topic.quiz.map(function (raw) {
+      var q = spread(raw);
+      return { q: q.q, a: q.a, c: q.c, why: q.why, teach: teachIndexFor(raw, topic), source: 'library' };
     });
     /* top it up with generated ones so a long run never repeats itself */
     topic.scenes.forEach(function (sc, i) {
@@ -4300,7 +4301,13 @@
     return best;
   }
 
-  var PER_ROUND = 3;   /* three to start with. "Dig deeper" opens up all ten. */
+  /* reorder the three options — see quizbank.js for why, and what it leaves alone */
+  function spread(q) {
+    return window.QUIZBANK ? window.QUIZBANK.spread(q) : q;
+  }
+
+  var PER_ROUND = 3;    /* three to start with */
+  var DEEP_ROUND = 10;  /* "dig deeper" is ten, not the whole bank — see quizbank.js */
 
   function buildQuiz(only) {
     var topic = S.board.topic;
@@ -4309,11 +4316,11 @@
     } else {
       /* walk through the bank so a second go asks the questions you have not seen yet */
       var bank = topic.quiz;
-      var take = S.deep ? bank.length : Math.min(PER_ROUND, bank.length);
+      var take = Math.min(S.deep ? DEEP_ROUND : PER_ROUND, bank.length);
       var start = (S.round * take) % bank.length;
       var picked = [];
       for (var i = 0; i < take; i++) {
-        var q = bank[(start + i) % bank.length];
+        var q = spread(bank[(start + i) % bank.length]);
         picked.push({ q: q.q, a: q.a, c: q.c, why: q.why, source: 'library', teach: teachIndexFor(q, topic) });
       }
       var extra = GRADES[S.grade].cloze ? boardQuestions(topic, S.grade === 'high' ? 2 : 1) : [];
@@ -4331,11 +4338,12 @@
         ? practice + ' new question' + (practice > 1 ? 's' : '') + ' about the ideas you missed, then the original one again.'
         : 'Just the ones you missed. Same questions, second go.')
       : (S.deep
-        ? 'All ' + lib + ' questions in this topic' + photoBit + '. This is the full set.'
+        ? lib + ' questions in a row' + photoBit + ', pulled from the ' + topic.quiz.length +
+          ' this topic has. Ask again for ' + lib + ' more.'
         : lib + ' of the ' + topic.quiz.length + ' questions in this topic' + photoBit +
-          '. Ask again for different ones, or dig deeper for all ' + topic.quiz.length + '.');
+          '. Ask again for different ones, or dig deeper for ten in a row.');
     $('quiz-deeper').hidden = !!(only && only.length) || S.deep;
-    $('quiz-reset').textContent = S.deep ? 'Back to three questions' : 'Ask me different questions';
+    $('quiz-reset').textContent = S.deep ? 'Back to three at a time' : 'Ask me different questions';
 
     QZ = { at: 0, picked: {}, right: 0, missed: [], over: false };
     S.hinted = {};
@@ -4448,8 +4456,13 @@
   }
 
   /* “I am the master” wants every question in a unit answered right, so we remember which
-     of a topic's ten have been. Only the library questions count: the generated practice
-     ones are built fresh each time and there is no fixed set of them to finish. */
+     have been. Only the library questions count: the generated practice ones are built
+     fresh each time and there is no fixed set of them to finish.
+
+     “The unit” means the topic's core ten — the ten that ship inside the topic itself. The
+     other forty arrive from quizbank.js in the background, so a bank can be ten questions
+     long one second and fifty the next, and a target that moved like that would not be
+     fair. The forty are for practice. */
   function noteMastery(q) {
     if (!S.board || !S.board.topic || q.source !== 'library') return;
     var id = S.board.topic.id;
@@ -4459,12 +4472,18 @@
     saveProfile();
   }
 
-  /* a topic is finished when all ten of its questions have been answered right */
+  /* a topic is finished when all ten of its core questions have been answered right */
+  function coreQuiz(topic) {
+    var n = (window.QUIZBANK && window.QUIZBANK.core) || 10;
+    return topic.quiz.slice(0, n);
+  }
+
   function topicMastered(topic) {
     var got = S.mastered[topic.id];
     if (!got) return false;
-    for (var i = 0; i < topic.quiz.length; i++) {
-      if (!got[topic.quiz[i].q]) return false;
+    var core = coreQuiz(topic);
+    for (var i = 0; i < core.length; i++) {
+      if (!got[core[i].q]) return false;
     }
     return true;
   }
