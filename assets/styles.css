@@ -1654,6 +1654,140 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 
 /* ── print ── */
 .print-only { display: none; }
+/* the shop, once you are mid-lesson: the pet stays, the sales pitch goes */
+.shop.is-tight .step-sub { display: none; }
+.shop.is-tight { padding-top: 1rem; padding-bottom: 1rem; }
+
+/* ── the lesson's three pages ────────────── */
+.lesson-tabs {
+  display: flex; gap: .4rem; margin: 1.2rem 0 .2rem;
+  border-bottom: 1px solid var(--line); padding-bottom: .55rem;
+}
+.ltab {
+  font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer;
+  padding: .55rem .9rem; min-height: 44px; border-radius: 999px;
+  border: 1px solid transparent; background: none; color: var(--ink-2);
+}
+.ltab:hover { color: var(--ink); background: var(--surface-2); }
+.ltab.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.lesson-panel.is-off { display: none; }
+
+/* a plain fold: a line you tap to open the rest */
+.fold > summary {
+  cursor: pointer; list-style: none; color: var(--ink-2);
+  padding: .55rem 0; font-size: .95rem;
+}
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: ' be'; color: var(--accent); font-weight: 700; }
+.fold[open] > summary::after { content: ' b4'; }
+.fold > summary:hover { color: var(--ink); }
+
+/* ── less to scroll past ────────────────── */
+
+.more-btn { margin-top: .7rem; }
+
+/* the explainer at the foot: there if you want it, not in the way if you do not */
+.how-fold > summary { cursor: pointer; list-style: none; }
+.how-fold > summary::-webkit-details-marker { display: none; }
+.how-fold > summary h2 { display: inline; }
+.how-fold > summary::after {
+  content: ' be'; color: var(--accent); font-weight: 700;
+}
+.how-fold[open] > summary::after { content: ' b4'; }
+.how-fold > summary:hover h2 { color: var(--accent); }
+
+/* On a phone, six format cards with a paragraph each ran to five screens. The paragraph
+   belongs to the one you have chosen; the rest are a title and an icon. */
+@media (max-width: 34rem) {
+  .choices.two { grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .choices.three { grid-template-columns: 1fr 1fr 1fr; gap: .4rem; }
+  .choices .choice-desc { display: none; }
+  .choices .choice input:checked + .choice-body .choice-desc { display: block; font-size: .92rem; }
+  .choice-body { padding: .75rem .7rem; }
+  .choice.sm .choice-body { padding: .6rem .5rem; }
+  .choice-title { font-size: .97rem; line-height: 1.25; }
+  .choice.sm .choice-title { font-size: .9rem; }
+}
+
+/* ── the quiz, one question to a page ────────
+   Three questions stacked in a form meant scrolling past the one you were answering, and
+   a wall of explanations at the end. One at a time, in type you can read at arm's length,
+   with dots showing how far along you are and how you have done. */
+
+.quiz-count {
+  display: flex; align-items: center; gap: .7rem; flex-wrap: wrap;
+  font-size: .82rem; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 700; color: var(--ink-2);
+}
+.quiz-dots { display: inline-flex; gap: .3rem; }
+.quiz-dot {
+  width: .55rem; height: .55rem; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--line-2);
+}
+.quiz-dot.is-here { box-shadow: 0 0 0 3px var(--accent-soft); border-color: var(--accent); }
+.quiz-dot.is-right { background: var(--ok); border-color: var(--ok); }
+.quiz-dot.is-wrong { background: var(--danger); border-color: var(--danger); }
+
+.q.is-one { margin-top: 1rem; }
+.q.is-one .q-text { font-size: clamp(1.18rem, 3.4vw, 1.45rem); line-height: 1.35; font-weight: 650; }
+.q.is-one .q-opts { gap: .55rem; margin-top: 1rem; }
+.q.is-one .q-opt {
+  align-items: center; padding: .85rem 1rem; min-height: 3rem;
+  font-size: 1.04rem; background: var(--surface);
+}
+.q.is-one .q-opt input { margin-top: 0; width: 1.15rem; height: 1.15rem; flex: none; }
+.q.is-one .q-why { font-size: 1rem; margin-top: .9rem; padding-left: .1rem; }
+
+.quiz-done { margin-top: 1.2rem; text-align: center; }
+.quiz-big { font-size: clamp(1.8rem, 7vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; }
+.quiz-line { color: var(--ink-2); margin-top: .4rem; }
+.quiz-earn { margin-top: .8rem; font-weight: 700; color: var(--accent); }
+
+@media (max-width: 34rem) {
+  .q.is-one .q-opt { padding: .95rem 1rem; min-height: 3.2rem; }
+}
+
+/* ── one step on the screen at a time ────────────
+   With a lesson built, this page measured nearly eighteen phone screens, and four of them
+   were steps already finished. A step you are done with now folds to its title and what you
+   chose; the whole row is the tap target, because that is what a thumb lands on. */
+
+.step.is-folded { padding-top: 1rem; padding-bottom: 1rem; cursor: pointer; }
+.step.is-folded:hover { border-color: var(--line-2); }
+.step.is-folded > *:not(.step-head) { display: none; }
+.step.is-folded .step-sub { display: none; }
+.step.is-folded .step-head {
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  gap: .1rem .8rem; max-width: none;
+}
+.step.is-folded .eyebrow { grid-column: 1; margin-bottom: 0; font-size: .68rem; }
+.step.is-folded h2 { grid-column: 1; font-size: 1.1rem; }
+.step-pick { grid-column: 1; font-weight: 600; color: var(--accent); }
+.step-reopen {
+  display: none; grid-column: 2; grid-row: 1 / span 3; justify-self: end;
+  font: inherit; font-size: .85rem; font-weight: 600; color: var(--ink-2);
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 999px; padding: .55rem 1rem; min-height: 44px; cursor: pointer;
+}
+.step.is-folded .step-reopen { display: inline-block; }
+.step.is-folded .step-reopen:hover { color: var(--ink); border-color: var(--line-2); }
+.step.is-locked .step-reopen, .step.is-locked .step-pick { display: none; }
+
+/* ── bigger on a phone ────────────────────
+   Everything here is sized in rem, so lifting the root lifts the whole page together —
+   text, padding and tap targets — rather than leaving big words in small boxes. */
+
+@media (max-width: 34rem) {
+  html { font-size: 17.5px; }
+  body { font-size: 1.06rem; }
+  .page-body { font-size: 1.14rem; line-height: 1.6; }
+  .page-title { font-size: 1.35rem; }
+  .page-term { font-size: 1rem; }
+  .step-sub { font-size: 1rem; }
+  .btn { font-size: 1rem; min-height: 44px; }
+  .btn-quiet { min-height: 40px; }
+}
+
 @media print {
   body { background: #fff; color: #000; }
   .site-head, .stepper, .intro, .how, .site-foot, .card, .toast, .skip { display: none !important; }

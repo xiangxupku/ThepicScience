@@ -92,6 +92,9 @@
     for (var i = 1; i <= 4; i++) {
       $('step' + i).classList.toggle('is-locked', i > S.unlocked);
     }
+    openStep = n;
+    foldSteps();
+    tidyHome();
     markStep(n);
   }
 
@@ -102,6 +105,91 @@
       a.classList.toggle('is-done', d < n);
       if (d === n) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current');
     });
+  }
+
+  /* ── the lesson is three pages, not one tall one ────
+     Reading it, being asked about it and keeping it are three different jobs, and nobody
+     does all three at once. They were stacked on top of each other, so getting to the
+     quiz meant scrolling past the whole lesson. Now they are tabs. */
+
+  var READ_TAB = { book: 'Read', video: 'Watch', project: 'The project', report: 'The outline' };
+
+  function lessonTab(name) {
+    ['read', 'check', 'keep'].forEach(function (p) {
+      var el = $('panel-' + p);
+      if (el) el.classList.toggle('is-off', p !== name);
+    });
+    $('lesson-tabs').querySelectorAll('[data-panel]').forEach(function (b) {
+      var on = b.dataset.panel === name;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-selected', String(on));
+    });
+  }
+
+  $('lesson-tabs').querySelectorAll('[data-panel]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      lessonTab(b.dataset.panel);
+      goTo($('step4'));
+    });
+  });
+
+  /* ── one step on the screen at a time ───────────
+     This was one tall page. Measured on a phone with a lesson built, it came to nearly
+     eighteen screens of scrolling, and four of those were steps already finished. Now a
+     step you are done with folds to a single line saying what you picked, and tapping it
+     opens it again. Nothing is taken away; it is just not all on the screen at once. */
+
+  var openStep = 1;
+
+  function stepSummary(n) {
+    if (n === 1) {
+      if (!S.files || !S.files.length) return S.ocrText ? 'Typed in' : '';
+      return S.files.length === 1 ? (S.file && S.file.name ? S.file.name : '1 picture')
+        : S.files.length + ' pictures';
+    }
+    if (n === 2) return S.topic ? S.topic.title : '';
+    if (n === 3) {
+      var f = FORMAT_NAMES[S.format] || S.format;
+      return f + ' · ' + (GRADES[S.grade] ? GRADES[S.grade].label : '');
+    }
+    if (n === 4) return S.board ? 'Ready' : '';
+    return '';
+  }
+
+  function foldSteps() {
+    for (var i = 1; i <= 4; i++) {
+      var el = $('step' + i);
+      var folded = i !== openStep && i <= S.unlocked;
+      el.classList.toggle('is-folded', folded);
+      var pick = $('step' + i + '-pick');
+      if (pick) {
+        var text = folded ? stepSummary(i) : '';
+        pick.textContent = text;
+        pick.hidden = !text;
+      }
+    }
+  }
+
+  /* Once you are actually working, the front-page furniture is in the way: the pitch you
+     have already read, and the list of what your grade covers that you have already picked
+     from. Both stay one tap away — the grade chip in the header reopens the first, and the
+     list comes back if you change grade. */
+  function tidyHome() {
+    var working = S.unlocked >= 2;
+    var intro = document.querySelector('.intro');
+    if (intro) intro.hidden = working;
+    var learn = document.querySelector('#me-known .learn');
+    if (learn) learn.hidden = working;
+    $('shop').classList.toggle('is-tight', working);
+  }
+
+  /* open one step, fold the rest, and put it at the top of the screen */
+  function showStep(n, scroll) {
+    if (n > S.unlocked) return;
+    openStep = n;
+    foldSteps();
+    markStep(n);
+    if (scroll !== false) goTo($('step' + n));
   }
 
   /* ── signing in as a grade ─────────────────────────────
@@ -187,6 +275,11 @@
       return n >= r.lo && n <= r.hi;
     });
     $('learn-h').textContent = 'What grade ' + n + ' usually covers — ' + mine.length + ' topics';
+    /* six is enough to see what this is; the rest is one tap away. A list of twenty on a
+       phone is just something to scroll past. */
+    if (!learnAll) mine = mine.slice(0, 6);
+    $('learn-more').hidden = learnAll || gradeTopics(n).length <= 6;
+    $('learn-more').textContent = 'Show all ' + gradeTopics(n).length + ' topics';
     $('learn-list').innerHTML = mine.map(function (t) {
       return '<li><button type="button" class="topic-btn" data-learn="' + t.id + '">' +
         '<b>' + esc(t.title) + '</b><span>' + esc(t.subject) + ' · ' + esc(t.blurb.slice(0, 62)) + '…</span></button></li>';
@@ -804,6 +897,18 @@
     return total;
   }
 
+  /* the library list: short by default, all of it on request */
+  var TOPIC_CAP = 8;
+  var topicsAll = false;
+  var learnAll = false;
+
+  function gradeTopics(n) {
+    return window.TOPICS.filter(function (t) {
+      var r = gradeRange(t);
+      return n >= r.lo && n <= r.hi;
+    });
+  }
+
   function renderTopics(filter) {
     var q = (filter || '').trim().toLowerCase();
     var words = q ? q.split(/\s+/).filter(Boolean) : [];
@@ -814,6 +919,11 @@
         .sort(function (a, b) { return b.n - a.n; })
         .map(function (x) { return x.t; });
     }
+
+    var total = list.length;
+    if (!topicsAll && total > TOPIC_CAP) list = list.slice(0, TOPIC_CAP);
+    $('topic-more').hidden = topicsAll || total <= TOPIC_CAP;
+    $('topic-more').textContent = 'Show the other ' + (total - TOPIC_CAP) + ' topics';
 
     $('topic-list').innerHTML = list.map(function (t) {
       var on = S.topic && S.topic.id === t.id;
@@ -831,7 +941,16 @@
       : window.TOPICS.length + ' topics in the library right now.';
   }
 
-  $('topic-search').addEventListener('input', function () { renderTopics(this.value); });
+  $('topic-search').addEventListener('input', function () { topicsAll = false; renderTopics(this.value); });
+  $('topic-more').addEventListener('click', function () {
+    topicsAll = true;
+    renderTopics($('topic-search').value);
+  });
+  $('learn-more').addEventListener('click', function () {
+    learnAll = true;
+    var n = S.gradeNum;
+    if (n) renderLearnList(n);
+  });
 
   function chooseTopic(id) {
     var t = window.TOPICS.filter(function (x) { return x.id === id; })[0];
@@ -872,6 +991,9 @@
     S.voiceURI = $('voice-select').value;
     $('len-book').hidden = S.format !== 'book';
     $('len-video').hidden = S.format !== 'video';
+    /* the voice settings are two and a half phone screens of controls. They matter for a
+       video, so they open themselves for one; otherwise they wait behind their own line. */
+    if (S.format === 'video') $('voice-fold').open = true;
     updateGradeNote();
     updateMakeButton();
     renderFindOnline();
@@ -896,6 +1018,12 @@
     if (on) bits.push('Leading with the ' + on + ' word' + (on > 1 ? 's' : '') + ' we found on your board.');
     n.textContent = bits.join(' ');
   }
+
+  /* the short name a folded step shows */
+  var FORMAT_NAMES = {
+    book: 'Picture book', video: 'Video', project: 'Project',
+    report: 'Report outline', chase: 'Escape the monster', duel: 'Duel'
+  };
 
   var MAKE_LABEL = {
     book: 'Make my picture book', video: 'Make my video',
@@ -1227,6 +1355,8 @@
     $('deeper').hidden = true;
     $('quiz').hidden = true;
     $('exports').hidden = true;
+    $('lesson-tabs').hidden = true;
+    lessonTab('read');
     $('building').hidden = false;
     $('build-bar').style.width = '8%';
     $('build-text').textContent = 'Getting the science together…';
@@ -1257,6 +1387,11 @@
       var isGame = S.board.format === 'chase' || S.board.format === 'duel';
       $('quiz').hidden = isGame;
       $('exports').hidden = isGame;
+      /* a game is its own thing: no tabs over the top of it */
+      $('lesson-tabs').hidden = isGame;
+      $('lesson-tabs').querySelector('[data-panel="read"]').textContent =
+        READ_TAB[S.board.format] || 'Read';
+      lessonTab('read');
     }
 
     if (reduceMotion || document.hidden) { reveal(); return; }
@@ -2491,6 +2626,7 @@
     $('quiz').hidden = false;
     buildQuiz(practiceRound(S.missed.slice()));
     showMissed(S.missed);
+    lessonTab('check');
     goTo($('quiz'));
   });
 
@@ -2570,7 +2706,7 @@
     body.hidden = !open;
     this.setAttribute('aria-expanded', String(open));
     this.textContent = open ? 'Hide it again' : 'Show me';
-    if (open) { goTo($('deeper')); say('Showing the deeper notes.'); }
+    if (open) { lessonTab('check'); goTo($('deeper')); say('Showing the deeper notes.'); }
   });
 
   /* ── sparks and pets ───────────────────────────────────
@@ -3171,11 +3307,9 @@
 
   /* ── the hint itself ──────────────────────────────── */
 
+  /* the page you are on, which is the only question on the screen */
   function firstUnanswered() {
-    for (var i = 0; i < S.questions.length; i++) {
-      if (!$('quiz-form').querySelector('input[name="q' + i + '"]:checked')) return i;
-    }
-    return S.questions.length ? 0 : -1;
+    return S.questions && S.questions.length ? QZ.at : -1;
   }
 
   $('hint-btn').addEventListener('click', function () {
@@ -3207,7 +3341,8 @@
         return '';
       })();
 
-    var fs = $('quiz-form').querySelectorAll('.q')[qi];
+    var fs = $('quiz-form').querySelector('.q');
+    if (!fs) return;
     var old = fs.querySelector('.pet-hint');
     if (old) old.remove();
     fs.appendChild(box);
@@ -4202,22 +4337,114 @@
     $('quiz-deeper').hidden = !!(only && only.length) || S.deep;
     $('quiz-reset').textContent = S.deep ? 'Back to three questions' : 'Ask me different questions';
 
-    $('quiz-form').innerHTML = S.questions.map(function (q, qi) {
-      return '<fieldset class="q"><legend class="q-text">' + (qi + 1) + '. ' + esc(q.q) +
-        (q.source === 'board' ? '<span class="q-tag">from your photo</span>' : '') +
-        (q.source === 'practice' ? '<span class="q-tag is-practice">practice</span>' : '') + '</legend>' +
-        '<div class="q-opts">' + q.a.map(function (a, ai) {
-          return '<label class="q-opt" data-q="' + qi + '" data-a="' + ai + '">' +
-            '<input type="radio" name="q' + qi + '" value="' + ai + '"> <span>' + esc(a) + '</span></label>';
-        }).join('') + '</div><p class="q-why" data-why="' + qi + '" hidden></p></fieldset>';
-    }).join('');
-
+    QZ = { at: 0, picked: {}, right: 0, missed: [], over: false };
     S.hinted = {};
     $('quiz-score').textContent = '';
     $('quiz-reset').hidden = true;
     $('quiz-check').disabled = false;
     $('missed').hidden = true;
     $('missed-list').innerHTML = '';
+    drawQuestion();
+  }
+
+  /* ── one question on the screen ──────────────
+     All of them used to be stacked in one form, which meant scrolling past the question you
+     were on to find the next, and reading a wall of three explanations at the end. One
+     question to a page instead: tap an answer, see straight away whether it was right and
+     why, then move on. It also means a topic can hold fifty questions without the page
+     getting any longer. */
+
+  var QZ = { at: 0, picked: {}, right: 0, missed: [], over: false };
+
+  function quizDots() {
+    return '<span class="quiz-dots" aria-hidden="true">' + S.questions.map(function (q, i) {
+      var cls = 'quiz-dot';
+      if (i === QZ.at) cls += ' is-here';
+      if (QZ.picked[i] !== undefined) cls += QZ.picked[i] === q.c ? ' is-right' : ' is-wrong';
+      return '<i class="' + cls + '"></i>';
+    }).join('') + '</span>';
+  }
+
+  function drawQuestion() {
+    if (!S.questions || !S.questions.length) return;
+    var qi = QZ.at;
+    var q = S.questions[qi];
+    var answered = QZ.picked[qi] !== undefined;
+
+    $('quiz-form').innerHTML =
+      '<p class="quiz-count">Question ' + (qi + 1) + ' of ' + S.questions.length + quizDots() + '</p>' +
+      '<fieldset class="q is-one"><legend class="q-text">' + esc(q.q) +
+      (q.source === 'board' ? '<span class="q-tag">from your photo</span>' : '') +
+      (q.source === 'practice' ? '<span class="q-tag is-practice">practice</span>' : '') + '</legend>' +
+      '<div class="q-opts">' + q.a.map(function (a, ai) {
+        var cls = 'q-opt';
+        if (answered) {
+          if (ai === q.c) cls += ' is-right';
+          else if (QZ.picked[qi] === ai) cls += ' is-wrong';
+        }
+        return '<label class="' + cls + '" data-q="' + qi + '" data-a="' + ai + '">' +
+          '<input type="radio" name="q' + qi + '" value="' + ai + '"' +
+          (QZ.picked[qi] === ai ? ' checked' : '') + (answered ? ' disabled' : '') +
+          '> <span>' + esc(a) + '</span></label>';
+      }).join('') + '</div>' +
+      '<p class="q-why" data-why="' + qi + '"' + (answered ? '' : ' hidden') + '>' +
+      (answered ? esc(q.why) : '') + '</p></fieldset>';
+
+    $('quiz-form').querySelectorAll('.q-opt input').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        answerOne(qi, Number(this.value));
+      });
+    });
+
+    $('quiz-check').textContent = answered
+      ? (qi + 1 >= S.questions.length ? 'See how I did' : 'Next question →')
+      : 'I do not know this one';
+    $('quiz-check').disabled = false;
+    $('hint-btn').hidden = answered;
+  }
+
+  function answerOne(qi, ai) {
+    if (QZ.picked[qi] !== undefined) return;
+    var q = S.questions[qi];
+    QZ.picked[qi] = ai;
+    if (ai === q.c) { QZ.right++; noteMastery(q); }
+    else QZ.missed.push(q);
+    drawQuestion();
+    say(ai === q.c ? 'Right. ' + q.why : 'Not that one. ' + q.why);
+  }
+
+  /* the last page: the score, what it earned, and the fix for anything missed */
+  function finishQuiz() {
+    QZ.over = true;
+    var n = S.questions.length;
+    var score = QZ.right;
+    var answered = Object.keys(QZ.picked).length;
+
+    var gained = score * window.PETS.earn.rightAnswer;
+    if (score === n && n > 1) gained += window.PETS.earn.perfectRound;
+    var fixed = S.questions.filter(function (q, i) {
+      return q.source === 'practice' && QZ.picked[i] === q.c;
+    }).length;
+    gained += fixed * window.PETS.earn.fixedMistake;
+    if (gained) earn(gained, score + ' right' + (fixed ? ' and ' + fixed + ' fixed' : ''));
+
+    $('quiz-form').innerHTML = '<div class="quiz-done">' +
+      '<p class="quiz-big">' + score + ' out of ' + n + '</p>' +
+      '<p class="quiz-line">' + (!answered
+        ? 'You skipped them all — no harm done. The answers are in the lesson above.'
+        : score === n ? 'Every one. You have got this.'
+          : score === 0 ? 'Nothing lost. The fix is right below.'
+            : 'Nearly. The ones you missed are below.') + '</p>' +
+      (gained ? '<p class="quiz-earn">+' + gained + ' sparks</p>' : '') +
+      '</div>';
+
+    $('quiz-score').textContent = score + ' out of ' + n;
+    $('quiz-check').disabled = true;
+    $('quiz-check').textContent = 'Done';
+    $('hint-btn').hidden = true;
+    $('quiz-reset').hidden = false;
+    showMissed(QZ.missed);
+    say(score + ' out of ' + n + '.');
   }
 
   /* “I am the master” wants every question in a unit answered right, so we remember which
@@ -4252,49 +4479,21 @@
     return mine.length ? mine : window.TOPICS;
   }
 
+  /* one button for the whole quiz: it owns up to not knowing, or turns the page */
   $('quiz-check').addEventListener('click', function () {
-    var qs = S.questions, score = 0, answered = 0, missed = [];
-    qs.forEach(function (q, qi) {
-      var picked = $('quiz-form').querySelector('input[name="q' + qi + '"]:checked');
-      if (picked) answered++;
-      $('quiz-form').querySelectorAll('[data-q="' + qi + '"]').forEach(function (lab) {
-        var ai = Number(lab.dataset.a);
-        lab.classList.remove('is-right', 'is-wrong');
-        if (ai === q.c) lab.classList.add('is-right');
-        else if (picked && Number(picked.value) === ai) lab.classList.add('is-wrong');
-      });
-      var why = $('quiz-form').querySelector('[data-why="' + qi + '"]');
-      why.hidden = false;
-      why.textContent = q.why;
-      if (picked && Number(picked.value) === q.c) {
-        score++;
-        noteMastery(q);
-      } else if (picked) missed.push(q);
-    });
-
-    if (answered) {
-      var gained = score * window.PETS.earn.rightAnswer;
-      if (score === qs.length && qs.length > 1) gained += window.PETS.earn.perfectRound;
-      var fixed = qs.filter(function (q, i) {
-        var picked = $('quiz-form').querySelector('input[name="q' + i + '"]:checked');
-        return q.source === 'practice' && picked && Number(picked.value) === q.c;
-      }).length;
-      gained += fixed * window.PETS.earn.fixedMistake;
-      if (gained) earn(gained, score + ' right' + (fixed ? ' and ' + fixed + ' fixed' : ''));
+    if (!S.questions || !S.questions.length || QZ.over) return;
+    var qi = QZ.at;
+    if (QZ.picked[qi] === undefined) {        /* “I do not know this one” */
+      QZ.picked[qi] = -1;
+      QZ.missed.push(S.questions[qi]);
+      drawQuestion();
+      return;
     }
-
-    if (!answered) {
-      $('quiz-score').textContent = 'Pick an answer for at least one question first — the right answers are shown above now anyway.';
-    } else {
-      $('quiz-score').textContent = score + ' out of ' + qs.length +
-        (score === qs.length ? ' — you have got this.'
-          : score === 0 ? ' — nothing lost. The fix is right below.'
-            : ' — nearly. The ones you missed are below.');
-    }
-    showMissed(missed);
-    $('quiz-reset').hidden = false;
-    $('quiz-check').disabled = true;
-    say($('quiz-score').textContent);
+    if (qi + 1 >= S.questions.length) { finishQuiz(); return; }
+    QZ.at = qi + 1;
+    drawQuestion();
+    lessonTab('check');
+    goTo($('quiz'));
   });
 
   /* ── helping with what you got wrong ─────────────────
@@ -4353,6 +4552,7 @@
       S.page = at;
       stopSpeech();
       renderPage();
+      lessonTab('read');
       goTo($('book-view'));
       $('book-page').focus();
     } else {
@@ -4360,6 +4560,7 @@
       V.i = at; V.t = 0; V.spoken = -1;
       drawScene();
       updateBar();
+      lessonTab('read');
       goTo($('video-view'));
     }
     say('Jumped to ' + title + '.');
@@ -4369,6 +4570,7 @@
     if (!S.missed || !S.missed.length) return;
     var set = practiceRound(S.missed.slice());
     buildQuiz(set);
+    lessonTab('check');
     goTo($('quiz'));
     var fresh = set.filter(function (q) { return q.source === 'practice'; }).length;
     say(fresh ? fresh + ' new questions about what you missed.' : 'The same questions again.');
@@ -4377,6 +4579,7 @@
   $('quiz-reset').addEventListener('click', function () {
     if (S.deep) { S.deep = false; S.round = 0; }
     buildQuiz();
+    lessonTab('check');
     goTo($('quiz'));
     say(S.deep ? 'All ten questions.' : 'Here is a different set of questions.');
   });
@@ -4385,6 +4588,7 @@
     S.deep = true;
     S.round = 0;
     buildQuiz();
+    lessonTab('check');
     goTo($('quiz'));
     say('All ten questions for this topic.');
   });
@@ -4558,8 +4762,20 @@
 
   /* ── stepper links ─────────────────────────────────── */
   document.querySelectorAll('.step-link').forEach(function (a) {
-    a.addEventListener('click', function () { markStep(Number(a.dataset.step)); });
+    a.addEventListener('click', function () { showStep(Number(a.dataset.step), false); });
   });
+
+  /* tapping a folded step opens it back up — the whole row, not just the button, because
+     on a phone the row is the thing your thumb lands on */
+  for (var sN = 1; sN <= 4; sN++) {
+    (function (n) {
+      $('step' + n).querySelector('.step-head').addEventListener('click', function (e) {
+        if (openStep === n) return;
+        if (e.target.closest('a, input, select, textarea')) return;
+        showStep(n);
+      });
+    })(sN);
+  }
 
   window.addEventListener('beforeunload', stopSpeech);
 

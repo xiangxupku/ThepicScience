@@ -38,14 +38,14 @@
 
   <section class="intro">
     <h1>Snap the whiteboard. Get a picture book or a video that explains it.</h1>
-    <p class="lede">Science is hard because it comes at you fast. Take a picture of the board — or a video of your teacher — and ThepicScience turns it into a picture book, a narrated video, a project you can actually do, or a report outline to write from. Free, and no account.</p>
+    <p class="lede">Take a picture of the board. Get a picture book, a narrated video, a project or a report outline. Free, and no account.</p>
   </section>
 
   <section class="card me" id="me" aria-labelledby="me-h">
     <div id="me-ask">
       <p class="eyebrow">Sign in</p>
       <h2 id="me-h">What grade are you in?</h2>
-      <p class="step-sub">No name, no password, no email — just your grade, kept on this device. It sets how the lessons are written and shows what your grade covers in science.</p>
+      <p class="step-sub">No name, no password, no email. Just your grade, kept on this device.</p>
       <div class="grade-row" id="grade-row"></div>
       <p class="skip-line"><button type="button" class="linkish" id="me-skip">Skip for now</button></p>
     </div>
@@ -63,6 +63,7 @@
         <p class="lbl" id="learn-h">What your grade covers</p>
         <p class="hint">Tap one to start, or scroll down and photograph your own board instead.</p>
         <ul class="topic-list" id="learn-list"></ul>
+        <button type="button" class="btn btn-quiet more-btn" id="learn-more" hidden></button>
       </div>
     </div>
   </section>
@@ -108,7 +109,7 @@
       <div>
         <p class="eyebrow">Pets</p>
         <h2 id="shop-h">Earn sparks, raise a study pet</h2>
-        <p class="step-sub">Answer questions and finish lessons to earn sparks. Spend them on a pet, then level it up — the higher its level, the more it can tell you when you are stuck on a question.</p>
+        <p class="step-sub">Answer questions to earn sparks. Spend them on a pet that helps when you are stuck.</p>
       </div>
       <button type="button" class="btn btn-quiet" id="shop-toggle" aria-expanded="false" aria-controls="shop-body">Open the shop</button>
     </div>
@@ -157,8 +158,10 @@
   <section class="card step" id="step1" aria-labelledby="step1-h">
     <div class="step-head">
       <p class="eyebrow">Step 1</p>
-      <h2 id="step1-h">Add photos or a video of the science</h2>
-      <p class="step-sub">The whiteboard, a page of your textbook, your own notes, or a clip of your teacher talking. Add up to ten pictures and they are read together, so a board that took three photos still makes one lesson. Nothing you add ever leaves your device.</p>
+      <h2 id="step1-h">Add a photo of the science</h2>
+      <p class="step-sub">A whiteboard, a textbook page, your notes, or a clip of your teacher. Up to ten pictures, read together. Nothing leaves your device.</p>
+      <p class="step-pick" id="step1-pick" hidden></p>
+      <button type="button" class="step-reopen" data-open="1">Change</button>
     </div>
 
     <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-help">
@@ -200,8 +203,10 @@
   <section class="card step is-locked" id="step2" aria-labelledby="step2-h">
     <div class="step-head">
       <p class="eyebrow">Step 2</p>
-      <h2 id="step2-h">Check that we found the right topic</h2>
-      <p class="step-sub">We read the words in your picture and match them to a topic in the science library. You can change it any time.</p>
+      <h2 id="step2-h">Check the topic</h2>
+      <p class="step-sub">We read your picture and matched it to the library. Change it any time.</p>
+      <p class="step-pick" id="step2-pick" hidden></p>
+      <button type="button" class="step-reopen" data-open="2">Change</button>
     </div>
 
     <div class="scan-status" id="scan-status" hidden>
@@ -226,6 +231,7 @@
       <input type="search" id="topic-search" class="input" placeholder="cells, forces, water cycle, circuits…" autocomplete="off">
       <p class="hint" id="topic-count"></p>
       <ul class="topic-list" id="topic-list"></ul>
+      <button type="button" class="btn btn-quiet more-btn" id="topic-more" hidden></button>
       <p class="empty-note" id="topic-empty" hidden>Nothing in the library matches that yet. Try a shorter word — "cell", "atom", "energy" — or pick one from the full list.</p>
     </div>
 
@@ -244,7 +250,9 @@
     <div class="step-head">
       <p class="eyebrow">Step 3</p>
       <h2 id="step3-h">How do you want it explained?</h2>
-      <p class="step-sub">Same science in all four — pick what you actually need right now.</p>
+      <p class="step-sub">Same science either way — pick what you need right now.</p>
+      <p class="step-pick" id="step3-pick" hidden></p>
+      <button type="button" class="step-reopen" data-open="3">Change</button>
     </div>
 
     <form id="style-form" novalidate>
@@ -334,6 +342,8 @@
 
       <fieldset class="fs">
         <legend class="lbl">Voice</legend>
+        <details class="fold" id="voice-fold">
+        <summary>Who reads it to you, how fast, and your own voice</summary>
         <div class="voice-row">
           <span class="vf">
             <label class="sub-lbl" for="voice-select">Who reads it to you</label>
@@ -382,6 +392,7 @@
             </div>
           </div>
         </div>
+        </details>
       </fieldset>
 
       <div class="make-row">
@@ -398,6 +409,8 @@
       <p class="eyebrow">Step 4</p>
       <h2 id="step4-h">Your lesson</h2>
       <p class="step-sub" id="step4-sub">It shows up here when it is ready.</p>
+      <p class="step-pick" id="step4-pick" hidden></p>
+      <button type="button" class="step-reopen" data-open="4">Open</button>
     </div>
 
     <div class="building" id="building" hidden>
@@ -405,6 +418,13 @@
       <p class="scan-text" id="build-text">Getting the science together…</p>
     </div>
 
+    <div class="lesson-tabs" id="lesson-tabs" role="tablist" hidden>
+      <button type="button" class="ltab is-on" data-panel="read" role="tab" aria-selected="true" aria-controls="panel-read">Read</button>
+      <button type="button" class="ltab" data-panel="check" role="tab" aria-selected="false" aria-controls="panel-check">Quick check</button>
+      <button type="button" class="ltab" data-panel="keep" role="tab" aria-selected="false" aria-controls="panel-keep">Keep it</button>
+    </div>
+
+    <div class="lesson-panel" id="panel-read" role="tabpanel">
     <div id="book-view" hidden>
       <div class="book" id="book">
         <div class="book-page" id="book-page" tabindex="0" aria-live="polite"></div>
@@ -593,7 +613,9 @@
     <div id="doc-view" hidden>
       <article class="doc" id="doc"></article>
     </div>
+    </div><!-- /panel-read -->
 
+    <div class="lesson-panel is-off" id="panel-check" role="tabpanel">
     <section class="deeper" id="deeper" hidden aria-labelledby="deeper-h">
       <div class="deeper-head">
         <div>
@@ -625,6 +647,9 @@
       </div>
     </div>
 
+    </div><!-- /panel-check -->
+
+    <div class="lesson-panel is-off" id="panel-keep" role="tabpanel">
     <div class="exports" id="exports" hidden>
       <p class="lbl">Keep it</p>
       <div class="export-row">
@@ -634,10 +659,12 @@
         <button type="button" class="btn btn-quiet" id="ex-restart">↺ Start over</button>
       </div>
     </div>
+    </div><!-- /panel-keep -->
   </section>
 
   <section class="how">
-    <h2>What this actually does</h2>
+    <details class="how-fold">
+    <summary><h2>What this actually does</h2></summary>
     <div class="how-grid">
       <div>
         <h3>It reads your picture on your own device</h3>
@@ -645,13 +672,14 @@
       </div>
       <div>
         <h3>It explains from a real science library</h3>
-        <p>Twenty-seven topics written in plain words: cells, respiration, enzymes, forces, circuits, the water cycle, DNA and more. If your topic is not in there yet, the app says so instead of making something up.</p>
+        <p>Forty-three topics written in plain words: cells, respiration, enzymes, forces, circuits, the water cycle, DNA and more. If your topic is not in there yet, the app says so instead of making something up.</p>
       </div>
       <div>
         <h3>It never asks who you are</h3>
         <p>No account, no email, no price. Built by a 7th grader who thinks understanding science should be free.</p>
       </div>
     </div>
+      </details>
   </section>
 </main>
 
