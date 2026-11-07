@@ -2605,6 +2605,10 @@
     try { p = JSON.parse(window.localStorage.getItem(PROFILE_KEY) || 'null'); } catch (e) {}
     S.profile = {
       name: (p && typeof p.name === 'string' ? p.name : '').slice(0, window.PROFILE.maxName),
+      /* Kept, not made fresh each visit. It is the name your seat in a party goes by, so
+         losing it on a refresh meant walking back into your own duel as a stranger while
+         your old seat sat there taken. */
+      deviceId: (p && typeof p.deviceId === 'string' ? p.deviceId : '') || '',
       worn: (p && p.worn) || {},
       items: (p && p.items) || {}
     };
@@ -2631,7 +2635,7 @@
   function saveProfile() {
     try {
       window.localStorage.setItem(PROFILE_KEY, JSON.stringify({
-        name: S.profile.name, worn: S.profile.worn,
+        name: S.profile.name, deviceId: S.profile.deviceId, worn: S.profile.worn,
         items: S.profile.items, lifetime: S.lifetime, tally: S.tally,
         bestTimes: S.bestTimes, spent: S.spent, mastered: S.mastered
       }));
@@ -3380,6 +3384,10 @@
       S.party.code = code;
       openLobby();
       guestWatch();
+      /* Walking back into a duel that is already running — a refresh, or a dropped phone
+         picked back up. The seat was still there, so show the board and wait for the host's
+         next word rather than a lobby that will never fill. */
+      if (S.party.started) joinStartedDuel();
     }).catch(function (e) {
       partyMsg(e.message || 'No party with that code.', true);
     });
@@ -3390,6 +3398,7 @@
   }
 
   function openLobby() {
+    partyMsg('');                      /* “Looking for …” has done its job */
     $('party-start').hidden = true;
     $('party-lobby').hidden = false;
     $('party-code-out').textContent = S.party.code;
@@ -3617,6 +3626,35 @@
       code: S.party.code, id: myId(), host: true,
       revive: reviveParty,
       onBack: function () { netNote(''); },
+
+      /* Someone is at the door. Only this device knows whether there is a seat for them,
+         so it answers, and a no comes back as a reason rather than a silence. */
+      onKnock: function (m) {
+        if (!S.party) return 'The host is not ready yet.';
+        if (S.party.members.some(function (x) { return x.id === m.id; })) return '';
+        if (S.party.started || window.DUEL.running()) return 'That duel has already started.';
+        if (window.PARTY.openTeam(S.party) < 0) {
+          return 'That party is full \u2014 ' + window.PARTY.mode(S.party.mode).name + ' is ' +
+            window.PARTY.capacity(S.party) + ' players.';
+        }
+        return '';
+      },
+
+      /* someone closed their tab: free the seat so the next person can have it */
+      onBye: function (id) {
+        if (!S.party || window.DUEL.running()) return;
+        if (!S.party.members.some(function (m) { return m.id === id; })) return;
+        var who = S.party.members.filter(function (m) { return m.id === id; })[0];
+        window.PARTY.leave(S.party, id);
+        toast((who && who.name ? who.name : 'Someone') + ' left');
+        renderLobby();
+        pushParty();
+      },
+
+      /* somebody has knocked: send the board again, in case they are coming back to a
+         duel already in progress */
+      onResend: function () { pushState(); },
+
       onParty: function (p) {
         if (!S.party || !p || !p.members || window.DUEL.running()) return;
         if (seatArrivals(p.members)) { renderLobby(); pushParty(); }
@@ -3648,6 +3686,14 @@
         else if (!p.started) renderLobby();
       },
       onState: function (state) { paintGuest(state); },
+      onClosed: function () {
+        /* The host has gone. Say so once and go back to the start, rather than leaving a
+           lobby that will never fill or a board that will never move again. */
+        stopParty();
+        window.DUEL.stop();
+        showDuel();
+        partyMsg('The host closed the party.', true);
+      },
       onError: function (m) {
         netNote(m + ' Ask the host to keep their screen open.', true);
       }

@@ -210,6 +210,24 @@ the photo, the text reading and the narration all happen inside the browser.
    the protocol directly over a WebSocket rather than pulling in a library. One broker, shared
    by everyone, nothing to split. `/api/party` is still there as a fallback.
 
+   **Joining each other.** Anyone with the code takes the next empty seat, and joining
+   alternates sides so the teams stay even — four people on four devices end up 2v2 without
+   anybody organising it. There is a **join link** as well as the four letters, because
+   reading a code down the phone and then talking someone through five screens is how an
+   invitation dies.
+
+   Only the host knows whether there is a seat, so the host answers the knock:
+   *that party is full — 2 v 2 is 4 players*, or *that duel has already started*, in about a
+   second. A no used to be nine seconds of silence followed by "no party with that code",
+   which is the same message a typo gets. Closing a tab frees your seat and tells the room who
+   left; the host leaving tells every guest instead of leaving them on a board that will never
+   move again.
+
+   Your seat is yours even if your phone gives up: the id behind it is kept, so a refresh
+   walks you back into the same duel, and the host re-sends the board when you knock. And
+   because the host checks who sent each tap against whose turn it is, nobody in a 4v4 can
+   answer a question aimed at a teammate.
+
    The trade is worth stating plainly, and the app states it where you pick Online: in online
    mode the game passes through someone else's broker. What crosses it is the name you typed,
    a pet id, and which of three buttons you pressed — no photo, no lesson. The room name is a

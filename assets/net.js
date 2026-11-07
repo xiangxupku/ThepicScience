@@ -84,7 +84,9 @@
       /* messages arrive as they are published, so there is nothing to poll for */
       hooks = {
         onParty: opts.onParty, onState: opts.onState,
-        onActions: opts.onActions, onError: opts.onError, onBack: opts.onBack
+        onActions: opts.onActions, onError: opts.onError, onBack: opts.onBack,
+        onKnock: opts.onKnock, onBye: opts.onBye, onClosed: opts.onClosed,
+        onResend: opts.onResend
       };
       amHost = !!opts.host;
       return {
@@ -174,9 +176,16 @@
     if (!msg || !msg.t) return;
 
     if (msg.t === 'hello' && amHost) {
-      /* a device asking to join. Remember it and hand the host the full list, which is
-         what seatArrivals expects — it puts newcomers on whichever side has room. */
-      if (msg.member && msg.member.id) seen[msg.member.id] = msg.member;
+      /* A device asking to join. Ask the host first, because only the host knows whether
+         there is a seat: a full party and a duel already under way both used to end in the
+         guest waiting out its nine seconds and being told the code did not exist. */
+      if (!msg.member || !msg.member.id) return;
+      var no = hooks.onKnock ? hooks.onKnock(msg.member) : '';
+      if (no) {
+        R.say({ t: 'no', id: msg.member.id, why: no });
+        return;
+      }
+      seen[msg.member.id] = msg.member;
       var members = (lastParty && lastParty.members ? lastParty.members.slice() : []);
       Object.keys(seen).forEach(function (id) {
         if (!members.some(function (m) { return m.id === id; })) members.push(seen[id]);
@@ -184,11 +193,21 @@
       if (hooks.onParty) hooks.onParty({ members: members });
       /* answer straight away so the guest is not left waiting on a poll */
       if (lastParty) R.say({ t: 'party', party: lastParty });
+      /* And say where the duel is up to. Someone who refreshes mid-duel keeps their seat,
+         but states are only published when something changes — without this they sat in
+         the lobby until the next question happened to come round. */
+      if (hooks.onResend) hooks.onResend();
       return;
     }
 
     if (msg.t === 'act' && amHost) {
-      if (hooks.onActions) hooks.onActions([msg.action]);
+      /* Who tapped matters once there are four of you: without this, anyone in the room
+         could answer a question meant for a teammate. duel.js checks it against whose
+         turn it actually is. */
+      var act = {};
+      Object.keys(msg.action || {}).forEach(function (k) { act[k] = msg.action[k]; });
+      act.from = msg.from;
+      if (hooks.onActions) hooks.onActions([act]);
       return;
     }
 
@@ -205,6 +224,19 @@
 
     if (msg.t === 'bye' && amHost) {
       delete seen[msg.id];
+      if (hooks.onBye) hooks.onBye(msg.id);
+      return;
+    }
+
+    /* the host could not seat us, and said why */
+    if (msg.t === 'no' && !amHost) {
+      if (hooks.onNo) hooks.onNo(msg);
+      return;
+    }
+
+    /* the host has shut the party down, so there is nothing left to wait for */
+    if (msg.t === 'closed' && !amHost) {
+      if (hooks.onClosed) hooks.onClosed();
     }
   }
 
@@ -267,8 +299,18 @@
             if (settled) return;
             settled = true;
             hooks.onParty = saw;
-            rej(new Error('No party with that code.'));
+            hooks.onNo = null;
+            rej(new Error('No party with that code. Check the four letters.'));
           }, 9000);
+
+          hooks.onNo = function (m) {
+            if (settled || !m || m.id !== member.id) return;
+            settled = true;
+            clearTimeout(give);
+            hooks.onParty = saw;
+            hooks.onNo = null;
+            rej(new Error(m.why || 'The host could not let you in.'));
+          };
 
           hooks.onParty = function (p) {
             if (saw) saw(p);
@@ -277,6 +319,7 @@
             settled = true;
             clearTimeout(give);
             hooks.onParty = saw;
+            hooks.onNo = null;
             lastParty = p;
             res({ ok: true, party: p, relay: true });
           };
@@ -328,7 +371,8 @@
     },
     leave: function (code, id) {
       if (relayUsable()) {
-        R.say({ t: 'bye', id: id });
+        if (amHost) R.say({ t: 'closed' });
+        else R.say({ t: 'bye', id: id });
         R.close(); R = null; lastParty = null; seen = {}; hooks = {};
         return Promise.resolve({ ok: true });
       }

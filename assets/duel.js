@@ -428,12 +428,23 @@
     state: snapshot,
 
     /* a move that arrived from another device */
+    /* An action from another device. `from` is the device that sent it, and it has to be
+       the player whose turn it is — in a 4v4 there are six other people in the room and
+       nothing else would stop one of them answering a question aimed at a teammate. An
+       action with no `from` is from an older client, and is taken on trust as before. */
     applyRemote: function (action) {
-      if (!D) return null;
-      if (action.type === 'pick' && D.phase === 'choose') takeChoice(action.index);
-      else if (action.type === 'answer' && D.phase === 'answer') {
+      if (!D || !action) return null;
+      var ok = function (member) {
+        return !action.from || (member && member.id === action.from);
+      };
+      if (action.type === 'pick' && D.phase === 'choose') {
+        if (!ok(attacker())) return null;
+        takeChoice(action.index);
+      } else if (action.type === 'answer' && D.phase === 'answer') {
+        if (!ok(defender())) return null;
         answer(action.index, D.el.stage.querySelector('[data-ans="' + action.index + '"]'));
       } else if (action.type === 'ready' && D.phase === 'handover') {
+        if (!ok(defender())) return null;
         D.phase = 'answer';
         render();
       }
