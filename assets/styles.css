@@ -1671,6 +1671,10 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
   .card { padding: 1.1rem; margin-bottom: .8rem; }
   .stepper { padding: .45rem 0; margin-bottom: .8rem; }
 
+  /* three tabs, one line each: they were wrapping to two */
+  .lesson-tabs { gap: .25rem; }
+  .ltab { padding: .5rem .55rem; font-size: .88rem; white-space: nowrap; }
+
   /* the drop zone: one icon, one line, two buttons */
   .drop { padding: 1.1rem .9rem; }
   .drop-icon { width: 34px; height: 34px; }
