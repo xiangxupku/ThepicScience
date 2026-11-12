@@ -45,7 +45,7 @@
     <div id="me-ask">
       <p class="eyebrow">Sign in</p>
       <h2 id="me-h">What grade are you in?</h2>
-      <p class="step-sub">No name, no password, no email. Just your grade, kept on this device.</p>
+      <p class="step-sub">No account. Just your grade, kept on this device.</p>
       <div class="grade-row" id="grade-row"></div>
       <p class="skip-line"><button type="button" class="linkish" id="me-skip">Skip for now</button></p>
     </div>
@@ -59,12 +59,12 @@
         </div>
         <button type="button" class="btn btn-quiet" id="me-change">Change grade</button>
       </div>
-      <div class="learn">
-        <p class="lbl" id="learn-h">What your grade covers</p>
-        <p class="hint">Tap one to start, or scroll down and photograph your own board instead.</p>
+      <details class="learn fold">
+        <summary><span class="lbl" id="learn-h">What your grade covers</span></summary>
+        <p class="hint">Tap one to start, or photograph your own board below.</p>
         <ul class="topic-list" id="learn-list"></ul>
         <button type="button" class="btn btn-quiet more-btn" id="learn-more" hidden></button>
-      </div>
+      </details>
     </div>
   </section>
 
@@ -104,46 +104,6 @@
     </div>
   </section>
 
-  <section class="card shop" id="shop" aria-labelledby="shop-h">
-    <div class="shop-head">
-      <div>
-        <p class="eyebrow">Pets</p>
-        <h2 id="shop-h">Earn sparks, raise a study pet</h2>
-        <p class="step-sub">Answer questions to earn sparks. Spend them on a pet that helps when you are stuck.</p>
-      </div>
-      <button type="button" class="btn btn-quiet" id="shop-toggle" aria-expanded="false" aria-controls="shop-body">Open the shop</button>
-    </div>
-
-    <div class="shop-active" id="shop-active" hidden>
-      <div class="pet-stage" id="active-pet-art"></div>
-      <div class="shop-active-text">
-        <p class="eyebrow">Helping you</p>
-        <p class="pet-name" id="active-pet-name"></p>
-        <div class="pet-level" id="active-pet-level"></div>
-        <p class="hint" id="active-pet-can"></p>
-      </div>
-      <button type="button" class="btn btn-primary" id="level-btn"></button>
-    </div>
-
-    <div id="shop-body" hidden>
-      <p class="shop-note">Sparks are not money. There is no way to buy them with anything real, nothing in this app costs money, and the egg prints its exact chances below before you spend a single spark.</p>
-
-      <p class="hint egg-count" id="egg-count"></p>
-      <div class="egg-row" id="egg-row"></div>
-      <p class="shop-note egg-truth">An egg can never give you a pet you already have, so you
-        end up with all fifty whichever ones you buy. A dearer egg brings the rare ones
-        forward, it does not add any. Every set of chances is printed above before you spend.</p>
-
-      <div class="egg-result" id="egg-result" hidden></div>
-
-      <p class="lbl pet-grid-label">Your collection</p>
-      <ul class="pet-grid" id="pet-grid"></ul>
-      <div class="shop-earn">
-        <p class="lbl">How to earn sparks</p>
-        <ul class="doc-list" id="earn-list"></ul>
-      </div>
-    </div>
-  </section>
 
   <nav class="stepper" aria-label="Progress">
     <ol>
@@ -159,7 +119,7 @@
     <div class="step-head">
       <p class="eyebrow">Step 1</p>
       <h2 id="step1-h">Add a photo of the science</h2>
-      <p class="step-sub">A whiteboard, a textbook page, your notes, or a clip of your teacher. Up to ten pictures, read together. Nothing leaves your device.</p>
+      <p class="step-sub">Whiteboard, textbook, notes or a clip of your teacher. Nothing leaves your device.</p>
       <p class="step-pick" id="step1-pick" hidden></p>
       <button type="button" class="step-reopen" data-open="1">Change</button>
     </div>
@@ -167,12 +127,12 @@
     <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-help">
       <svg class="drop-icon" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="13" width="38" height="27" rx="4"/><circle cx="24" cy="27" r="8"/><path d="M17 13l3-5h8l3 5"/></svg>
         <p class="drop-title">Drop your pictures here</p>
-        <p class="drop-or" id="drop-help">up to 10 at once — or choose files, take a photo, or paste one with Ctrl + V</p>
+        <p class="drop-or" id="drop-help">up to 10 at once, or paste with Ctrl + V</p>
       <div class="drop-actions">
         <button type="button" class="btn btn-primary" id="pick-file">Choose a file</button>
         <button type="button" class="btn" id="pick-camera">Take a photo</button>
       </div>
-      <p class="drop-note">JPG, PNG, WEBP, MP4 or MOV — up to 10 photos, 50 MB each</p>
+      <p class="drop-note">JPG, PNG, WEBP, MP4 or MOV, 50 MB each</p>
     </div>
 
     <label class="visually-hidden" for="file-input">Choose an image or video file</label>
@@ -660,6 +620,47 @@
       </div>
     </div>
     </div><!-- /panel-keep -->
+  </section>
+
+  <section class="card shop" id="shop" aria-labelledby="shop-h">
+    <div class="shop-head">
+      <div>
+        <p class="eyebrow">Pets</p>
+        <h2 id="shop-h">Earn sparks, raise a study pet</h2>
+        <p class="step-sub">Answer questions to earn sparks. Spend them on a pet that helps when you are stuck.</p>
+      </div>
+      <button type="button" class="btn btn-quiet" id="shop-toggle" aria-expanded="false" aria-controls="shop-body">Open the shop</button>
+    </div>
+
+    <div class="shop-active" id="shop-active" hidden>
+      <div class="pet-stage" id="active-pet-art"></div>
+      <div class="shop-active-text">
+        <p class="eyebrow">Helping you</p>
+        <p class="pet-name" id="active-pet-name"></p>
+        <div class="pet-level" id="active-pet-level"></div>
+        <p class="hint" id="active-pet-can"></p>
+      </div>
+      <button type="button" class="btn btn-primary" id="level-btn"></button>
+    </div>
+
+    <div id="shop-body" hidden>
+      <p class="shop-note">Sparks are not money. There is no way to buy them with anything real, nothing in this app costs money, and the egg prints its exact chances below before you spend a single spark.</p>
+
+      <p class="hint egg-count" id="egg-count"></p>
+      <div class="egg-row" id="egg-row"></div>
+      <p class="shop-note egg-truth">An egg can never give you a pet you already have, so you
+        end up with all fifty whichever ones you buy. A dearer egg brings the rare ones
+        forward, it does not add any. Every set of chances is printed above before you spend.</p>
+
+      <div class="egg-result" id="egg-result" hidden></div>
+
+      <p class="lbl pet-grid-label">Your collection</p>
+      <ul class="pet-grid" id="pet-grid"></ul>
+      <div class="shop-earn">
+        <p class="lbl">How to earn sparks</p>
+        <ul class="doc-list" id="earn-list"></ul>
+      </div>
+    </div>
   </section>
 
   <section class="how">

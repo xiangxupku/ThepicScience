@@ -143,7 +143,10 @@
 
   function stepSummary(n) {
     if (n === 1) {
-      if (!S.files || !S.files.length) return S.ocrText ? 'Typed in' : '';
+      if (!S.files || !S.files.length) {
+        if (S.ocrText) return 'Typed in';
+        return S.topic ? 'No photo — picked from the library' : '';
+      }
       return S.files.length === 1 ? (S.file && S.file.name ? S.file.name : '1 picture')
         : S.files.length + ' pictures';
     }

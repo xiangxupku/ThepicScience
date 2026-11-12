@@ -1658,6 +1658,52 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 .shop.is-tight .step-sub { display: none; }
 .shop.is-tight { padding-top: 1rem; padding-bottom: 1rem; }
 
+/* ── the first screen on a phone ─────────────
+   Landing on this page cost nearly five phone screens before you reached the one thing you
+   came to do. The pet shop now sits below the steps rather than above them, and everything
+   on the way in gives up some of its padding. */
+
+@media (max-width: 34rem) {
+  .intro { padding: 1.2rem 0 .8rem; }
+  h1 { font-size: 1.58rem; }
+  /* the headline already says this, and on a phone it is three lines in the way */
+  .lede { display: none; }
+  .card { padding: 1.1rem; margin-bottom: .8rem; }
+  .stepper { padding: .45rem 0; margin-bottom: .8rem; }
+
+  /* the drop zone: one icon, one line, two buttons */
+  .drop { padding: 1.1rem .9rem; }
+  .drop-icon { width: 34px; height: 34px; }
+  .drop-title { font-size: 1.05rem; }
+  .drop-or, .drop-note { font-size: .88rem; }
+  .drop-actions { margin-top: .7rem; }
+}
+
+/* the list of what your grade covers: a shortcut, not the main road. Signing in used to
+   drop seven hundred pixels of topic list between you and the photo button. */
+.learn.fold > summary { padding: .5rem 0; }
+.learn.fold > summary .lbl { display: inline; }
+
+/* ── what sits above the first step ───────────
+   On a phone the header, the pitch and the grade question together pushed the thing you
+   came to do — add a photo — about one and a half screens down the page. The header loses
+   its tagline, which the page title already says, and the ten grade buttons become one row
+   you swipe instead of three rows you scroll past. */
+
+@media (max-width: 34rem) {
+  .head-inner { padding-top: .55rem; padding-bottom: .55rem; gap: .3rem .7rem; }
+  .brand-tag { display: none; }
+  .brand-name { font-size: 1.05rem; }
+
+  .grade-row {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    margin-top: .8rem; padding-bottom: .2rem;
+    scroll-snap-type: x proximity;
+  }
+  .grade-row::-webkit-scrollbar { display: none; }
+  .grade-btn { flex: 0 0 auto; scroll-snap-align: start; }
+}
+
 /* ── the lesson's three pages ────────────── */
 .lesson-tabs {
   display: flex; gap: .4rem; margin: 1.2rem 0 .2rem;
