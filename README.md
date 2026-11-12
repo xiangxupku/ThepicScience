@@ -322,8 +322,10 @@ there — it was moved, folded, or paged.
 Everything above is phone-only or layout-only: at 1180px the lede, the tagline, the
 three-column format cards and the two-column book page are all exactly as they were.
 
-A caching note learned the hard way: assets are served `no-cache` rather than
-`max-age=3600`. That means “ask first”, not “do not store” — the browser keeps the file
+Two notes about `vercel.json`, both learned the hard way. It is JSON, so it takes no
+comments — a `"_comment"` key inside a headers rule fails Vercel's schema and every
+deployment after it silently fails, which cost four pushes that looked fine on GitHub and
+never reached the site. And assets are served `no-cache` rather than `max-age=3600`. That means “ask first”, not “do not store” — the browser keeps the file
 and revalidates with its ETag, so an unchanged file is a tiny 304. With an hour of
 max-age, a fix sat invisible on the phones of the people who needed it.
 
