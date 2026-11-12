@@ -10,8 +10,9 @@
   "headers": [
     {
       "source": "/assets/(.*)",
+      "_comment": "no-cache means 'ask first', not 'do not store'. The browser keeps the file and revalidates with its ETag, so an unchanged file costs one tiny 304 and is served from disk. An hour of max-age meant a fix could sit invisible for an hour on the phones of the people who needed it, which is exactly what happened with the scrolling fix.",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+        { "key": "Cache-Control", "value": "public, no-cache, must-revalidate" }
       ]
     },
     {
