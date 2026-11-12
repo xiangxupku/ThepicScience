@@ -140,7 +140,7 @@ window.QUIZBANK.add({
     { q: 'What brings water back down to the ground?', a: ['Magnetism', 'Gravity', 'Wind'], c: 1, why: 'Droplets grow heavy enough that gravity wins.' },
     { q: 'Transpiration is water leaving a plant through its…', a: ['Leaves', 'Seeds', 'Roots'], c: 0, why: 'Water travels up and escapes as vapour through the stomata.' },
     { q: 'A big forest adds a lot of water to the air. What is that process called?', a: ['Transpiration', 'Infiltration', 'Precipitation'], c: 0, why: 'A single large tree can release hundreds of litres on a hot day.' },
-    { q: 'Clouds form when…', a: ['Water freezes in the ground', 'Wind pushes rain upwards', 'Rising air cools and its vapour condenses on tiny particles'], c: 2, why: 'Cool air cannot hold as much vapour, so droplets form on dust.' },
+    { q: 'What do water droplets need to condense onto in a cloud?', a: ['Tiny specks of dust or salt', 'Nothing at all', 'Other raindrops only'], c: 0, why: 'They are called condensation nuclei, and without them cloud forms poorly.' },
     { q: 'Water soaking down into the soil is called…', a: ['Runoff', 'Evaporation', 'Infiltration'], c: 2, why: 'What soaks in becomes soil water, and deeper down, groundwater.' },
     { q: 'Water flowing over the surface into a river is…', a: ['Condensation', 'Infiltration', 'Runoff'], c: 2, why: 'Runoff is what the ground could not absorb.' },
     { q: 'Why is there more runoff in a city than a forest?', a: ['Concrete and tarmac cannot absorb water', 'Forests push water away', 'Cities get more rain'], c: 0, why: 'Hard surfaces send it all into drains, which is why cities flood fast.' },
