@@ -1724,8 +1724,8 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
   padding: .55rem 0; font-size: .95rem;
 }
 .fold > summary::-webkit-details-marker { display: none; }
-.fold > summary::after { content: ' be'; color: var(--accent); font-weight: 700; }
-.fold[open] > summary::after { content: ' b4'; }
+.fold > summary::after { content: ' ▾'; color: var(--accent); font-weight: 700; }
+.fold[open] > summary::after { content: ' ▴'; }
 .fold > summary:hover { color: var(--ink); }
 
 /* ── less to scroll past ────────────────── */
@@ -1737,9 +1737,9 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 .how-fold > summary::-webkit-details-marker { display: none; }
 .how-fold > summary h2 { display: inline; }
 .how-fold > summary::after {
-  content: ' be'; color: var(--accent); font-weight: 700;
+  content: ' ▾'; color: var(--accent); font-weight: 700;
 }
-.how-fold[open] > summary::after { content: ' b4'; }
+.how-fold[open] > summary::after { content: ' ▴'; }
 .how-fold > summary:hover h2 { color: var(--accent); }
 
 /* On a phone, six format cards with a paragraph each ran to five screens. The paragraph
