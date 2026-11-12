@@ -294,6 +294,39 @@ the photo, the text reading and the narration all happen inside the browser.
 Before making a video it also offers a one-tap search of YouTube, Khan Academy, Bilibili and
 the web for your topic, because a real teacher on video often beats anything we can draw.
 
+## On a phone
+
+Most people open this on a phone, and for a while the answer to every new feature was
+another thing further down the page. Measured at 375px wide with a lesson built, the page
+came to **17.8 screens** of scrolling. It is **3.5** now, and nothing was deleted to get
+there — it was moved, folded, or paged.
+
+- **One step at a time.** A step you have finished folds to its title and what you chose
+  — “Check the topic / Photosynthesis” — and the whole row reopens it.
+- **The lesson is three tabs**: Read, Quick check, Keep it. Reading, being asked and
+  saving are three jobs nobody does at once, but they used to be stacked, so getting to
+  the quiz meant scrolling past the whole lesson.
+- **One question to a page.** Tap an answer and you are told straight away whether it was
+  right and why. Dots show how far along you are. It is also what makes a fifty-question
+  bank possible without the page growing at all.
+- **Long documents fold by section.** The report outline was eight screens in one column;
+  it is 3.1 with the first section open and a button for the whole thing. Printing opens
+  every section again in the copy it sends to paper.
+- **The first screen is the first step.** The pet shop sits below the steps, the header
+  drops its tagline, the ten grade buttons are one row you swipe, and the list of what
+  your grade covers is a fold rather than seven hundred pixels in the way. The photo
+  button starts on screen one instead of 1187px down.
+- **Bigger words.** Under 544px the root size goes to 17.5px, so text, padding and tap
+  targets all grow together, and buttons are at least 44px.
+
+Everything above is phone-only or layout-only: at 1180px the lede, the tagline, the
+three-column format cards and the two-column book page are all exactly as they were.
+
+A caching note learned the hard way: assets are served `no-cache` rather than
+`max-age=3600`. That means “ask first”, not “do not store” — the browser keeps the file
+and revalidates with its ETag, so an unchanged file is a tiny 304. With an hour of
+max-age, a fix sat invisible on the phones of the people who needed it.
+
 ## Run it locally
 
 Any static file server works. From this folder:
