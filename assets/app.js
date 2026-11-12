@@ -2229,10 +2229,53 @@
       : S.grade === 'high' ? '600 to 900 words' : '300 to 500 words';
   }
 
+  /* ── a document you can get through ───────────
+     A report outline ran to eight phone screens in one unbroken column, and a project to
+     four and a half. They are long because they have to be, so the fix is not to cut them:
+     each section folds under its own heading, with the first one open and a button for
+     anyone who wants the lot. Printing is unaffected — it renders from its own markup. */
+
+  function foldDoc() {
+    var doc = $('doc');
+    var heads = [].slice.call(doc.querySelectorAll('h4'));
+    if (!heads.length) return;
+
+    heads.forEach(function (h, i) {
+      var det = document.createElement('details');
+      det.className = 'fold doc-fold';
+      if (i === 0) det.open = true;
+      var sum = document.createElement('summary');
+      sum.innerHTML = '<span class="doc-fold-h">' + h.innerHTML + '</span>';
+      det.appendChild(sum);
+      h.parentNode.insertBefore(det, h);
+
+      /* everything up to the next h4 belongs to this section */
+      var node = h.nextSibling;
+      while (node && !(node.nodeType === 1 && node.tagName === 'H4')) {
+        var next = node.nextSibling;
+        det.appendChild(node);
+        node = next;
+      }
+      h.parentNode.removeChild(h);
+    });
+
+    var bar = document.createElement('div');
+    bar.className = 'doc-allbar';
+    bar.innerHTML = '<button type="button" class="btn btn-quiet" id="doc-all">Open every section</button>';
+    doc.insertBefore(bar, doc.querySelector('.doc-fold'));
+    var open = false;
+    bar.querySelector('#doc-all').addEventListener('click', function () {
+      open = !open;
+      doc.querySelectorAll('.doc-fold').forEach(function (d) { d.open = open; });
+      this.textContent = open ? 'Close the sections' : 'Open every section';
+    });
+  }
+
   function showDoc() {
     $('doc-view').hidden = false;
     var html = S.format === 'project' ? projectHtml() : reportHtml();
     $('doc').innerHTML = html;
+    foldDoc();
     $('step4-sub').textContent = S.format === 'project'
       ? 'A project you can actually do, about ' + S.board.topic.title.toLowerCase() + '. Print it and tick things off.'
       : 'A writing plan for a report about ' + S.board.topic.title.toLowerCase() + '. The facts are here; the words should be yours.';
@@ -4734,7 +4777,12 @@
   $('ex-print').addEventListener('click', function () {
     var b = S.board;
     if (b.format === 'project' || b.format === 'report') {
-      $('print-area').innerHTML = '<div class="p-doc">' + $('doc').innerHTML + '</div>';
+      /* The sections on screen are folded. A printout has no one to tap them open, so the
+         copy that goes to paper has every one of them open and the toggle removed. */
+      var copy = $('doc').cloneNode(true);
+      copy.querySelectorAll('details').forEach(function (d) { d.open = true; });
+      copy.querySelectorAll('.doc-allbar').forEach(function (d) { d.remove(); });
+      $('print-area').innerHTML = '<div class="p-doc">' + copy.innerHTML + '</div>';
       stopSpeech();
       toast('Opening the print window');
       setTimeout(function () { window.print(); }, 150);

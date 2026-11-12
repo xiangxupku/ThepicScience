@@ -1684,6 +1684,15 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 .learn.fold > summary { padding: .5rem 0; }
 .learn.fold > summary .lbl { display: inline; }
 
+/* a long document, section by section */
+.doc-fold { border-top: 1px solid var(--line); }
+.doc-fold > summary { padding: .85rem 0; }
+.doc-fold-h { font-weight: 650; font-size: 1.05rem; color: var(--ink); }
+.doc-fold[open] > summary .doc-fold-h { color: var(--accent); }
+.doc-fold > summary + * { margin-top: .2rem; }
+.doc-fold > *:last-child { margin-bottom: .9rem; }
+.doc-allbar { margin: .6rem 0 .2rem; }
+
 /* ── what sits above the first step ───────────
    On a phone the header, the pitch and the grade question together pushed the thing you
    came to do — add a photo — about one and a half screens down the page. The header loses
@@ -1848,6 +1857,10 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
   .p-doc h3 { font-size: 18pt; margin-bottom: .3cm; }
   .p-doc h4 { font-size: 13pt; margin: .7cm 0 .2cm; border-bottom: 1pt solid #999; }
   .p-doc .doc-callout, .p-doc .doc-fact { border-left: 3pt solid #666; padding-left: .3cm; }
+  /* belt and braces: nothing folded away on paper, whatever the browser does with details */
+  .p-doc details, .p-doc details > * { display: block; }
+  .p-doc summary { list-style: none; font-size: 13pt; font-weight: bold; margin: .7cm 0 .2cm; border-bottom: 1pt solid #999; }
+  .p-doc summary::-webkit-details-marker, .p-doc summary::after { display: none; content: none; }
   .p-doc .doc-step { display: inline-block; margin-right: .2cm; font-weight: bold; }
   .p-doc ul, .p-doc ol { margin: 0 0 .3cm 1cm; }
   .p-term { border-left: 3pt solid #444; padding-left: .4cm; margin-top: .6cm; font-size: 12pt; }
