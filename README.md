@@ -309,12 +309,16 @@ there — it was moved, folded, or paged.
 - **One question to a page.** Tap an answer and you are told straight away whether it was
   right and why. Dots show how far along you are. It is also what makes a fifty-question
   bank possible without the page growing at all.
-- **Long documents fold by section.** The report outline was eight screens in one column;
-  it is 3.1 with the first section open and a button for the whole thing. Printing opens
-  every section again in the copy it sends to paper.
+- **Slides, not a shorter list.** The library briefly showed eight topics with the rest
+  behind a button. That was the wrong answer: all 43 are there, dealt into slides you
+  swipe — five to a page on a phone, nine on a desktop, one screen tall either way. The
+  long documents work the same way: the report outline is 20 sections as 20 slides, one at
+  a time, and the deck takes the height of the section you are on. Eight phone screens
+  down to 2.1. `assets/slides.js` is the whole mechanism; printing still gathers every
+  section in order.
 - **The first screen is the first step.** The pet shop sits below the steps, the header
   drops its tagline, the ten grade buttons are one row you swipe, and the list of what
-  your grade covers is a fold rather than seven hundred pixels in the way. The photo
+  your grade covers is a deck rather than seven hundred pixels in the way. The photo
   button starts on screen one instead of 1187px down.
 - **Bigger words.** Under 544px the root size goes to 17.5px, so text, padding and tap
   targets all grow together, and buttons are at least 44px.
@@ -374,6 +378,7 @@ clean URLs and a few safety headers. You can also drag this folder onto vercel.c
 | `assets/worlds.js` | The three places and the three monsters, with their chests and tuning |
 | `assets/party.js` | Parties: team sizes, seating, codes, and the one-in-three robots |
 | `assets/relay.js` | MQTT over a WebSocket: one shared broker every device can reach |
+| `assets/slides.js` | Long lists and long documents as slides you swipe |
 | `assets/net.js` | The wire between devices in an online party |
 | `assets/myvoice.js` | Recording your own narration: the microphone, the store, playback |
 | `api/party.js` | The one serverless file: a JSON document per party code, for 30 minutes |
