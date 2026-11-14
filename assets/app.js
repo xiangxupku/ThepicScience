@@ -119,6 +119,7 @@
       var el = $('panel-' + p);
       if (el) el.classList.toggle('is-off', p !== name);
     });
+    setTimeout(refreshSlides, 0);
     $('lesson-tabs').querySelectorAll('[data-panel]').forEach(function (b) {
       var on = b.dataset.panel === name;
       b.classList.toggle('is-on', on);
@@ -160,6 +161,7 @@
   }
 
   function foldSteps() {
+    setTimeout(refreshSlides, 0);
     for (var i = 1; i <= 4; i++) {
       var el = $('step' + i);
       var folded = i !== openStep && i <= S.unlocked;
@@ -184,6 +186,12 @@
     var learn = document.querySelector('#me-known .learn');
     if (learn) learn.hidden = working;
     $('shop').classList.toggle('is-tight', working);
+  }
+
+  /* A deck inside a step that was folded had no width to be dealt for, so it is dealt
+     again as the step opens. */
+  function refreshSlides() {
+    if (window.SLIDES) window.SLIDES.refresh();
   }
 
   /* open one step, fold the rest, and put it at the top of the screen */
@@ -278,15 +286,11 @@
       return n >= r.lo && n <= r.hi;
     });
     $('learn-h').textContent = 'What grade ' + n + ' usually covers — ' + mine.length + ' topics';
-    /* six is enough to see what this is; the rest is one tap away. A list of twenty on a
-       phone is just something to scroll past. */
-    if (!learnAll) mine = mine.slice(0, 6);
-    $('learn-more').hidden = learnAll || gradeTopics(n).length <= 6;
-    $('learn-more').textContent = 'Show all ' + gradeTopics(n).length + ' topics';
     $('learn-list').innerHTML = mine.map(function (t) {
       return '<li><button type="button" class="topic-btn" data-learn="' + t.id + '">' +
         '<b>' + esc(t.title) + '</b><span>' + esc(t.subject) + ' · ' + esc(t.blurb.slice(0, 62)) + '…</span></button></li>';
     }).join('');
+    /* the handlers go on before the items are dealt out, because dealing moves them */
     $('learn-list').querySelectorAll('[data-learn]').forEach(function (b) {
       b.addEventListener('click', function () {
         unlock(2);
@@ -296,6 +300,7 @@
         say('Starting ' + b.dataset.learn.replace(/-/g, ' ') + '.');
       });
     });
+    deal('learn-list', 'learn-deck', 'topics');
   }
 
   function openGradePicker() {
@@ -901,15 +906,13 @@
   }
 
   /* the library list: short by default, all of it on request */
-  var TOPIC_CAP = 8;
-  var topicsAll = false;
-  var learnAll = false;
-
-  function gradeTopics(n) {
-    return window.TOPICS.filter(function (t) {
-      var r = gradeRange(t);
-      return n >= r.lo && n <= r.hi;
-    });
+  /* The library used to show eight topics with the rest behind a button. Hiding topics was
+     the wrong fix for a long page: all of them are here, dealt into slides you swipe. */
+  function deal(sourceId, deckId, label) {
+    if (!window.SLIDES) return;
+    /* no row count here on purpose: slides.js counts the columns that fit and picks the
+       rows to match, so a phone gets a taller slide and fewer of them */
+    window.SLIDES.render($(sourceId), $(deckId), { min: 230, label: label });
   }
 
   function renderTopics(filter) {
@@ -923,11 +926,6 @@
         .map(function (x) { return x.t; });
     }
 
-    var total = list.length;
-    if (!topicsAll && total > TOPIC_CAP) list = list.slice(0, TOPIC_CAP);
-    $('topic-more').hidden = topicsAll || total <= TOPIC_CAP;
-    $('topic-more').textContent = 'Show the other ' + (total - TOPIC_CAP) + ' topics';
-
     $('topic-list').innerHTML = list.map(function (t) {
       var on = S.topic && S.topic.id === t.id;
       return '<li><button type="button" class="topic-btn" data-topic="' + t.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
@@ -937,23 +935,15 @@
     $('topic-list').querySelectorAll('[data-topic]').forEach(function (b) {
       b.addEventListener('click', function () { chooseTopic(b.dataset.topic); });
     });
+    deal('topic-list', 'topic-deck', 'topics');
 
     $('topic-empty').hidden = list.length > 0;
     $('topic-count').textContent = q
       ? list.length + ' of ' + window.TOPICS.length + ' topics match "' + q + '"'
-      : window.TOPICS.length + ' topics in the library right now.';
+      : window.TOPICS.length + ' topics in the library, a swipe at a time.';
   }
 
-  $('topic-search').addEventListener('input', function () { topicsAll = false; renderTopics(this.value); });
-  $('topic-more').addEventListener('click', function () {
-    topicsAll = true;
-    renderTopics($('topic-search').value);
-  });
-  $('learn-more').addEventListener('click', function () {
-    learnAll = true;
-    var n = S.gradeNum;
-    if (n) renderLearnList(n);
-  });
+  $('topic-search').addEventListener('input', function () { renderTopics(this.value); });
 
   function chooseTopic(id) {
     var t = window.TOPICS.filter(function (x) { return x.id === id; })[0];
@@ -2235,47 +2225,49 @@
      each section folds under its own heading, with the first one open and a button for
      anyone who wants the lot. Printing is unaffected — it renders from its own markup. */
 
-  function foldDoc() {
+  /* ── a document read as slides ───────────────
+     A report outline ran to eight phone screens in one column, and a project four and a
+     half. The picture book had the answer all along: one idea to a page, with Back and
+     Next. So each section of the document becomes a slide. Nothing is cut — the same
+     sections, the same words, one at a time with room around them. */
+
+  function slideDoc() {
     var doc = $('doc');
     var heads = [].slice.call(doc.querySelectorAll('h4'));
-    if (!heads.length) return;
+    if (!heads.length || !window.SLIDES) return;
 
-    heads.forEach(function (h, i) {
-      var det = document.createElement('details');
-      det.className = 'fold doc-fold';
-      if (i === 0) det.open = true;
-      var sum = document.createElement('summary');
-      sum.innerHTML = '<span class="doc-fold-h">' + h.innerHTML + '</span>';
-      det.appendChild(sum);
-      h.parentNode.insertBefore(det, h);
+    var source = document.createElement('div');
+    source.id = 'doc-sections';
+    source.className = 'doc-sections';
+    source.hidden = true;
 
-      /* everything up to the next h4 belongs to this section */
+    heads.forEach(function (h) {
+      var sec = document.createElement('div');
+      sec.className = 'doc-slide';
+      sec.appendChild(h.cloneNode(true));
       var node = h.nextSibling;
       while (node && !(node.nodeType === 1 && node.tagName === 'H4')) {
-        var next = node.nextSibling;
-        det.appendChild(node);
-        node = next;
+        var after = node.nextSibling;
+        sec.appendChild(node);
+        node = after;
       }
       h.parentNode.removeChild(h);
+      source.appendChild(sec);
     });
 
-    var bar = document.createElement('div');
-    bar.className = 'doc-allbar';
-    bar.innerHTML = '<button type="button" class="btn btn-quiet" id="doc-all">Open every section</button>';
-    doc.insertBefore(bar, doc.querySelector('.doc-fold'));
-    var open = false;
-    bar.querySelector('#doc-all').addEventListener('click', function () {
-      open = !open;
-      doc.querySelectorAll('.doc-fold').forEach(function (d) { d.open = open; });
-      this.textContent = open ? 'Close the sections' : 'Open every section';
-    });
+    var deck = document.createElement('div');
+    deck.className = 'deck';
+    deck.id = 'doc-deck';
+    doc.appendChild(source);
+    doc.appendChild(deck);
+    window.SLIDES.render(source, deck, { perSlide: 1, label: 'sections' });
   }
 
   function showDoc() {
     $('doc-view').hidden = false;
     var html = S.format === 'project' ? projectHtml() : reportHtml();
     $('doc').innerHTML = html;
-    foldDoc();
+    slideDoc();
     $('step4-sub').textContent = S.format === 'project'
       ? 'A project you can actually do, about ' + S.board.topic.title.toLowerCase() + '. Print it and tick things off.'
       : 'A writing plan for a report about ' + S.board.topic.title.toLowerCase() + '. The facts are here; the words should be yours.';
@@ -4777,11 +4769,18 @@
   $('ex-print').addEventListener('click', function () {
     var b = S.board;
     if (b.format === 'project' || b.format === 'report') {
-      /* The sections on screen are folded. A printout has no one to tap them open, so the
-         copy that goes to paper has every one of them open and the toggle removed. */
+      /* On screen the sections are slides. Paper has no Next button, so the printed copy
+         is the opening blurb followed by every section in order, with the deck's arrows
+         and counter left out. */
       var copy = $('doc').cloneNode(true);
-      copy.querySelectorAll('details').forEach(function (d) { d.open = true; });
-      copy.querySelectorAll('.doc-allbar').forEach(function (d) { d.remove(); });
+      var deck = copy.querySelector('#doc-deck');
+      var sections = deck ? [].slice.call(deck.querySelectorAll('.doc-slide')) : [];
+      if (deck) {
+        deck.remove();
+        var hidden = copy.querySelector('#doc-sections');
+        if (hidden) hidden.remove();
+        sections.forEach(function (sec) { copy.appendChild(sec); });
+      }
       $('print-area').innerHTML = '<div class="p-doc">' + copy.innerHTML + '</div>';
       stopSpeech();
       toast('Opening the print window');

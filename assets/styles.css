@@ -1688,6 +1688,59 @@ ol.doc-list li { display: flex; gap: .7rem; align-items: baseline; }
 .learn.fold > summary { padding: .5rem 0; }
 .learn.fold > summary .lbl { display: inline; }
 
+/* ── slides ─────────────────────────────
+   A row of pages you swipe, one screen tall whatever is in it. The scrolling and the
+   snapping are the browser's own, so a phone gets real momentum and a trackpad works
+   without a line of JavaScript about it. */
+
+.deck { margin-top: .9rem; }
+.deck-track {
+  display: flex; overflow-x: auto; overflow-y: hidden;
+  /* the smoothing is asked for per scroll in slides.js; declaring it here as well made
+     Chrome drop the programmatic scrolls entirely */
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; gap: 0;
+}
+.deck-track::-webkit-scrollbar { display: none; }
+.deck-track:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: var(--r-sm); }
+.deck-slide { flex: 0 0 100%; scroll-snap-align: start; min-width: 0; padding: .15rem; align-self: flex-start; }
+.deck-track { transition: height 180ms ease; }
+.deck-slide > .topic-list { margin: 0; display: grid; gap: .5rem; }
+
+.deck-bar {
+  display: flex; align-items: center; gap: .7rem;
+  margin-top: .8rem;
+}
+.deck-arrow {
+  font: inherit; font-size: 1.05rem; line-height: 1; cursor: pointer;
+  width: 2.6rem; height: 2.6rem; min-height: 44px; min-width: 44px;
+  border-radius: 999px; border: 1px solid var(--line-2);
+  background: var(--surface); color: var(--ink);
+  transition: border-color var(--t), background var(--t);
+}
+.deck-arrow:hover:not([disabled]) { border-color: var(--accent); background: var(--accent-soft); }
+.deck-arrow[disabled] { opacity: .35; cursor: default; }
+.deck-count { font-size: .85rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.deck-dots { display: flex; gap: .3rem; flex: 1; flex-wrap: wrap; }
+.deck-dot {
+  width: .45rem; height: .45rem; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--line-2);
+}
+.deck-dot.is-here { background: var(--accent); border-color: var(--accent); }
+
+/* a document read as slides: one section to a page, with room around it */
+.deck-slide > .doc-sections { margin: 0; }
+.doc-slide { padding: .2rem .1rem; }
+.doc-slide h4 {
+  margin: 0 0 .5rem; font-size: 1.1rem; color: var(--accent);
+}
+.doc-slide > *:last-child { margin-bottom: 0; }
+
+@media (max-width: 34rem) {
+  .deck-bar { gap: .5rem; margin-top: .7rem; }
+  .deck-count { font-size: .8rem; }
+}
+
 /* a long document, section by section */
 .doc-fold { border-top: 1px solid var(--line); }
 .doc-fold > summary { padding: .85rem 0; }

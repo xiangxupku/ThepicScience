@@ -62,8 +62,8 @@
       <details class="learn fold">
         <summary><span class="lbl" id="learn-h">What your grade covers</span></summary>
         <p class="hint">Tap one to start, or photograph your own board below.</p>
-        <ul class="topic-list" id="learn-list"></ul>
-        <button type="button" class="btn btn-quiet more-btn" id="learn-more" hidden></button>
+        <ul class="topic-list" id="learn-list" hidden></ul>
+        <div class="deck" id="learn-deck"></div>
       </details>
     </div>
   </section>
@@ -190,8 +190,8 @@
       <label class="lbl" for="topic-search">Search the science library</label>
       <input type="search" id="topic-search" class="input" placeholder="cells, forces, water cycle, circuits…" autocomplete="off">
       <p class="hint" id="topic-count"></p>
-      <ul class="topic-list" id="topic-list"></ul>
-      <button type="button" class="btn btn-quiet more-btn" id="topic-more" hidden></button>
+      <ul class="topic-list" id="topic-list" hidden></ul>
+      <div class="deck" id="topic-deck"></div>
       <p class="empty-note" id="topic-empty" hidden>Nothing in the library matches that yet. Try a shorter word — "cell", "atom", "energy" — or pick one from the full list.</p>
     </div>
 
@@ -702,6 +702,7 @@
 <script src="assets/topics-e.js"></script>
 <script src="assets/topics-f.js"></script>
 <script src="assets/quizbank.js"></script>
+<script src="assets/slides.js"></script>
 <script src="assets/match.js"></script>
 <script src="assets/projects.js"></script>
 <script src="assets/detail.js"></script>
