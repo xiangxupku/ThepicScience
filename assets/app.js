@@ -188,6 +188,51 @@
     $('shop').classList.toggle('is-tight', working);
   }
 
+  /* ── one panel open at a time ───────────────
+     Six things on this page open and close: the three folds, the shop, the deeper notes
+     and the profile. Nothing stopped all six being open at once, and then the page is long
+     again — which is the whole thing we have been fixing. So they share one rule: opening
+     any of them puts the others away. The steps already worked like this; now the panels
+     do too. */
+
+  var PANELS = [];
+
+  function panel(isOpen, close) {
+    var p = { isOpen: isOpen, close: close };
+    PANELS.push(p);
+    return p;
+  }
+
+  function solo(keep) {
+    PANELS.forEach(function (p) {
+      if (p !== keep && p.isOpen()) p.close();
+    });
+  }
+
+  var shopPanel = panel(
+    function () { return !$('shop-body').hidden; },
+    function () { setShop(false); }
+  );
+  var deeperPanel = panel(
+    function () { return !$('deeper-body').hidden; },
+    function () { setDeeper(false); }
+  );
+  var profilePanel = panel(
+    function () { return !$('profile').hidden; },
+    function () { openProfile(false); }
+  );
+
+  /* every <details> on the page is a panel too. The toggle event fires whether it was
+     opened by a tap or by the app itself, which is what we want: switching to the video
+     format opens the voice settings, and that should put the shop away like any other. */
+  document.querySelectorAll('details.fold, details.how-fold').forEach(function (d) {
+    var p = panel(
+      function () { return d.open; },
+      function () { d.open = false; }
+    );
+    d.addEventListener('toggle', function () { if (d.open) solo(p); });
+  });
+
   /* A deck inside a step that was folded had no width to be dealt for, so it is dealt
      again as the step opens. */
   function refreshSlides() {
@@ -2739,13 +2784,20 @@
     });
   }
 
+  function setDeeper(open) {
+    $('deeper-body').hidden = !open;
+    $('deeper-toggle').setAttribute('aria-expanded', String(open));
+    $('deeper-toggle').textContent = open ? 'Hide it again' : 'Show me';
+    if (open) {
+      solo(deeperPanel);
+      lessonTab('check');
+      goTo($('deeper'));
+      say('Showing the deeper notes.');
+    }
+  }
+
   $('deeper-toggle').addEventListener('click', function () {
-    var body = $('deeper-body');
-    var open = body.hidden;
-    body.hidden = !open;
-    this.setAttribute('aria-expanded', String(open));
-    this.textContent = open ? 'Hide it again' : 'Show me';
-    if (open) { lessonTab('check'); goTo($('deeper')); say('Showing the deeper notes.'); }
+    setDeeper($('deeper-body').hidden);
   });
 
   /* ── sparks and pets ───────────────────────────────────
@@ -3045,18 +3097,20 @@
     say(cur.def.name + ' reached level ' + (cur.level + 1) + ' and can now tell you more.');
   });
 
+  function setShop(open) {
+    $('shop-body').hidden = !open;
+    $('shop-toggle').setAttribute('aria-expanded', String(open));
+    $('shop-toggle').textContent = open ? 'Close the shop' : 'Open the shop';
+    if (open) { solo(shopPanel); goTo($('shop')); }
+  }
+
   $('shop-toggle').addEventListener('click', function () {
-    var body = $('shop-body');
-    var open = body.hidden;
-    body.hidden = !open;
-    this.setAttribute('aria-expanded', String(open));
-    this.textContent = open ? 'Close the shop' : 'Open the shop';
-    if (open) goTo($('shop'));
+    setShop($('shop-body').hidden);
   });
 
   $('spark-chip').addEventListener('click', function () {
     goTo($('shop'));
-    if ($('shop-body').hidden) $('shop-toggle').click();
+    if ($('shop-body').hidden) setShop(true);
   });
 
   /* ── your profile ──────────────────────────────
@@ -3323,7 +3377,7 @@
   function openProfile(open) {
     $('profile').hidden = !open;
     $('me-chip').setAttribute('aria-expanded', String(open));
-    if (open) { renderProfile(); goTo($('profile')); $('profile-name').focus(); }
+    if (open) { solo(profilePanel); renderProfile(); goTo($('profile')); $('profile-name').focus(); }
   }
 
   $('me-chip').addEventListener('click', function () { openProfile($('profile').hidden); });
